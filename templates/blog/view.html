@@ -1,0 +1,29 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}{{title}}{% endblock %}
+
+{% block content %}
+    <!-- 博客封面图 -->
+    <div class="blog-jpg">
+        <!-- 阴影块 -->
+        <div class="blog-overlay"></div>
+        <!-- 封面及标题 -->
+        <div class="blog-cover" data-stellar-background-ratio="0.5" style="background-image: url({{pic}});">
+            <div class="blog-title">
+                <h2>{{title}}</h2>
+            </div>
+        </div>
+    </div>
+    <!-- 正文 -->
+    <div class="container">
+        <div id="main-content">
+            <article>
+                <div class="art-content">
+                    <div class="info"><a href="">{{writer}}</a><p>{{date|date:"Y年n月j日"}}</p></div>
+                    {{body}}
+                </div>
+            </article>
+        </div>
+    </div>
+    
+{% endblock %}
