@@ -11,25 +11,19 @@ from itchat.utils import test_connect
 from app.helper.wheel import parallel as pl
 
 logger = logging.getLogger('itchat')
-PKL = 'static/itchat.pkl'
 
-def login(pic_dir, hot_reload=True):
+def login(pic_dir):
     '来吧复杂的登陆函数'
     #如果无法链接, 就推出
     if not test_connect():
         logger.info("You can't get access to internet or wechat domain, so exit.")
         sys.exit()
-    #如果打开热启动
-    if hot_reload:
         #确认登陆状态
-        if itchat.load_login_status(PKL):
-            return
-        uuid = __open_qr(pic_dir)
-        yield '/' + pic_dir
-        itchat.dump_login_status(PKL)
-        __login_after_qr(uuid, pic_dir)
-        os.remove(pic_dir)
-        yield
+    uuid = __open_qr(pic_dir)
+    yield '/' + pic_dir
+    __login_after_qr(uuid, pic_dir)
+    os.remove(pic_dir)
+    yield
 
 def __open_qr(pic_dir):
     for _ in range(10):
@@ -79,7 +73,7 @@ def __login_after_qr(uuid, pic_dir):
         msg = '休眠%d秒' % num
         logger.info(msg)
 
-    pl.run_thread([(func, ('23333', user, num, )) for num in range(100)], None, False, 5)
+    pl.run_thread([(func, ('23333', user, num, )) for num in range(100)], None, False, 30)
 
     itchat.start_receiving()
 
