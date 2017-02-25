@@ -24,7 +24,7 @@ def index(request):
     return render(request, 'app/index.html', result)
 
 def login(request):
-    itchat.auto_login(picDir='static' + pic_name, hotReload=True)
+    itchat.auto_login(picDir='./static' + pic_name, hotReload=True)
     friend = itchat.search_mps(name='微信支付')[0]
     itchat.send('2333', friend['UserName'])
     draw()
