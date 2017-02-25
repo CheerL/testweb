@@ -1,10 +1,12 @@
+import os
+from logging import getLogger
 from django.shortcuts import render
 from django.http import HttpResponse
-from PIL import Image
-import itchat
 from app.login import login as LG
 from app.helper.ucas import EXCEPTIONS
-from logging import getLogger
+from app.login import PKL
+import itchat
+
 
 QR_name = 'static/QR.png'
 COUNT = 0
@@ -29,7 +31,11 @@ def login(request):
         return HttpResponse(next(LOGIN))
     except EXCEPTIONS as error:
         LIMIT = 0
-        logger.error(error)
+        if os.path.isfile(PKL):
+            os.remove(PKL)
+        #logger.info(error)
+        raise ConnectionError(error)
+        return HttpResponse(error)
 
 '''
 def draw():

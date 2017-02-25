@@ -15,7 +15,7 @@ EXCEPTIONS = (
     AttributeError, IOError, NotImplementedError,
     TimeoutError, IndexError, ConnectionError,
     ValueError, TypeError, RuntimeError,
-    IndentationError, InterruptedError, KeyError,
+    IndentationError, InterruptedError, KeyError, StopIteration,
     )
 PHANTOMJS_PATH = r'C:\Users\Cheer.L\Documents\phantomjs-2.1.1-windows\bin\phantomjs.exe'
 

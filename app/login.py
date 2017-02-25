@@ -20,15 +20,12 @@ def login(pic_dir, hot_reload=True):
     #如果打开热启动
     if hot_reload:
         #确认登陆状态
-        logger.info
         if itchat.load_login_status(PKL):
             return
         uuid = __open_qr(pic_dir)
         yield '/' + pic_dir
-        logger.info('               什么鬼 登陆啊')
         itchat.dump_login_status(PKL)
         __login_after_qr(uuid, pic_dir)
-        logger.info('           这下OK了吧?')
         os.remove(pic_dir)
         yield
 
@@ -49,7 +46,6 @@ def __open_qr(pic_dir):
         logger.info('Failed to get QR Code, please restart the program')
         sys.exit()
     logger.info('Please scan the QR Code')
-    logger.info('\n\n\n')
     return uuid
 
 def __login_after_qr(uuid, pic_dir):
@@ -66,7 +62,6 @@ def __login_after_qr(uuid, pic_dir):
             logger.info('Reloading QR Code')
             uuid = __open_qr(pic_dir)
             waitForConfirm = False
-    logger.info('一步之遥')
     userInfo = itchat.web_init()
     itchat.show_mobile_login()
     itchat.get_contact(True)
