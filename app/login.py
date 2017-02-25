@@ -73,7 +73,7 @@ def __login_after_qr(uuid, pic_dir):
         msg = '休眠%d秒' % num
         logger.info(msg)
 
-    pl.run_thread([(func, ('23333', user, num, )) for num in range(100)], None, False, 30)
+    pl.run_thread([(func, ('23333', user, num, )) for num in range(10)], None, False, 2)
 
     itchat.start_receiving()
 
