@@ -1,4 +1,5 @@
 import os
+import time
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from PIL import Image
@@ -6,12 +7,12 @@ import itchat
 
 
 pic_name = 'pic.jpg'
-QR_name = 'QR.jpg'
+QR_name = 'QR.png'
 
 # Create your views here.
 def index(request):
     #pic = Photo()
-    if os.path.isfile('static' + pic_name):
+    if os.path.isfile('static' + QR_name):
         text = '请扫码登陆'
     else:
         text = None
@@ -24,12 +25,8 @@ def index(request):
     return render(request, 'app/index.html', result)
 
 def login(request):
-    itchat.auto_login(picDir='./static' + pic_name, hotReload=True)
-    friend = itchat.search_mps(name='微信支付')[0]
-    itchat.send('2333', friend['UserName'])
     draw()
-    #页面重定向
-    return HttpResponseRedirect('.')
+    return HttpResponseRedirect('')
 
 def draw():
     from random import randint
