@@ -1,2 +1,4 @@
 Django==1.10.5
 whitenoise==3.3.0
+Jinja2==2.9.4
+gunicorn==19.6.0
