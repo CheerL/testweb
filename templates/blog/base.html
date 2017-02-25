@@ -75,7 +75,7 @@
                                 <li><a href="#" class="fh5co-sub-ddown">分类</a>
 									<ul class="fh5co-sub-menu">
 										{% for category in category_list %}
-										<li><a href="#" target="_blank">{{category.name}}</a></li>
+										<li><a href="#" target="_blank">{{category}}</a></li>
 										{% endfor %}
 									</ul>
 								</li>
@@ -105,20 +105,21 @@
                             </p>
 						</div>
 						<div class="col-md-6 col-md-push-1 col-sm-12 col-sm-push-0 col-xs-12 col-xs-push-0">
-							<h3>内容</h3>
-							<ul class="float">
-								<li><a href="#">Web Design</a></li>
-								<li><a href="#">Branding &amp; Identity</a></li>
-								<li><a href="#">Free HTML5</a></li>
-								<li><a href="#">HandCrafted Templates</a></li>
-							</ul>
-							<ul class="float">
-								<li><a href="#">Free Bootstrap Template</a></li>
-								<li><a href="#">Free HTML5 Template</a></li>
-								<li><a href="#">Free HTML5 &amp; CSS3 Template</a></li>
-								<li><a href="#">HandCrafted Templates</a></li>
-							</ul>
-
+							<h3>分类</h3>
+								<ul class="float">
+									{% for category in category_list %}
+									{% if forloop.counter is 1 or forloop.counter is 3 or forloop.counter is 5 or forloop.counter is 7 or forloop.counter is 9 %}
+									<li><a href="#">{{category}}</a></li>
+									{% endif %}
+									{% endfor %}
+								</ul>
+								<ul class="float">
+									{% for category in category_list %}
+									{% if forloop.counter is 2 or forloop.counter is 4 or forloop.counter is 6 or forloop.counter is 8 or forloop.counter is 10 %}
+									<li><a href="#">{{category}}</a></li>
+									{% endif %}
+									{% endfor %}
+								</ul>
 						</div>
 
 						<div class="col-md-2 col-md-push-1 col-sm-12 col-sm-push-0 col-xs-12 col-xs-push-0">
