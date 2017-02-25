@@ -4,39 +4,48 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from PIL import Image
 import itchat
-from helper.wheel import parallel as pl
+from app.login import login as LG
+from app.helper.ucas import EXCEPTIONS
+from logging import getLogger
 
-pic_name = 'pic.jpg'
-QR_name = 'QR.png'
+QR_name = 'static/QR.png'
 COUNT = 0
+LIMIT = 0
+LOGIN = LG(QR_name)
+logger = getLogger('helper')
 
 # Create your views here.
 def index(request):
-    #pic = Photo()
-    if os.path.isfile('static' + QR_name):
-        text = '请扫码登陆'
-    else:
-        text = None
-    result = {
-        'title':'微信小助手',
-        'body':text or '微信小助手',
-        'pic':pic_name,
-        'QR':QR_name,
-    }
-    return render(request, 'app/index.html', result)
+    'app初始界面, 有可能是唯一的界面'
+    return render(request, 'app/index.html', None)
 
 def login(request):
-    return HttpResponse(draw())
+    '终于登陆了'
+    global LIMIT, LOGIN
+    #global f
+    if LIMIT >= 2:
+        LOGIN = LG(QR_name)
+        LIMIT = 0
+    LIMIT += 1
+    try:
+        return HttpResponse(next(LOGIN))
+    except EXCEPTIONS as error:
+        LIMIT = 0
+        logger.error(error)
 
+'''
 def draw():
     from random import randint
     global COUNT
-    os.remove('static/' + str(COUNT) + pic_name)
     COUNT += 1
     width = 100
     height = 100
     name = 'static/' + str(COUNT) + pic_name
     image = Image.new('RGB', (width, height), (randint(0, 255), randint(0, 255), randint(0, 255)))
     image.save(name, 'jpeg')
-    return '/' + name
-    
+    yield '/' + name
+    time.sleep(5)
+    if os.path.isfile(name):
+        os.remove(name)
+    yield
+'''

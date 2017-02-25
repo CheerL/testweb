@@ -3,8 +3,8 @@ import os
 import re
 import itchat
 import helper
-from helper import Helper
-from ucas import EXCEPTIONS
+from .helper import Helper
+from .ucas import EXCEPTIONS
 
 HELPER = Helper()
 ADMIN_HELP = '''?data.csv?   None

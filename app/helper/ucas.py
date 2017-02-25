@@ -7,8 +7,8 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup as Bs
 from PIL import Image
-from ..wheel import parallel as pl
-from ..wheel import testemail
+from app.helper.wheel import parallel as pl
+from app.helper.wheel import testemail
 
 TIMEOUT = 10
 EXCEPTIONS = (

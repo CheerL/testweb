@@ -2,14 +2,12 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>{{title}}</title>
+        <title>微信小助手</title>
     </head>
     <body>
-        {{body}}
+        <div id="text">请点击下面的登陆键</div>
         <br>
-        <img id="pic" src="{% static pic %}" class="1">
-        <br>
-        <!--<img src="{% static QR %}"> -->
+        <img id="pic" src="" class="1" type="hidden">
         <br>
         <a><button id="button">登陆</button></a>
     </body>
@@ -19,7 +17,11 @@
         $(document).ready(function(){
             $("#button").click(function(){
                 $.get("login", function(data){
-                    $("#pic")[0].src = data;
+                    var pic = $("#pic")[0];
+                    pic.src = data;
+                    pic.show();
+                    $("#text").text() = "请扫描二维码"
+                    $.get("login", function(){pic.hide();});
                 });
             });
         });

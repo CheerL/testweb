@@ -7,8 +7,8 @@ import datetime
 import requests
 import itchat
 import pandas as pd
-import parallel as pl
-from ucas import _info, UCASSEP, EXCEPTIONS
+from app.helper.wheel import parallel as pl
+from .ucas import _info, UCASSEP, EXCEPTIONS
 
 TL_KEY = '71f28bf79c820df10d39b4074345ef8c'
 SAVE_TIME = 1#分钟
