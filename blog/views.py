@@ -8,7 +8,7 @@ def get_category(result):
 def index(request):
     blog_list = [
         {
-            'pic':'/static/images/blog-1.jpg',
+            'pic':'images/blog-1.jpg',
             'title':blog.title,
             'date':blog.date,
             'category':blog.category,
@@ -19,7 +19,7 @@ def index(request):
     result = {
         'title':'Cheer.L Blog',
         'welcome':'欢迎来到Cheer.L的Blog',
-        'pic':'/static/images/cover_bg_1.jpg',
+        'pic':'images/cover_bg_1.jpg',
         'blog_list':blog_list,
     }
     get_category(result)
@@ -33,7 +33,7 @@ def blog_read(request, year, month, day, title):
         'body':blog.body,
         'writer':'Cheer.L',
         'date':blog.date,
-        'pic':'/static/images/cover_bg_2.jpg'
+        'pic':'images/cover_bg_2.jpg'
     }
     get_category(result)
     return render(request, 'blog/view.html', result)

@@ -1,14 +1,13 @@
 {% extends 'blog/base.html' %}
-
+{% load static staticfiles%}
 {% block title %}{{title}}{% endblock %}
-
 {% block content %}
 	<!-- 首页大图 -->
 	<div class="fh5co-hero">
 		<!-- 阴影块 -->
 		<div class="fh5co-overlay"></div>
 		<!-- 首页图文 -->
-		<div class="fh5co-cover text-center" data-stellar-background-ratio="0.5" style="background-image: url({{pic}});">
+		<div class="fh5co-cover text-center" data-stellar-background-ratio="0.5" style="background-image: url({% static pic %});">
 			<div class="desc animate-box">
 				<h2>{{welcome}}</h2>
 			</div>
@@ -30,7 +29,7 @@
 					{% for blog in blog_list %}
 					<div class="col-lg-4 col-md-4">
 						<div class="fh5co-blog animate-box">
-							<a href="{{blog.href}}"><img class="img-responsive" src="{{blog.pic}}" alt=""></a>
+							<a href="{{blog.href}}"><img class="img-responsive" src="{% static blog.pic %}" alt=""></a>
 							<div class="blog-text">
 								<div class="prod-title">
 									<h3 style="font-size: 30px;"><a href="{{blog.href}}">{{blog.title}}</a></h3>
