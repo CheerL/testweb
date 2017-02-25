@@ -26,7 +26,8 @@ SECRET_KEY = '3p1bk!e25y7qx_n^$c%yn6d5civtq86$f4i6mhce$i9qze&t97'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '5000.gr34d63a.none.xunda-bj.goodrain.net'
+    '5000.gr34d63a.none.xunda-bj.goodrain.net',
+    '127.0.0.1'
 ]
 
 # Application definition
@@ -119,6 +120,10 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
+
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
 

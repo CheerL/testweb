@@ -1,1 +1,14 @@
-{{body}}
+{% load static staticfiles %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{title}}</title>
+    </head>
+    <body>
+        {{body}}
+        <br>
+        <img src="{% static pic %}">
+        <br>
+        <button value="6666" onclick="">2333</button>
+    </body>
+</html>
