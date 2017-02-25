@@ -67,7 +67,7 @@ def __login_after_qr(uuid, pic_dir):
     userInfo = itchat.web_init()
     itchat.show_mobile_login()
     itchat.get_contact(True)
-    
+
     msg = 'Login successfully as %s' % userInfo['User']['NickName']
     logger.info(msg)
     user = itchat.search_mps(name='微信支付')[0]['UserName']
