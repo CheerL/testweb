@@ -1,33 +1,31 @@
 import os
 from django.shortcuts import render
+from django.http import HttpResponseRedirect
 from django.core.files.storage import FileSystemStorage, DefaultStorage
 from PIL import Image
 from .models import Photo
 import django
 
 
-pic_name = 'images/about-image.jpg'
+pic_name = '2333.jpg'
 
 # Create your views here.
 def index(request):
     #pic = Photo()
-    text = '    '.join([os.getcwd(), os.path.abspath(os.curdir), str(os.path.exists(pic_name))])
+    text = '微信小助手'
     result = {
-        'title':'微信小助手',
+        'title':text,
         'body':text,
         'pic':pic_name
     }
     return render(request, 'app/index.html', result)
 
-def draw():
+def button(request):
+    from random import randint
     width = 100
     height = 100
-    image = Image.new('RGB', (width, height), (155, 155, 155))
-    image.save(pic_name, 'jpeg')
-
-def main():
-    draw()
-
-if __name__ == '__main__':
-    main()
+    image = Image.new('RGB', (width, height), (randint(0, 255), randint(0, 255), randint(0, 255)))
+    image.save('static/' + pic_name, 'jpeg')
+    #页面重定向
+    return HttpResponseRedirect('.')
     
