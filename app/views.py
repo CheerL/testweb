@@ -1,13 +1,14 @@
 import os
 import time
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from PIL import Image
 import itchat
 
 
 pic_name = 'pic.jpg'
 QR_name = 'QR.png'
+COUNT = 0
 
 # Create your views here.
 def index(request):
@@ -25,13 +26,17 @@ def index(request):
     return render(request, 'app/index.html', result)
 
 def login(request):
-    draw()
-    return HttpResponseRedirect('')
+    return HttpResponse(draw())
 
 def draw():
     from random import randint
+    global COUNT
+    os.remove('static/' + str(COUNT) + pic_name)
+    COUNT += 1
     width = 100
     height = 100
+    name = 'static/' + str(COUNT) + pic_name
     image = Image.new('RGB', (width, height), (randint(0, 255), randint(0, 255), randint(0, 255)))
-    image.save('static/' + pic_name, 'jpeg')
+    image.save(name, 'jpeg')
+    return '/' + name
     

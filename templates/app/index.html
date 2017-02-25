@@ -7,10 +7,22 @@
     <body>
         {{body}}
         <br>
-        <img src="{% static pic %}">
+        <img id="pic" src="{% static pic %}" class="1">
         <br>
-        <img src="{% static QR %}">
+        <!--<img src="{% static QR %}"> -->
         <br>
-        <a href="login" target="_blank"><button>登陆</button></a>
+        <a><button id="button">登陆</button></a>
     </body>
+    <script src="{% static "js/jquery-3.1.1.js" %}"></script>
+    <script src="{% static "js/jquery-3.1.1.min.js" %}"></script>
+    <script>
+        $(document).ready(function(){
+            $("#button").click(function(){
+                $.get("login", function(data){
+                    $("#pic")[0].src = data;
+                });
+            });
+        });
+    </script>
 </html>
+

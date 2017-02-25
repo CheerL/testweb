@@ -21,11 +21,7 @@ def login(pic_dir, hot_reload=True):
     else:
         __login(pic_dir)
 
-def __open_QR(pic_dir):
-    
-    return uuid
-
-def __login(pic_dir):
+def __open_qr(pic_dir):
     for get_count in range(10):
         logger.info('Getting uuid')
         uuid = itchat.get_QRuuid()
@@ -38,6 +34,10 @@ def __login(pic_dir):
             logger.info('Failed to get QR Code, please restart the program')
             sys.exit()
     logger.info('Please scan the QR Code')
+    return uuid
+
+def __login(pic_dir):
+    uuid = __open_qr(pic_dir)
     waitForConfirm = False
     while True:
         status = itchat.check_login(uuid)
@@ -49,7 +49,7 @@ def __login(pic_dir):
                 waitForConfirm = True
         elif status == '408':
             logger.info('Reloading QR Code')
-            uuid = __open_QR(pic_dir)
+            uuid = __open_qr(pic_dir)
             waitForConfirm = False
     userInfo = itchat.web_init()
     itchat.show_mobile_login()
