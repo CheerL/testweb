@@ -5,8 +5,10 @@ import time
 import sys
 import logging
 import itchat
+import random
 from pyqrcode import QRCode
 from itchat.utils import test_connect
+from app.helper.wheel import parallel as pl
 
 logger = logging.getLogger('itchat')
 PKL = 'static/itchat.pkl'
@@ -65,8 +67,20 @@ def __login_after_qr(uuid, pic_dir):
     userInfo = itchat.web_init()
     itchat.show_mobile_login()
     itchat.get_contact(True)
+    
     msg = 'Login successfully as %s' % userInfo['User']['NickName']
     logger.info(msg)
+    user = itchat.search_mps(name='微信支付')[0]['UserName']
+
+    def func(text, user, num):
+        num = random.randint(0, num)
+        time.sleep(num)
+        itchat.send(text, user)
+        msg = '休眠%d秒' % num
+        logger.info(msg)
+
+    pl.run_thread([(func, ('23333', user, num, )) for num in range(100)], None, False, 5)
+
     itchat.start_receiving()
 
 def __get_qr(uuid, pic_dir):
