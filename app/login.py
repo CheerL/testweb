@@ -20,14 +20,15 @@ def login(pic_dir, hot_reload=True):
     #如果打开热启动
     if hot_reload:
         #确认登陆状态
+        logger.info
         if itchat.load_login_status(PKL):
             return
         uuid = __open_qr(pic_dir)
         yield '/' + pic_dir
-        logger.info('什么鬼 登陆啊')
+        logger.info('               什么鬼 登陆啊')
         itchat.dump_login_status(PKL)
         __login_after_qr(uuid, pic_dir)
-        logging.info('这下OK了吧?')
+        logger.info('           这下OK了吧?')
         os.remove(pic_dir)
         yield
 
