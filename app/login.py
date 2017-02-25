@@ -12,7 +12,7 @@ def login(pic_dir, hot_reload=True):
     if not test_connect():
         logger.info("You can't get access to internet or wechat domain, so exit.")
         sys.exit()
-    if hotReload:
+    if hot_reload:
         if itchat.load_login_status(PKL):
             return
         __login(pic_dir)
