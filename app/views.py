@@ -11,7 +11,7 @@ pic_name = 'images/about-image.jpg'
 # Create your views here.
 def index(request):
     #pic = Photo()
-    text = os.getcwd()
+    text = '    '.join([os.getcwd(), os.path.abspath(os.curdir), str(os.path.exists(pic_name))])
     result = {
         'title':'微信小助手',
         'body':text,
