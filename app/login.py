@@ -17,7 +17,6 @@ def login(pic_dir, hot_reload=True):
             return
         __login(pic_dir)
         itchat.dump_login_status(PKL)
-        hotReloadDir = PKL
     else:
         __login(pic_dir)
 
@@ -57,6 +56,10 @@ def __login(pic_dir):
     msg = 'Login successfully as %s' % userInfo['User']['NickName']
     logger.info(msg)
     itchat.start_receiving()
+
+def qr_callback(pic_dir, uuid, status, qrcode):
+    with open(picDir=pic_dir, mode='wb') as img:
+        img.write(qrcode)
 
 # Start auto-replying
 @itchat.msg_register
