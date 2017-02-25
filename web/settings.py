@@ -25,7 +25,9 @@ SECRET_KEY = '3p1bk!e25y7qx_n^$c%yn6d5civtq86$f4i6mhce$i9qze&t97'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '5000.gr34d63a.none.xunda-bj.goodrain.net'
+]
 
 # Application definition
 
