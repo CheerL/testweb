@@ -24,8 +24,10 @@ def login(pic_dir, hot_reload=True):
             return
         uuid = __open_qr(pic_dir)
         yield '/' + pic_dir
+        logger.info('什么鬼 登陆啊')
         itchat.dump_login_status(PKL)
         __login_after_qr(uuid, pic_dir)
+        logging.info('这下OK了吧?')
         os.remove(pic_dir)
         yield
 
@@ -39,13 +41,14 @@ def __open_qr(pic_dir):
             time.sleep(1)
         logger.info('Getting QR Code')
         #如果成功获取二维码, 跳出循环
-        if __get_QR(uuid, pic_dir):
+        if __get_qr(uuid, pic_dir):
             break
     #否则重试0次
     else:
         logger.info('Failed to get QR Code, please restart the program')
         sys.exit()
     logger.info('Please scan the QR Code')
+    logger.info('\n\n\n')
     return uuid
 
 def __login_after_qr(uuid, pic_dir):
@@ -62,6 +65,7 @@ def __login_after_qr(uuid, pic_dir):
             logger.info('Reloading QR Code')
             uuid = __open_qr(pic_dir)
             waitForConfirm = False
+    logger.info('一步之遥')
     userInfo = itchat.web_init()
     itchat.show_mobile_login()
     itchat.get_contact(True)
@@ -69,7 +73,7 @@ def __login_after_qr(uuid, pic_dir):
     logger.info(msg)
     itchat.start_receiving()
 
-def __get_QR(uuid, pic_dir):
+def __get_qr(uuid, pic_dir):
     qrStorage = io.BytesIO()
     qrCode = QRCode('https://login.weixin.qq.com/l/' + uuid)
     qrCode.png(qrStorage, scale=10)

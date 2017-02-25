@@ -1,7 +1,5 @@
-import os
-import time
 from django.shortcuts import render
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
+from django.http import HttpResponse
 from PIL import Image
 import itchat
 from app.login import login as LG

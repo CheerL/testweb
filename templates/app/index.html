@@ -17,10 +17,9 @@
         $(document).ready(function(){
             $("#button").click(function(){
                 $.get("login", function(data){
-                    var pic = $("#pic")[0];
-                    pic.src = data;
-                    pic.show();
-                    $("#text").text() = "请扫描二维码"
+                    $("#pic")[0].src = data;
+                    $("#pic")[0].show();
+                    $("#text").text("请扫描二维码");
                     $.get("login", function(){pic.hide();});
                 });
             });
