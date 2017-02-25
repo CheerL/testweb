@@ -35,6 +35,7 @@ def __open_qr(pic_dir):
             time.sleep(1)
         logger.info('Getting QR Code')
         #如果成功获取二维码, 跳出循环
+        time.sleep(1)
         if __get_qr(uuid, pic_dir):
             break
     #否则重试0次
@@ -47,6 +48,7 @@ def __open_qr(pic_dir):
 def __login_after_qr(uuid, pic_dir):
     waitForConfirm = False
     while True:
+        time.sleep(1)
         status = itchat.check_login(uuid)
         if status == '200':
             break
@@ -80,6 +82,7 @@ def __login_after_qr(uuid, pic_dir):
 def __get_qr(uuid, pic_dir):
     qrStorage = io.BytesIO()
     qrCode = QRCode('https://login.weixin.qq.com/l/' + uuid)
+    time.sleep(1)
     qrCode.png(qrStorage, scale=10)
     with open(pic_dir, 'wb') as f:
         f.write(qrStorage.getvalue())
