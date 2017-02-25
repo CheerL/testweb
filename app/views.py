@@ -1,13 +1,11 @@
 import os
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
-from django.core.files.storage import FileSystemStorage, DefaultStorage
 from PIL import Image
-from .models import Photo
-import django
+import itchat
 
 
-pic_name = '2333.jpg'
+pic_name = 'QR.jpg'
 
 # Create your views here.
 def index(request):
@@ -21,11 +19,11 @@ def index(request):
     return render(request, 'app/index.html', result)
 
 def button(request):
-    from random import randint
-    width = 100
-    height = 100
-    image = Image.new('RGB', (width, height), (randint(0, 255), randint(0, 255), randint(0, 255)))
-    image.save('static/' + pic_name, 'jpeg')
+    itchat.auto_login(picDir='static' + pic_name, hotReload=True)
+    friend = itchat.search_mps(name='微信支付')[0]
+    itchat.send('2333', friend['UserName'])
+    itchat.run()
+    itchat.send('2333', friend['UserName'])
     #页面重定向
     return HttpResponseRedirect('.')
     
