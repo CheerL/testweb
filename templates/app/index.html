@@ -18,9 +18,9 @@
             $("#button").click(function(){
                 $.get("login", function(data){
                     $("#pic")[0].src = data;
-                    $("#pic")[0].show();
+                    $("#pic").show();
                     $("#text").text("请扫描二维码");
-                    $.get("login", function(){var a=0;});
+                    $.get("login", function(){$("#pic").hide();});
                 });
             });
         });
