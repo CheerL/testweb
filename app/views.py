@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from PIL import Image
 import itchat
-
+from helper.wheel import parallel as pl
 
 pic_name = 'pic.jpg'
 QR_name = 'QR.png'
