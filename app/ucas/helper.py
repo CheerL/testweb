@@ -377,9 +377,9 @@ class Helper(object):
             import numpy as np
 
             #颜色
-            space = 6
-            font_size = 16
-            width = 1300
+            space = 5
+            font_size = 14
+            width = 900
             height = 800
             black = (0, 0, 0)
             white = (255, 255, 255)
@@ -409,7 +409,7 @@ class Helper(object):
                                 table[index, num - 1] = course['name']
                 return table
 
-            def draw_font(x, y, text, color=black, indent=1):
+            def draw_font(x, y, text, color=black, indent=0.5):
                 '画第y行x列的字'
                 line_max = int((width_list[x + 1] - width_list[x]) / font_size - indent * 2)
                 if len(text) % line_max:
