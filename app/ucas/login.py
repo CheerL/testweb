@@ -19,6 +19,7 @@ def login(pic_dir):
         #确认登陆状态
     uuid = __open_qr(pic_dir)
     yield '/' + pic_dir
+    time.sleep(5)
     __login_after_qr(uuid, pic_dir)
     os.remove(pic_dir)
     yield
