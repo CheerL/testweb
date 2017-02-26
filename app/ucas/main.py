@@ -86,7 +86,8 @@ def reply(msg):
         elif '提醒' in text:
             HELPER.show_remind_list(now_user, nick_name)
         elif '课表' in text:
-            HELPER.show_course_list(now_user, nick_name)
+            #HELPER.show_course_list(now_user, nick_name)
+            itchat.send("课表功能暂时失效, 请使用文字课表功能", now_user)
         elif '绑定' in text:
             HELPER.add_user(now_user, nick_name, text)
         else:
