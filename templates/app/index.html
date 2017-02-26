@@ -22,6 +22,25 @@
             var text = $("#text");
             var pic = $("#pic");
             var exit = $("#exit");
+            function after_scan(){
+                $.get("login", function(data){
+                    if (data == "错误, 请重新登陆"){
+                        text.text(data);
+                    }
+                    else{
+                        pic.hide();
+                        run.show();
+                        exit.show();
+                        text.text("登陆成功, 请点击运行, 或重启");
+                        run.click(function(){
+                            $.get("run", function(data){
+                                text.text(data);
+                                run.hide();
+                            });
+                        });
+                    }
+                });
+            };
             exit.click(function(){
                 if (confirm("你确定要退出么?")) {
                     $.get("logout", function(data){
@@ -45,23 +64,7 @@
                         pic[0].src = data;
                         pic.show();
                         text.text("请扫描二维码");
-                        $.get("login", function(data){
-                            if (data == "错误, 请重新登陆"){
-                                text.text(data);
-                            }
-                            else{
-                                pic.hide();
-                                run.show();
-                                exit.show();
-                                text.text("登陆成功, 请点击运行, 或重启");
-                                run.click(function(){
-                                    $.get("run", function(data){
-                                        text.text(data);
-                                        run.hide();
-                                    });
-                                });
-                            }
-                        });
+                        setTimeout('after_scan()', 5000)
                     }
                 });
             });
