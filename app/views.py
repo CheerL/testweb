@@ -34,7 +34,7 @@ def login(request):
     except main.EXCEPTIONS:
         LIMIT = 0
         LOGIN = LG(QR_name)
-        return HttpResponse("错误, 请重新登陆或退出")
+        return HttpResponse("错误, 请重新登陆")
 
 def run(request):
     '开始执行'
@@ -47,7 +47,7 @@ def run(request):
     except main.EXCEPTIONS:
         LIMIT = 0
         LOGIN = LG(QR_name)
-        return HttpResponse("错误, 请重新登陆或退出")
+        return HttpResponse("错误, 请重新登陆")
 
 def logout(request):
     itchat.logout()

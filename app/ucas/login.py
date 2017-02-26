@@ -24,7 +24,7 @@ def login(pic_dir):
     yield
 
 def __open_qr(pic_dir):
-    for _ in range(10):
+    for _ in range(3):
         logger.info('Getting uuid')
         uuid = itchat.get_QRuuid()
         #收到uuid为止
@@ -36,7 +36,7 @@ def __open_qr(pic_dir):
         time.sleep(1)
         if __get_qr(uuid, pic_dir):
             break
-    #否则重试0次
+    #否则重试3次
     else:
         logger.info('Failed to get QR Code, please restart the program')
         sys.exit()
