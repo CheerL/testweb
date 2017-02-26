@@ -125,7 +125,7 @@ class Helper(object):
             return response.get('text')
         # 为了防止服务器没有正常响应导致程序异常退出，这里用try-except捕获了异常
         # 如果服务器没能正常交互（返回非json或无法连接），那么就会进入下面的return
-        except:
+        except EXCEPTIONS:
             # 将会返回一个None
             return
 
@@ -371,14 +371,121 @@ class Helper(object):
 
     def show_course_list(self, now_user, nick_name, is_pic=True, is_with_num=False):
         '显示课表'
+        def get_list_pic(user, pic_name):
+            '生成图片'
+            from PIL import Image, ImageDraw, ImageFont
+            import numpy as np
+
+            #颜色
+            font_size = 16
+            width = 1300
+            height = 800
+            black = (0, 0, 0)
+            white = (255, 255, 255)
+            grey_0 = (245, 245, 245)
+            grey_1 = (204, 204, 204)
+            blue_0 = (225, 234, 240)
+            blue_1 = (0, 136, 205)
+            line_color = (221, 221, 221)
+
+            #获取表格
+            def get_time_table(course_list):
+                '转合课表格式'
+                table = np.zeros((7, 11)).astype(str)
+                for index, day in enumerate(WEEK):
+                    for num in range(1, 12):
+                        for course in course_list:
+                            week = 1
+                            if week > int(course['weeks'][1]) or week < int(course['weeks'][0]):
+                                continue
+                            func = lambda x:\
+                                True\
+                                if list(filter(\
+                                    lambda x: True if x[0] == day and str(num) in x[1] else False,\
+                                    x['times']))\
+                                else False
+                            if func(course):
+                                table[index, num - 1] = course['name']
+                return table
+
+            def draw_font(x, y, text, color=black, indent=1):
+                '画第y行x列的字'
+                space = 6
+                line_max = int((width_list[x + 1] - width_list[x]) / font_size - indent * 2)
+                if len(text) % line_max:
+                    line_num = len(text) // line_max + 1
+                else:
+                    line_num = len(text) // line_max
+                font_x = width_list[x] + indent * font_size
+                font_y = height_list[y] + (height_list[y + 1] - height_list[y] - \
+                (font_size + space) * line_num + space) / 2
+                for num in range(line_num):
+                    line = text[num * line_max : (num + 1) * line_max]
+                    if line != '':
+                        draw.text(
+                            (font_x, font_y + num * (font_size + space)), line, font=font, fill=color
+                            )
+
+            #参数设置
+            img = Image.new('RGB', (width, height), white)
+            draw = ImageDraw.Draw(img)
+            font = ImageFont.truetype('static/Deng.ttf', font_size, encoding='utf-8')
+            course_list = user['course_list']
+            table = get_time_table(course_list)
+
+            part_w = 7
+            part_h = 12
+            _change = font_size * 7
+            _width = width - _change
+            width_list = [0] + [num + _change for num in range(0, _width, int(_width/part_w))]
+            height_list = [num for num in range(0, height, int(height/part_h))]
+            width_list[-1] = width
+            height_list[-1] = height
+
+            #画方块
+            for index_w, num_w in enumerate(width_list):
+                for index_h, num_h in enumerate(height_list):
+                    if not index_h or not index_w:
+                        continue
+                    elif index_h is 1 and index_w is 1:
+                        draw.rectangle([0, 0, num_w, num_h], grey_1, line_color)
+                    elif index_h is 1 and index_w is not 1:
+                        width_last = width_list[index_w - 1]
+                        draw.rectangle([width_last, 0, num_w, num_h], grey_1, line_color)
+                    elif index_w is 1 and index_h is not 1:
+                        height_last = height_list[index_h - 1]
+                        draw.rectangle([0, height_last, num_w, num_h], blue_0, line_color)
+                    else:
+                        height_last = height_list[index_h - 1]
+                        width_last = width_list[index_w - 1]
+                        if not index_h % 2:
+                            draw.rectangle(
+                                [width_last, height_last, num_w, num_h], grey_0, line_color
+                                )
+                        else:
+                            draw.rectangle(
+                                [width_last, height_last, num_w, num_h], white, line_color
+                                )
+
+            #画字
+            draw_font(0, 0, "节次/星期")
+            for num, day in enumerate(WEEK):
+                draw_font(num, 0, day)
+            for num in range(1, 12):
+                draw_font(0, num, '第%d节'%num)
+            for i in range(7):
+                for j in range(11):
+                    if table[i, j] != '0.0':
+                        draw_font(i + 1, j + 1, table[i, j], blue_1)
+            #保存
+            img.save(pic_name, 'png')
+
         try:
             user = self.search_list(nick_name)
             if is_pic:
                 try:
-                    pic_name = 'static/' + user['nick_name'] + '-course.png'
-                    self.send('正在获取课表, 这可能会花上10秒到30秒', now_user)
-                    UCASSEP(user).get_course_list_pic(pic_name)
-                    self.send('@img@' + pic_name, now_user)
+                    pic_name = '%s.course.png' % nick_name
+                    get_list_pic(self.search_list(nick_name), pic_name)
                 except EXCEPTIONS as error:
                     if os.path.isfile(pic_name):
                         self.send('@img@' + pic_name, now_user)
