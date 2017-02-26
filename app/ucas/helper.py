@@ -13,7 +13,7 @@ from .SEP import _info, UCASSEP, EXCEPTIONS, logger
 TL_KEY = '71f28bf79c820df10d39b4074345ef8c'
 SAVE_TIME = 1#分钟
 REMIND_BEFORE = 30#分钟
-REMIND_WAIT = 5#分钟
+REMIND_WAIT = 1#分钟
 A_WEEK = 60 * 60 * 24 * 7#秒
 END_WEEK = 20
 FILE_NAME = 'static/data.csv'
