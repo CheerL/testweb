@@ -3,3 +3,4 @@ itchat.pkl
 *.ipynb
 *.png
 !data.csv
+test.*
