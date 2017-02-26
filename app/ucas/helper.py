@@ -377,6 +377,7 @@ class Helper(object):
             import numpy as np
 
             #颜色
+            space = 6
             font_size = 16
             width = 1300
             height = 800
@@ -410,7 +411,6 @@ class Helper(object):
 
             def draw_font(x, y, text, color=black, indent=1):
                 '画第y行x列的字'
-                space = 6
                 line_max = int((width_list[x + 1] - width_list[x]) / font_size - indent * 2)
                 if len(text) % line_max:
                     line_num = len(text) // line_max + 1
@@ -423,7 +423,8 @@ class Helper(object):
                     line = text[num * line_max : (num + 1) * line_max]
                     if line != '':
                         draw.text(
-                            (font_x, font_y + num * (font_size + space)), line, font=font, fill=color
+                            (font_x, font_y + num * (font_size + space)),
+                            line, font=font, fill=color
                             )
 
             #参数设置
@@ -470,7 +471,7 @@ class Helper(object):
             #画字
             draw_font(0, 0, "节次/星期")
             for num, day in enumerate(WEEK):
-                draw_font(num, 0, day)
+                draw_font(num + 1, 0, day)
             for num in range(1, 12):
                 draw_font(0, num, '第%d节'%num)
             for i in range(7):
@@ -478,14 +479,15 @@ class Helper(object):
                     if table[i, j] != '0.0':
                         draw_font(i + 1, j + 1, table[i, j], blue_1)
             #保存
-            img.save(pic_name, 'png')
+            img.save(pic_name, 'png', quality=95)
 
         try:
             user = self.search_list(nick_name)
             if is_pic:
                 try:
-                    pic_name = '%s.course.png' % nick_name
+                    pic_name = 'static/%s.course.png' % nick_name
                     get_list_pic(self.search_list(nick_name), pic_name)
+                    self.send('@img@' + pic_name, now_user)
                 except EXCEPTIONS as error:
                     if os.path.isfile(pic_name):
                         self.send('@img@' + pic_name, now_user)
