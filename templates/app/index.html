@@ -16,31 +16,32 @@
     <script src="{% static "js/jquery-3.1.1.js" %}"></script>
     <script src="{% static "js/jquery-3.1.1.min.js" %}"></script>
     <script>
-        $(document).ready(function(){
-            var login = $("#login");
-            var run = $("#run");
-            var text = $("#text");
-            var pic = $("#pic");
-            var exit = $("#exit");
-            function after_scan(){
-                $.get("login", function(data){
-                    if (data == "错误, 请重新登陆"){
-                        text.text(data);
-                    }
-                    else{
-                        pic.hide();
-                        run.show();
-                        exit.show();
-                        text.text("登陆成功, 请点击运行, 或重启");
-                        run.click(function(){
-                            $.get("run", function(data){
-                                text.text(data);
-                                run.hide();
-                            });
+
+        var login = $("#login");
+        var run = $("#run");
+        var text = $("#text");
+        var pic = $("#pic");
+        var exit = $("#exit");
+        function after_scan(){
+            $.get("login", function(data){
+                if (data == "错误, 请重新登陆"){
+                    text.text(data);
+                }
+                else{
+                    pic.hide();
+                    run.show();
+                    exit.show();
+                    text.text("登陆成功, 请点击运行, 或重启");
+                    run.click(function(){
+                        $.get("run", function(data){
+                            text.text(data);
+                            run.hide();
                         });
-                    }
-                });
-            };
+                    });
+                }
+            });
+        }
+        $(document).ready(function(){
             exit.click(function(){
                 if (confirm("你确定要退出么?")) {
                     $.get("logout", function(data){
