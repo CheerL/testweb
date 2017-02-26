@@ -1,10 +1,10 @@
 '程序运行主体'
-import os
 import re
 import itchat
-import helper
+from . import helper as hp
 from .helper import Helper
-from .ucas import EXCEPTIONS
+from .SEP import EXCEPTIONS
+from .login import login
 
 HELPER = Helper()
 ADMIN_HELP = '''?data.csv?   None
@@ -37,17 +37,17 @@ def reply(msg):
                 HELPER.remind()
             itchat.send('remind_alive已更改', now_user)
         elif '?save time?' in text:
-            helper.SAVE_TIME = float(re.findall(r'(\d+\.?\d*)', text)[0])
-            itchat.send('SAVE_TIME改为%f分钟' % helper.SAVE_TIME, now_user)
+            hp.SAVE_TIME = float(re.findall(r'(\d+\.?\d*)', text)[0])
+            itchat.send('SAVE_TIME改为%f分钟' % hp.SAVE_TIME, now_user)
         elif '?remind wait?' in text:
-            helper.REMIND_WAIT = float(re.findall(r'(\d+\.?\d*)', text)[0])
-            itchat.send('REMIND_WAIT改为%f分钟' % helper.REMIND_WAIT, now_user)
+            hp.REMIND_WAIT = float(re.findall(r'(\d+\.?\d*)', text)[0])
+            itchat.send('REMIND_WAIT改为%f分钟' % hp.REMIND_WAIT, now_user)
         elif '?remind before?' in text:
-            helper.REMIND_BEFORE = float(re.findall(r'(\d+\.?\d*)', text)[0])
-            itchat.send('REMIND_BEFORE改为%f分钟' % helper.REMIND_BEFORE, now_user)
+            hp.REMIND_BEFORE = float(re.findall(r'(\d+\.?\d*)', text)[0])
+            itchat.send('REMIND_BEFORE改为%f分钟' % hp.REMIND_BEFORE, now_user)
         elif '?course dict?' in text:
             result = re.findall(r'(\d+):(\d+):(\d+)', text)[0]
-            helper.COURSE_DICT[result[0]] = [int(result[1]), int(result[2])]
+            hp.COURSE_DICT[result[0]] = [int(result[1]), int(result[2])]
             itchat.send("COURSE_DICT['%d']改为(%d, %d)" % result, now_user)
         elif '?send?' in text:
             result = re.findall(r'用户[:：\s]*(.+?)\s*内容[:：\s]*(.*)$', text)
@@ -101,12 +101,8 @@ def add_friend(msg):
     itchat.send_msg('Nice to meet you!', msg['RecommendInfo']['UserName'])
     itchat.send('你可以试着输入"???"来查看帮助信息', msg['RecommendInfo']['UserName'])
 
-def main(hot=True):
+def main():
     '开始运行'
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    PIC_DIR = os.path.join(BASE_DIR, 'QR.jpg')
-    itchat.auto_login(picDir=PIC_DIR, hotReload=hot)
-    HELPER.friends = itchat.get_friends(update=True)
     HELPER.remind()
     HELPER.auto_save()
     itchat.run()

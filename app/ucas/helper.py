@@ -7,8 +7,8 @@ import datetime
 import requests
 import itchat
 import pandas as pd
-from app.helper.wheel import parallel as pl
-from .ucas import _info, UCASSEP, EXCEPTIONS
+from .wheel import parallel as pl
+from .SEP import _info, UCASSEP, EXCEPTIONS, logger
 
 TL_KEY = '71f28bf79c820df10d39b4074345ef8c'
 SAVE_TIME = 1#分钟
@@ -16,7 +16,7 @@ REMIND_BEFORE = 30#分钟
 REMIND_WAIT = 5#分钟
 A_WEEK = 60 * 60 * 24 * 7#秒
 END_WEEK = 20
-FILE_NAME = 'data.csv'
+FILE_NAME = 'static/data.csv'
 WEEK = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
 WEEK_DICT = dict(map(lambda x, y: [x, y], WEEK, [i for i in range(7)]))
 COURSE_NUM = [str(i) for i in range(1, 12)]
@@ -30,8 +30,7 @@ class Helper(object):
     '助手类'
     user_list = None
     remind_alive = True
-    friends = None
-    admin = None
+    friends = True
 
     @staticmethod
     def get_now_week():
@@ -78,7 +77,7 @@ class Helper(object):
     def my_error(error, user=None, up_rep=True):
         '错误处理, 向用户发送错误信息或继续上报错误'
         msg = _info(error)
-        print(msg)
+        logger.info(msg)
         if not up_rep:
             Helper.send(msg, user)
         else:
@@ -107,7 +106,7 @@ class Helper(object):
                 user_name = None
             itchat.send(msg, user_name)
         except EXCEPTIONS as error:
-            print(error)
+            logger.info(error)
             itchat.send(msg)
 
     @staticmethod
@@ -285,7 +284,7 @@ class Helper(object):
         def _remind_do(remind, user):
             _time = time.strftime('%H:%M', time.localtime(remind[2]))
             msg = '今天{}在{}上{}, 不要迟到哦'.format(_time, remind[1], remind[0])
-            print(msg)
+            logger.info(msg)
             self.send(msg, user)
 
         def _remind_main(user):
@@ -376,7 +375,7 @@ class Helper(object):
             user = self.search_list(nick_name)
             if is_pic:
                 try:
-                    pic_name = 'pic\\' + user['nick_name'] + '-course.png'
+                    pic_name = 'static/' + user['nick_name'] + '-course.png'
                     self.send('正在获取课表, 这可能会花上10秒到30秒', now_user)
                     UCASSEP(user).get_course_list_pic(pic_name)
                     self.send('@img@' + pic_name, now_user)
@@ -449,7 +448,3 @@ class Helper(object):
                 self.send('退课失败', now_user)
         except EXCEPTIONS as error:
             self.my_error(error)
-
-if __name__ is '__main__':
-    import main
-    main.main()

@@ -1,15 +1,16 @@
 # _*_ coding: utf-8 _*_
 '国科大教育系统选课程序'
 import re
+from logging import getLogger
 import time
 from selenium import webdriver
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup as Bs
 from PIL import Image
-from app.helper.wheel import parallel as pl
-from app.helper.wheel import testemail
+from .wheel import parallel as pl
 
+logger = getLogger('helper')
 TIMEOUT = 10
 EXCEPTIONS = (
     AttributeError, IOError, NotImplementedError,
@@ -17,13 +18,13 @@ EXCEPTIONS = (
     ValueError, TypeError, RuntimeError,
     IndentationError, InterruptedError, KeyError, StopIteration,
     )
-PHANTOMJS_PATH = r'C:\Users\Cheer.L\Documents\phantomjs-2.1.1-windows\bin\phantomjs.exe'
+PHANTOMJS_PATH = 'static/phantomjs.exe'
 
 def _info(msg):
     return '%s\n%s' % (time.ctime(), str(msg))
 
 def _rep(msg):
-    print(_info(msg))
+    logger.info(msg)
 
 def _error(error, is_up_rep=True):
     _rep(error)
@@ -253,7 +254,6 @@ class UCASSEP(object):
         browser.get(url[0])
         browser.find_element_by_id('menhuusername').send_keys(self.user_id)
         browser.find_element_by_xpath('//*[@id="menhupassword"]').send_keys(self.password)
-        browser.save_screenshot('1.png')
         browser.find_element_by_xpath('//*[@id="menuhudiv"]/div[4]/div').click()
         time.sleep(1)
         browser.get(url[1])
@@ -281,21 +281,6 @@ class UCASSEP(object):
         filename = '{}.csv'.format(self.user_name)
         pd.DataFrame(self.course_list).to_csv(filename, encoding='utf-8')
         _rep('课表已保存为{}'.format(filename))
-
-def my_email(content, title):
-    ''' 新建邮件并发送
-        从linchenran14@mails.ucas.ac.cn
-        发到1017801883@qq.com
-        '''
-    sender = 'linchenran14@mails.ucas.ac.cn'
-    password = 'lcr19960717'
-    reciever = '1017801883@qq.com'
-    host = 'smtp.cstnet.cn'
-    nickname = 'Cheer.L'
-    to_nickname = 'Cheer.L'
-    new_mail = testemail.Mail(sender, password, reciever, host)
-    new_mail.send(content, title, nickname, to_nickname)
-    print(new_mail.show_result())
 
 
 def main():
