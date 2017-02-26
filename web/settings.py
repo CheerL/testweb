@@ -27,7 +27,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '5000.gr34d63a.none.xunda-bj.goodrain.net',
-    '127.0.0.1'
+    '5000.gra75b53.none.ali-sh.goodrain.net',
+    '127.0.0.1',
 ]
 
 # Application definition
