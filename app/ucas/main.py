@@ -28,7 +28,7 @@ def reply(msg):
         keys_2 = ['绑定', '退课', '选课', '更新', '保存', '提醒', '课表']
         keys_3 = ['???', '？？？']
         if '?data.csv?' in text:
-            itchat.send('@fil@data.csv', now_user)
+            itchat.send('@fil@static/data.csv', now_user)
         elif '?remind alive?' in text:
             if HELPER.remind_alive:
                 HELPER.remind_alive = False
