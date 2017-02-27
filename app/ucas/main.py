@@ -58,13 +58,13 @@ def reply(msg):
         elif '?admin?' in text:
             return ADMIN_HELP
             HELPER.admins = nick_name
-        elif '重新绑定' in text:
+        elif '重新绑定' in text and '成功' not in text:
             HELPER.change_user(now_user, nick_name, text)
-        elif '取消绑定' in text:
+        elif '取消绑定' in text and '成功' not in text:
             HELPER.del_user(now_user, nick_name)
-        elif '取消提醒' in text:
+        elif '取消提醒' in text and '成功' not in text:
             HELPER.cancel_remind(now_user, nick_name)
-        elif '打开提醒' in text:
+        elif '打开提醒' in text and '成功' not in text:
             HELPER.remind(now_user, nick_name)
         elif '???' in text:
             HELPER.help(now_user, [keys_2, keys_1, keys_3[:1]])
@@ -77,18 +77,18 @@ def reply(msg):
                 HELPER.show_course_list(now_user, nick_name, False)
         elif '保存' in text and '成功' not in text:
             HELPER.save_user_list(now_user)
-        elif '退课' in text:
+        elif '退课' in text and '成功' not in text:
             HELPER.drop_course(now_user, nick_name, text)
-        elif '选课' in text:
+        elif '选课' in text and '成功' not in text:
             HELPER.add_course(now_user, nick_name, text)
-        elif '更新' in text:
+        elif '更新' in text and '成功' not in text:
             HELPER.remind_list_update(now_user, nick_name)
-        elif '提醒' in text:
+        elif '提醒' in text and '成功' not in text:
             HELPER.show_remind_list(now_user, nick_name)
-        elif '课表' in text:
+        elif '课表' in text and '成功' not in text:
             HELPER.show_course_list(now_user, nick_name)
             #return "课表功能暂时失效, 请使用文字课表功能"
-        elif '绑定' in text:
+        elif '绑定' in text and '成功' not in text:
             HELPER.add_user(now_user, nick_name, text)
         else:
             return Helper.get_response(text)
