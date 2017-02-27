@@ -9,6 +9,7 @@ from .wheel.recognize import spech_recognize
 
 HELPER = Helper()
 ADMIN_HELP = '''?data.csv?   None
+?update?        None
 ?remind alive?  None
 ?user?          None
 ?save time?     \\f
@@ -30,6 +31,9 @@ def reply(msg):
         keys_3 = ['???', '？？？']
         if '?data.csv?' in text:
             return '@fil@static/data.csv'
+        elif '?update?' in text:
+            HELPER.update_info()
+            return '所有用户信息更新成功'
         elif '?remind alive?' in text:
             if HELPER.remind_alive:
                 HELPER.remind_alive = False
