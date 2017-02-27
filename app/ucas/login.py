@@ -3,27 +3,26 @@ import io
 import os
 import time
 import sys
-import logging
 import itchat
+import requests
 from pyqrcode import QRCode
 from itchat.utils import test_connect
-
-logger = logging.getLogger('itchat')
+from . import logger, EXCEPTIONS, TIMEOUT
 
 def login(pic_dir):
     '来吧复杂的登陆函数'
-    #如果无法链接, 就推出
-    if not test_connect():
-        logger.info("You can't get access to internet or wechat domain, so exit.")
-        sys.exit()
-        #确认登陆状态
-    uuid = __open_qr(pic_dir)
-    logger.info('请扫码')
-    yield '/' + pic_dir
-    logger.info('开始检测扫码')
-    __login_after_qr(uuid, pic_dir)
-    os.remove(pic_dir)
-    yield
+    #如果无法链接, 就退出
+    try:
+        url = 'https://login.weixin.qq.com/'
+        requests.get(url, timeout=TIMEOUT)
+        uuid = __open_qr(pic_dir)
+        yield '/' + pic_dir
+        __login_after_qr(uuid, pic_dir)
+        os.remove(pic_dir)
+        yield
+    except EXCEPTIONS as error:
+        logger.info(error)
+        raise NotImplementedError('登陆出错, 请重新登陆')
 
 def __open_qr(pic_dir):
     for _ in range(3):
@@ -46,26 +45,25 @@ def __open_qr(pic_dir):
     return uuid
 
 def __login_after_qr(uuid, pic_dir):
-    waitForConfirm = False
+    wait_confirm = True
     while True:
-        time.sleep(2)
-        logger.info('检查登陆状态')
+        time.sleep(1)
+        logger.info('检查扫码状态')
         status = itchat.check_login(uuid)
         if status == '200':
             break
         elif status == '201':
-            if waitForConfirm:
+            if wait_confirm:
                 logger.info('请扫码')
-                waitForConfirm = True
+                wait_confirm = False
         elif status == '408':
-            logger.info('Reloading QR Code')
-            uuid = __open_qr(pic_dir)
-            waitForConfirm = False
+            logger.info('请重新登陆')
+            raise NotImplementedError('二维码失效')
     userInfo = itchat.web_init()
     itchat.show_mobile_login()
     itchat.get_contact(True)
 
-    msg = 'Login successfully as %s' % userInfo['User']['NickName']
+    msg = '%s 成功登录' % userInfo['User']['NickName']
     logger.info(msg)
     itchat.start_receiving()
 

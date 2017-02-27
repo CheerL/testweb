@@ -3,14 +3,14 @@ import re
 import itchat
 from . import helper as hp
 from .helper import Helper
-from .SEP import EXCEPTIONS
-from .login import login
-from .wheel.recognize import spech_recognize 
+from . import EXCEPTIONS
+from .wheel.recognize import spech_recognize
 
 HELPER = Helper()
 ADMIN_HELP = '''?data.csv?   None
+?autosave?      None
 ?update?        None
-?remind alive?  None
+?remind?        None
 ?user?          None
 ?save time?     \\f
 ?remind wait?   \\f
@@ -34,13 +34,19 @@ def reply(msg):
         elif '?update?' in text:
             HELPER.update_info()
             return '所有用户信息更新成功'
-        elif '?remind alive?' in text:
+        elif '?remind?' in text:
             if HELPER.remind_alive:
                 HELPER.remind_alive = False
             else:
                 HELPER.remind_alive = True
                 HELPER.remind()
             return 'remind_alive已更改'
+        elif '?autosave?' in text:
+            if HELPER.auto_save_alive:
+                HELPER.auto_save_alive = False
+            else:
+                HELPER.auto_save_alive = True
+                HELPER.auto_save()
         elif '?save time?' in text:
             hp.SAVE_TIME = float(re.findall(r'(\d+\.?\d*)', text)[0])
             return 'SAVE_TIME改为%f分钟' % hp.SAVE_TIME
@@ -62,7 +68,6 @@ def reply(msg):
             return ', '.join([user['nick_name'] for user in HELPER.user_list])
         elif '?admin?' in text:
             return ADMIN_HELP
-            HELPER.admins = nick_name
         elif '重新绑定' in text and '成功' not in text:
             HELPER.change_user(now_user, nick_name, text)
         elif '取消绑定' in text and '成功' not in text:
@@ -92,7 +97,6 @@ def reply(msg):
             HELPER.show_remind_list(now_user, nick_name)
         elif '课表' in text and '成功' not in text:
             HELPER.show_course_list(now_user, nick_name)
-            #return "课表功能暂时失效, 请使用文字课表功能"
         elif '绑定' in text and '成功' not in text:
             HELPER.add_user(now_user, nick_name, text)
         else:

@@ -8,16 +8,16 @@ import requests
 import itchat
 import pandas as pd
 from .wheel import parallel as pl
-from .SEP import _info, UCASSEP, EXCEPTIONS, logger
+from .SEP import _info, UCASSEP
+from . import EXCEPTIONS, logger, WEEK, TIMEOUT
 
-TL_KEY = '71f28bf79c820df10d39b4074345ef8c'
-SAVE_TIME = 0.1#分钟
+TL_KEY = '71f28bf79c820df10d39b4074345ef8c' #图灵机器人密钥
+SAVE_TIME = 1#分钟
 REMIND_BEFORE = 30#分钟
 REMIND_WAIT = 1#分钟
 A_WEEK = 60 * 60 * 24 * 7#秒
 END_WEEK = 20
 FILE_NAME = 'static/data.csv'
-WEEK = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
 WEEK_DICT = dict(map(lambda x, y: [x, y], WEEK, [i for i in range(7)]))
 COURSE_NUM = [str(i) for i in range(1, 12)]
 COURSE_DICT = dict(map(lambda x, y: [x, y], COURSE_NUM, (
@@ -30,7 +30,8 @@ class Helper(object):
     '助手类'
     user_list = None
     remind_alive = True
-    friends = True
+    auto_save_alive = True
+    host = None
 
     @staticmethod
     def get_now_week():
@@ -266,19 +267,23 @@ class Helper(object):
         '保存用户信息为csv'
         data = pd.DataFrame(self.user_list)
         data.to_csv(FILE_NAME, encoding='utf-8', index=False)
-        self.send('保存成功', now_user)
+        if now_user:
+            self.send('保存成功', now_user)
 
     def auto_save(self):
         '每间隔一段时间自动保存一次'
-        sleep_time = SAVE_TIME*60#秒
         def _auto_save():
-            while True:
-                self.save_user_list()
-                time.sleep(int(sleep_time))
-                reciever = itchat.search_mps(name='微信支付')[0]['UserName']
-                itchat.send('保持在线 %s' % time.ctime(), reciever)
-
-        if not pl.search_thread('auto_save'):
+            sleep_time = SAVE_TIME * 60#秒
+            self.save_user_list()
+            reciever = itchat.search_mps(name='微信支付')[0]['UserName']
+            msg = '%s 成功保存' % time.ctime()
+            itchat.send(msg, reciever)
+            logger.info(msg)
+            time.sleep(int(sleep_time))
+            if self.host:
+                url = 'http://%s/app/save/all' % self.host
+                requests.get(url, timeout=TIMEOUT)
+        if self.auto_save_alive:
             pl.run_thread([(_auto_save, ())], name='auto_save', is_lock=False)
 
     def remind(self, now_user=None, nick_name=None):
@@ -310,22 +315,30 @@ class Helper(object):
                     self.my_error(error, user)
 
         def _remind():
-            while self.remind_alive:
-                for user in self.user_list:
-                    if user['is_open']:
-                        _remind_main(user)
-                time.sleep(int(REMIND_WAIT * 60))
+            for user in self.user_list:
+                if user['is_open']:
+                    _remind_main(user)
+            reciever = itchat.search_mps(name='微信支付')[0]['UserName']
+            msg = '%s 成功提醒' % time.ctime()
+            itchat.send(msg, reciever)
+            logger.info(msg)
+            time.sleep(int(REMIND_WAIT * 60))
+            if self.host:
+                url = 'http://%s/app/remind' % self.host
+                requests.get(url, timeout=TIMEOUT)
 
         if self.get_now_week() > END_WEEK:
             self.remind_alive = False
             raise NotImplementedError('学期已经结束')
+
         if nick_name:
             user = self.search_list(nick_name)
             user['is_open'] = True
             self.send('打开提醒成功', now_user)
         else:
             try:
-                pl.run_thread([(_remind, ())], 'remind', False)
+                if self.remind_alive:
+                    pl.run_thread([(_remind, ())], 'remind', False)
             except EXCEPTIONS as error:
                 self.my_error(error)
 
@@ -373,122 +386,14 @@ class Helper(object):
 
     def show_course_list(self, now_user, nick_name, is_pic=True, is_with_num=False):
         '显示课表'
-        def get_list_pic(user, pic_name):
-            '生成图片'
-            from PIL import Image, ImageDraw, ImageFont
-            import numpy as np
-
-            #颜色
-            space = 5
-            font_size = 14
-            width = 900
-            height = 800
-            black = (0, 0, 0)
-            white = (255, 255, 255)
-            grey_0 = (245, 245, 245)
-            grey_1 = (204, 204, 204)
-            blue_0 = (225, 234, 240)
-            blue_1 = (0, 136, 205)
-            line_color = (221, 221, 221)
-
-            #获取表格
-            def get_time_table(course_list):
-                '转合课表格式'
-                table = np.zeros((7, 11)).astype(str)
-                for index, day in enumerate(WEEK):
-                    for num in range(1, 12):
-                        for course in course_list:
-                            week = 1
-                            if week > int(course['weeks'][1]) or week < int(course['weeks'][0]):
-                                continue
-                            func = lambda x:\
-                                True\
-                                if list(filter(\
-                                    lambda x: True if x[0] == day and str(num) in x[1] else False,\
-                                    x['times']))\
-                                else False
-                            if func(course):
-                                table[index, num - 1] = course['name']
-                return table
-
-            def draw_font(x, y, text, color=black, indent=0.5):
-                '画第y行x列的字'
-                line_max = int((width_list[x + 1] - width_list[x]) / font_size - indent * 2)
-                if len(text) % line_max:
-                    line_num = len(text) // line_max + 1
-                else:
-                    line_num = len(text) // line_max
-                font_x = width_list[x] + indent * font_size
-                font_y = height_list[y] + (height_list[y + 1] - height_list[y] - \
-                (font_size + space) * line_num + space) / 2
-                for num in range(line_num):
-                    line = text[num * line_max : (num + 1) * line_max]
-                    if line != '':
-                        draw.text(
-                            (font_x, font_y + num * (font_size + space)),
-                            line, font=font, fill=color
-                            )
-
-            #参数设置
-            img = Image.new('RGB', (width, height), white)
-            draw = ImageDraw.Draw(img)
-            font = ImageFont.truetype('static/Deng.ttf', font_size, encoding='utf-8')
-            course_list = user['course_list']
-            table = get_time_table(course_list)
-
-            part_w = 7
-            part_h = 12
-            _change = font_size * 7
-            _width = width - _change
-            width_list = [0] + [num + _change for num in range(0, _width, int(_width/part_w))]
-            height_list = [num for num in range(0, height, int(height/part_h))]
-            width_list[-1] = width
-            height_list[-1] = height
-
-            #画方块
-            for index_w, num_w in enumerate(width_list):
-                for index_h, num_h in enumerate(height_list):
-                    if not index_h or not index_w:
-                        continue
-                    elif index_h is 1 and index_w is 1:
-                        draw.rectangle([0, 0, num_w, num_h], grey_1, line_color)
-                    elif index_h is 1 and index_w is not 1:
-                        width_last = width_list[index_w - 1]
-                        draw.rectangle([width_last, 0, num_w, num_h], grey_1, line_color)
-                    elif index_w is 1 and index_h is not 1:
-                        height_last = height_list[index_h - 1]
-                        draw.rectangle([0, height_last, num_w, num_h], blue_0, line_color)
-                    else:
-                        height_last = height_list[index_h - 1]
-                        width_last = width_list[index_w - 1]
-                        if not index_h % 2:
-                            draw.rectangle(
-                                [width_last, height_last, num_w, num_h], grey_0, line_color
-                                )
-                        else:
-                            draw.rectangle(
-                                [width_last, height_last, num_w, num_h], white, line_color
-                                )
-
-            #画字
-            draw_font(0, 0, "节次/星期")
-            for num, day in enumerate(WEEK):
-                draw_font(num + 1, 0, day)
-            for num in range(1, 12):
-                draw_font(0, num, '第%d节'%num)
-            for i in range(7):
-                for j in range(11):
-                    if table[i, j] != '0.0':
-                        draw_font(i + 1, j + 1, table[i, j], blue_1)
-            #保存
-            img.save(pic_name, 'png', quality=95)
-
         try:
             user = self.search_list(nick_name)
             if is_pic:
                 try:
                     pic_name = 'static/%s.course.png' % nick_name
-                    get_list_pic(self.search_list(nick_name), pic_name)
+                    sep = UCASSEP(user)
+                    sep.get_course_list()
+                    sep.get_course_list_pic(pic_name)
                     self.send('@img@' + pic_name, now_user)
                 except EXCEPTIONS as error:
                     if os.path.isfile(pic_name):
@@ -559,3 +464,7 @@ class Helper(object):
                 self.send('退课失败', now_user)
         except EXCEPTIONS as error:
             self.my_error(error)
+
+    def logout(self):
+        '退出登陆'
+        itchat.logout()
