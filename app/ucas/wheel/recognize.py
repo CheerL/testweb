@@ -24,12 +24,12 @@ def spech_recognize(path, mode=0):
 
     try:
         if mode is 0:
-            return recognizer.recognize_bing(audio, key, language='zh-cn')
+            return '你说的是 ' + recognizer.recognize_bing(audio, key, language='zh-cn')
         elif mode is '1':
-            return recognizer.recognize_google(audio, language='zh-cn')
+            return '你说的是 ' + recognizer.recognize_google(audio, language='zh-cn')
         else:
             return
-    except LookupError:
+    except (LookupError, sr.UnknownValueError):
         return "我没有听懂"
     finally:
         if re.match(r'^.*\.mp3\.wav$', path):

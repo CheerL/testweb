@@ -110,12 +110,12 @@ def add_friend(msg):
     itchat.add_friend(**msg['Text'])
     return 'Nice to see you!\n你可以试着输入"???"来查看帮助信息'
 
-@itchat.msg_register(itchat.content.RECORDING)
+@itchat.msg_register(['Recording', 'Attachment', 'Video'])
 def download_files(msg):
     '接收语音'
     voice_path = 'static/' + msg['FileName']
     msg['Text'](voice_path)
-    #return '你说的是  ' + spech_recognize(voice_path)
+    #return spech_recognize(voice_path)
     '''
     itchat.send(
         '@%s@%s'%('img' if msg['Type'] == 'Picture' else 'fil', voice_name),

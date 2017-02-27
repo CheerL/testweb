@@ -7,11 +7,11 @@
     <body>
         <div id="text">请点击下面的登陆键</div>
         <br>
-        <img id="pic" src="" class="1" type="hidden">
+        <img id="pic" src="" class="1" style="height: 250px; width: 250px; display: none;">
         <br>
         <button id="login">登陆</button>
-        <button id="run" style="display:none;">运行</button>
-        <button id="exit" style="display:none;">退出</button>
+        <button id="run" style="display: none;">运行</button>
+        <button id="exit" style="display: none;">退出</button>
     </body>
     <script src="{% static "js/jquery-3.1.1.js" %}"></script>
     <script>
@@ -64,7 +64,7 @@
                         pic[0].src = data;
                         pic.show();
                         text.text("请扫描二维码");
-                        setTimeout('after_scan()', 5000)
+                        setTimeout('after_scan()', 2000)
                     }
                 });
             });
