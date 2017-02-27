@@ -34,6 +34,7 @@ def login(request):
     except main.EXCEPTIONS:
         LIMIT = 0
         LOGIN = LG(QR_name)
+        logger.info('登陆错误')
         return HttpResponse("错误, 请重新登陆")
 
 def run(request):

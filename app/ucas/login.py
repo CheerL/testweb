@@ -18,7 +18,9 @@ def login(pic_dir):
         sys.exit()
         #确认登陆状态
     uuid = __open_qr(pic_dir)
+    logger.info('请扫码')
     yield '/' + pic_dir
+    logger.info('开始检测扫码')
     __login_after_qr(uuid, pic_dir)
     os.remove(pic_dir)
     yield
@@ -46,13 +48,14 @@ def __open_qr(pic_dir):
 def __login_after_qr(uuid, pic_dir):
     waitForConfirm = False
     while True:
-        time.sleep(1)
+        time.sleep(2)
+        logger.info('检查登陆状态')
         status = itchat.check_login(uuid)
         if status == '200':
             break
         elif status == '201':
             if waitForConfirm:
-                logger.info('Please press confirm')
+                logger.info('请扫码')
                 waitForConfirm = True
         elif status == '408':
             logger.info('Reloading QR Code')

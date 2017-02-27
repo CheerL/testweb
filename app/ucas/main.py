@@ -5,6 +5,7 @@ from . import helper as hp
 from .helper import Helper
 from .SEP import EXCEPTIONS
 from .login import login
+from .wheel.recognize import spech_recognize 
 
 HELPER = Helper()
 ADMIN_HELP = '''?data.csv?   None
@@ -95,7 +96,6 @@ def reply(msg):
     except EXCEPTIONS as error:
         HELPER.my_error(error, now_user, False)
 
-
 @itchat.msg_register(itchat.content.TEXT)
 def text_reply(msg):
     '回复文字'
@@ -109,15 +109,18 @@ def add_friend(msg):
 @itchat.msg_register(itchat.content.RECORDING)
 def download_files(msg):
     '接收语音'
-    voice_name = 'static/' + msg['FileName']
-    msg['Text'](voice_name)
+    voice_path = 'static/' + msg['FileName']
+    msg['Text'](voice_path)
+    return '你说的是' + spech_recognize(voice_path)
+    '''
     itchat.send(
         '@%s@%s'%('img' if msg['Type'] == 'Picture' else 'fil', voice_name),
         msg['FromUserName']
         )
+    '''
     #msg['Text'] = ''
     #msg['MsgType'] = 'Text'
-    return
+    #return
 
 def main():
     '开始运行'

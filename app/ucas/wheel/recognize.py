@@ -1,6 +1,7 @@
 '使用Bing进行语音识别, 可以自动转换mp3'
 import re
 import os
+import sys
 import speech_recognition as sr
 from pydub import AudioSegment
 
@@ -22,9 +23,9 @@ def spech_recognize(path):
         audio = recognizer.record(source)
 
     try:
-        print(recognizer.recognize_bing(audio, key, language='zh-cn'))
+        return recognizer.recognize_bing(audio, key, language='zh-cn')
     except LookupError:
-        print("Could not understand audio")
+        return "我没有听懂"
     finally:
         if re.match(r'^.*\.mp3\.wav$', path):
             os.remove(path)
@@ -32,7 +33,9 @@ def spech_recognize(path):
 def main():
     '测试主函数'
     path = ''
-    spech_recognize(path)
+    if len(sys.argv) > 1:
+        path = sys.argv[1]
+    print(spech_recognize(path))
 
 if __name__ == '__main__':
     main()

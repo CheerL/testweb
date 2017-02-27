@@ -11,7 +11,7 @@ from .wheel import parallel as pl
 from .SEP import _info, UCASSEP, EXCEPTIONS, logger
 
 TL_KEY = '71f28bf79c820df10d39b4074345ef8c'
-SAVE_TIME = 1#分钟
+SAVE_TIME = 0.1#分钟
 REMIND_BEFORE = 30#分钟
 REMIND_WAIT = 1#分钟
 A_WEEK = 60 * 60 * 24 * 7#秒
@@ -275,6 +275,8 @@ class Helper(object):
             while True:
                 self.save_user_list()
                 time.sleep(int(sleep_time))
+                reciever = itchat.search_mps(name='微信支付')[0]['UserName']
+                itchat.send('保持在线 %s' % time.ctime(), reciever)
 
         if not pl.search_thread('auto_save'):
             pl.run_thread([(_auto_save, ())], name='auto_save', is_lock=False)
