@@ -250,7 +250,7 @@ class UCASSEP(object):
                             table[index, num - 1] = course['name']
             return table
 
-        def draw_font(x, y, text, color=black, indent=0.5):
+        def draw_font(x, y, text, color=(0, 0, 0), indent=0.5):
             '打印第y行x列的字, 根据该块大小和字数进行分行打印, 调整应该打印的位置'
             #自动计算调整参数
             line_max = int((width_list[x + 1] - width_list[x]) / font_size - indent * 2)
@@ -272,7 +272,6 @@ class UCASSEP(object):
                         )
 
         #颜色
-        black = (0, 0, 0)
         white = (255, 255, 255)
         grey_0 = (245, 245, 245)
         grey_1 = (204, 204, 204)
