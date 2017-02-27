@@ -16,7 +16,7 @@ ADMIN_HELP = '''?data.csv?   None
 ?course dict?   \\d:\\d:\\d
 ?send?          用户:\\s 内容:\\s'''
 
-@itchat.msg_register(itchat.content.TEXT)
+
 def reply(msg):
     '回复函数'
     try:
@@ -28,35 +28,35 @@ def reply(msg):
         keys_2 = ['绑定', '退课', '选课', '更新', '保存', '提醒', '课表']
         keys_3 = ['???', '？？？']
         if '?data.csv?' in text:
-            itchat.send('@fil@static/data.csv', now_user)
+            return '@fil@static/data.csv'
         elif '?remind alive?' in text:
             if HELPER.remind_alive:
                 HELPER.remind_alive = False
             else:
                 HELPER.remind_alive = True
                 HELPER.remind()
-            itchat.send('remind_alive已更改', now_user)
+            return 'remind_alive已更改'
         elif '?save time?' in text:
             hp.SAVE_TIME = float(re.findall(r'(\d+\.?\d*)', text)[0])
-            itchat.send('SAVE_TIME改为%f分钟' % hp.SAVE_TIME, now_user)
+            return 'SAVE_TIME改为%f分钟' % hp.SAVE_TIME
         elif '?remind wait?' in text:
             hp.REMIND_WAIT = float(re.findall(r'(\d+\.?\d*)', text)[0])
-            itchat.send('REMIND_WAIT改为%f分钟' % hp.REMIND_WAIT, now_user)
+            return 'REMIND_WAIT改为%f分钟' % hp.REMIND_WAIT
         elif '?remind before?' in text:
             hp.REMIND_BEFORE = float(re.findall(r'(\d+\.?\d*)', text)[0])
-            itchat.send('REMIND_BEFORE改为%f分钟' % hp.REMIND_BEFORE, now_user)
+            return 'REMIND_BEFORE改为%f分钟' % hp.REMIND_BEFORE
         elif '?course dict?' in text:
             result = re.findall(r'(\d+):(\d+):(\d+)', text)[0]
             hp.COURSE_DICT[result[0]] = [int(result[1]), int(result[2])]
-            itchat.send("COURSE_DICT['%d']改为(%d, %d)" % result, now_user)
+            return "COURSE_DICT['%d']改为(%d, %d)" % result
         elif '?send?' in text:
             result = re.findall(r'用户[:：\s]*(.+?)\s*内容[:：\s]*(.*)$', text)
             HELPER.send(result[0][1], result[0][0])
-            itchat.send('发送成功', now_user)
+            return '发送成功'
         elif '?user?' in text:
-            itchat.send(', '.join([user['nick_name'] for user in HELPER.user_list]), now_user)
+            return ', '.join([user['nick_name'] for user in HELPER.user_list])
         elif '?admin?' in text:
-            itchat.send(ADMIN_HELP, now_user)
+            return ADMIN_HELP
             HELPER.admins = nick_name
         elif '重新绑定' in text:
             HELPER.change_user(now_user, nick_name, text)
@@ -87,20 +87,37 @@ def reply(msg):
             HELPER.show_remind_list(now_user, nick_name)
         elif '课表' in text:
             HELPER.show_course_list(now_user, nick_name)
-            #itchat.send("课表功能暂时失效, 请使用文字课表功能", now_user)
+            #return "课表功能暂时失效, 请使用文字课表功能"
         elif '绑定' in text:
             HELPER.add_user(now_user, nick_name, text)
         else:
-            itchat.send(Helper.get_response(text), now_user)
+            return Helper.get_response(text)
     except EXCEPTIONS as error:
         HELPER.my_error(error, now_user, False)
 
+
+@itchat.msg_register(itchat.content.TEXT)
+def text_reply(msg):
+    '回复文字'
+    return reply(msg)
 @itchat.msg_register(itchat.content.FRIENDS)
 def add_friend(msg):
     '自动接受好友申请'
     itchat.add_friend(**msg['Text'])
-    itchat.send_msg('Nice to meet you!', msg['RecommendInfo']['UserName'])
-    itchat.send('你可以试着输入"???"来查看帮助信息', msg['RecommendInfo']['UserName'])
+    return 'Nice to see you!\n你可以试着输入"???"来查看帮助信息'
+
+@itchat.msg_register(itchat.content.RECORDING)
+def download_files(msg):
+    '接收语音'
+    voice_name = 'static/' + msg['FileName']
+    msg['Text'](voice_name)
+    itchat.send(
+        '@%s@%s'%('img' if msg['Type'] == 'Picture' else 'fil', voice_name),
+        msg['FromUserName']
+        )
+    #msg['Text'] = ''
+    #msg['MsgType'] = 'Text'
+    return
 
 def main():
     '开始运行'

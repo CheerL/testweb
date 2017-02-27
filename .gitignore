@@ -4,3 +4,5 @@ itchat.pkl
 *.png
 !data.csv
 test.*
+test/
+*.mp3
