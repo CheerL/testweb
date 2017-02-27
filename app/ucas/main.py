@@ -115,7 +115,7 @@ def download_files(msg):
     '接收语音'
     voice_path = 'static/' + msg['FileName']
     msg['Text'](voice_path)
-    return '你说的是' + spech_recognize(voice_path)
+    return '你说的是  ' + spech_recognize(voice_path)
     '''
     itchat.send(
         '@%s@%s'%('img' if msg['Type'] == 'Picture' else 'fil', voice_name),
