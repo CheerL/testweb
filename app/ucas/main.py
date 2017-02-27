@@ -75,7 +75,7 @@ def reply(msg):
                 HELPER.show_course_list(now_user, nick_name, False, is_with_num=True)
             else:
                 HELPER.show_course_list(now_user, nick_name, False)
-        elif '保存' in text:
+        elif '保存' in text and '成功' not in text:
             HELPER.save_user_list(now_user)
         elif '退课' in text:
             HELPER.drop_course(now_user, nick_name, text)
