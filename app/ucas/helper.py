@@ -22,11 +22,14 @@ COURSE_NUM = [str(i) for i in range(1, 12)]
 COURSE_DICT = dict(map(lambda x, y: [x, y], COURSE_NUM, (
     [8, 30], [9, 20], [10, 30], [11, 20],
     [13, 30], [14, 20], [15, 30], [16, 20],
-    [19, 00], [20, 00], [21, 00]
+    [19, 00], [19, 50], [20, 50]
     )))
 
 class Helper(object):
     '助手类'
+    is_login = False
+    is_wait = False
+    is_run = False
     user_list = None
     remind_alive = True
     host = None
@@ -347,8 +350,13 @@ class Helper(object):
             else:
                 return _remind_list_update_main(week, course_list, count + 1)
 
-        self.update_info(user)
-        course_list = user['course_list']
+        course_list = None
+        while not course_list:
+            try:
+                self.update_info(user)
+                course_list = user['course_list']
+            except EXCEPTIONS:
+                pass
         week = self.get_now_week()
         _remind_list_update_main(week, course_list)
 
@@ -447,7 +455,9 @@ class Helper(object):
         except EXCEPTIONS as error:
             self.my_error(error)
 
-    @staticmethod
-    def logout():
+    
+    def logout(self):
         '退出登陆'
         itchat.logout()
+        self.is_login = False
+        self.is_run = False

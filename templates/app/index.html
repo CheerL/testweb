@@ -7,11 +7,13 @@
     <body>
         <div id="text">请点击下面的登陆键</div>
         <br>
-        <img id="pic" src="" class="1" style="height: 250px; width: 250px; display: none;">
+        <img id="pic" src="" style="height: 250px; width: 250px; display: none;">
         <br>
-        <button id="login">登陆</button>
-        <button id="run" style="display: none;">运行</button>
-        <button id="exit" style="display: none;">退出</button>
+        <button id="login"></button>
+        <button id="run" style="display: none;" onclick="run_func()">运行</button>
+        <button id="exit" style="display: none;" onclick="exit_func()">退出</button>
+        <div id='is_login' style="display: none">{{is_login}}</div>
+        <div id='is_run' style="display: none">{{is_run}}</div>
     </body>
     <script src="{% static "js/jquery-3.1.1.js" %}"></script>
     <script>
@@ -21,54 +23,77 @@
         var text = $("#text");
         var pic = $("#pic");
         var exit = $("#exit");
+        function run_func(){
+            $.get("run", function(data){
+                text.text(data);
+                run.hide();
+            });
+        }
+        function exit_func(){
+            if (confirm("你确定要退出么?")) {
+                $.get("logout", function(data){
+                    alert(data);
+                    window.location.reload();
+                });
+            }
+        }
+        function login_before(){
+            text.text("正在获取二维码");
+            login.hide();
+            login.click(login_after);
+            login.text("重启");
+            $.get("login", function(data){
+                login.show();
+                if (data == "错误, 请重新登陆"){
+                    text.text(data);
+                    $.get('', function(){
+                        hide_pic();
+                    });
+                }
+                else{
+                    pic[0].src = data;
+                    pic.show();
+                    text.text("请扫描二维码");
+                    setTimeout('after_scan()', 2000)
+                }
+            });
+        }
+        function login_after(){
+            window.location.reload();
+        }
         function after_scan(){
             $.get("login", function(data){
                 if (data == "错误, 请重新登陆"){
                     text.text(data);
+                    pic.hide();
                 }
                 else{
                     pic.hide();
                     run.show();
                     exit.show();
-                    text.text("登陆成功, 请点击运行, 或重启");
-                    run.click(function(){
-                        $.get("run", function(data){
-                            text.text(data);
-                            run.hide();
-                        });
-                    });
+                    text.text("登陆成功, 请点击运行");
                 }
             });
         }
         $(document).ready(function(){
-            exit.click(function(){
-                if (confirm("你确定要退出么?")) {
-                    $.get("logout", function(data){
-                        alert(data);
-                        window.location.reload();
-                    });
+            var is_login = $('#is_login').text();
+            var is_run = $('#is_run').text();
+            if (is_login == 'False') {
+                login.text('登陆');
+                login.click(login_before);
+            }
+            else {
+                login.text('重启');
+                login.click(login_after);
+                exit.show();
+                if (is_run == 'False') {
+                    run.show();
+                    text.text('登陆成功, 请点击运行');
                 }
-            });
-            login.click(function(){
-                text.text("正在获取二维码");
-                login.hide();
-                login.click(function(){
-                    window.location.reload();
-                });
-                login.text("重启");
-                $.get("login", function(data){
-                    login.show();
-                    if (data == "错误, 请重新登陆"){
-                        text.text(data);
-                    }
-                    else{
-                        pic[0].src = data;
-                        pic.show();
-                        text.text("请扫描二维码");
-                        setTimeout('after_scan()', 2000)
-                    }
-                });
-            });
+                else {
+                    text.text('正在运行');
+                }
+            }
         });
     </script>
 </html>

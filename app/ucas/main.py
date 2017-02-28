@@ -4,12 +4,14 @@ import itchat
 from . import helper as hp
 from .helper import Helper
 from . import EXCEPTIONS
-from .wheel.recognize import spech_recognize
+#from .wheel.recognize import spech_recognize
 
 HELPER = Helper()
-ADMIN_HELP = '''?data.csv?   None
+ADMIN_HELP = '''?data?   None
+?log?           None
 ?update?        None
 ?remind?        None
+?status?        None
 ?user?          None
 ?remind wait?   \\f
 ?remind before? \\f
@@ -26,8 +28,12 @@ def reply(msg):
         keys_1 = ['重新绑定', '取消绑定', '取消提醒', '打开提醒', '文字课表']
         keys_2 = ['绑定', '退课', '选课', '更新', '保存', '提醒', '课表']
         keys_3 = ['???', '？？？']
-        if '?data.csv?' in text:
+        if '?data?' in text:
             return '@fil@static/data.csv'
+
+        elif '?log?' in text:
+            return '@fil@static/run.log'
+
         elif '?update?' in text:
             HELPER.update_info()
             return '所有用户信息更新成功'
@@ -37,7 +43,11 @@ def reply(msg):
             else:
                 HELPER.remind_alive = True
                 HELPER.remind()
-            return 'remind_alive已更改'
+            return 'remind_alive已更改为%s' % HELPER.remind_alive
+
+        elif '?status?' in text:
+            return 'remind_alive:%s REMIND_WAIT:%s REMIND_BEFORE:%s' % (
+                HELPER.remind_alive, hp.REMIND_WAIT, hp.REMIND_BEFORE)
 
         elif '?remind wait?' in text:
             hp.REMIND_WAIT = float(re.findall(r'(\d+\.?\d*)', text)[0])
