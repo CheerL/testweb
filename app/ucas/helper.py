@@ -8,13 +8,12 @@ import requests
 import itchat
 import pandas as pd
 from .wheel import parallel as pl
-from .SEP import _info, UCASSEP
-from . import EXCEPTIONS, logger, WEEK, TIMEOUT
+from .SEP import UCASSEP
+from . import EXCEPTIONS, info, WEEK, TIMEOUT
 
 TL_KEY = '71f28bf79c820df10d39b4074345ef8c' #图灵机器人密钥
-SAVE_TIME = 1#分钟
+REMIND_WAIT = 3#分钟
 REMIND_BEFORE = 30#分钟
-REMIND_WAIT = 1#分钟
 A_WEEK = 60 * 60 * 24 * 7#秒
 END_WEEK = 20
 FILE_NAME = 'static/data.csv'
@@ -30,7 +29,6 @@ class Helper(object):
     '助手类'
     user_list = None
     remind_alive = True
-    auto_save_alive = True
     host = None
 
     @staticmethod
@@ -77,12 +75,11 @@ class Helper(object):
     @staticmethod
     def my_error(error, user=None, up_rep=True):
         '错误处理, 向用户发送错误信息或继续上报错误'
-        msg = _info(error)
-        logger.info(msg)
-        if not up_rep:
-            Helper.send(msg, user)
-        else:
+        info(error)
+        if up_rep:
             raise NotImplementedError(error)
+        else:
+            Helper.send(error, user)
 
     @staticmethod
     def send(msg, user=None):
@@ -107,7 +104,7 @@ class Helper(object):
                 user_name = None
             itchat.send(msg, user_name)
         except EXCEPTIONS as error:
-            logger.info(error)
+            info(error)
             itchat.send(msg)
 
     @staticmethod
@@ -270,28 +267,12 @@ class Helper(object):
         if now_user:
             self.send('保存成功', now_user)
 
-    def auto_save(self):
-        '每间隔一段时间自动保存一次'
-        def _auto_save():
-            sleep_time = SAVE_TIME * 60#秒
-            self.save_user_list()
-            reciever = itchat.search_mps(name='微信支付')[0]['UserName']
-            msg = '%s 成功保存' % time.ctime()
-            itchat.send(msg, reciever)
-            logger.info(msg)
-            time.sleep(int(sleep_time))
-            if self.host:
-                url = 'http://%s/app/save/all' % self.host
-                requests.get(url, timeout=TIMEOUT)
-        if self.auto_save_alive:
-            pl.run_thread([(_auto_save, ())], name='auto_save', is_lock=False)
-
     def remind(self, now_user=None, nick_name=None):
         '定时提醒'
         def _remind_do(remind, user):
             _time = time.strftime('%H:%M', time.localtime(remind[2]))
             msg = '今天{}在{}上{}, 不要迟到哦'.format(_time, remind[1], remind[0])
-            logger.info(msg)
+            info(msg)
             self.send(msg, user)
 
         def _remind_main(user):
@@ -318,14 +299,17 @@ class Helper(object):
             for user in self.user_list:
                 if user['is_open']:
                     _remind_main(user)
-            reciever = itchat.search_mps(name='微信支付')[0]['UserName']
-            msg = '%s 成功提醒' % time.ctime()
-            itchat.send(msg, reciever)
-            logger.info(msg)
+            info('成功提醒')
+            self.save_user_list()
+            info('成功保存')
             time.sleep(int(REMIND_WAIT * 60))
             if self.host:
-                url = 'http://%s/app/remind' % self.host
-                requests.get(url, timeout=TIMEOUT)
+                try:
+                    requests.get('http://%s/app/remind' % self.host, timeout=TIMEOUT)
+                except EXCEPTIONS:
+                    info('打开新线程失败, 自动提醒结束')
+                    self.remind_alive = False
+
 
         if self.get_now_week() > END_WEEK:
             self.remind_alive = False
@@ -340,7 +324,7 @@ class Helper(object):
                 if self.remind_alive:
                     pl.run_thread([(_remind, ())], 'remind', False)
             except EXCEPTIONS as error:
-                self.my_error(error)
+                info(error)
 
     def __remind_list_update(self, user):
         '更新提醒列表'
@@ -404,10 +388,9 @@ class Helper(object):
                 course_list = user['course_list']
                 _course_list = list()
                 for course in course_list:
-                    place = course['place']
-                    name = course['name']
-                    nob = course['num']
-                    _course_list += [(name, place, day, num, nob) for (day, num) in course['times']]
+                    para = [course['place'], course['name'], course['num']]
+                    _course_list += [(para[1], para[0], day, num, para[2])
+                                     for (day, num) in course['times']]
                 _course_list.sort(key=lambda x: self.get_course_time(x[2], x[3][0]))
                 if not is_with_num:
                     msg = '\n'.join(['{}, {}, {}, 第{}节'.format(
@@ -465,6 +448,7 @@ class Helper(object):
         except EXCEPTIONS as error:
             self.my_error(error)
 
-    def logout(self):
+    @staticmethod
+    def logout():
         '退出登陆'
         itchat.logout()

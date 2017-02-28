@@ -59,14 +59,6 @@ def logout(request):
     main.HELPER.logout()
     return HttpResponse('成功退出')
 
-def save_all(request):
-    '保存'
-    if not request:
-        return no_request()
-    main.HELPER.auto_save()
-    logger.info('成功储存所有用户信息')
-    return HttpResponse('')
-
 def remind(request):
     '提醒'
     if not request:
@@ -88,9 +80,4 @@ def draw():
     name = 'static/' + str(COUNT) + pic_name
     image = Image.new('RGB', (width, height), (randint(0, 255), randint(0, 255), randint(0, 255)))
     image.save(name, 'jpeg')
-    yield '/' + name
-    time.sleep(5)
-    if os.path.isfile(name):
-        os.remove(name)
-    yield
 '''

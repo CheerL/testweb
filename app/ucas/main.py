@@ -41,15 +41,8 @@ def reply(msg):
                 HELPER.remind_alive = True
                 HELPER.remind()
             return 'remind_alive已更改'
-        elif '?autosave?' in text:
-            if HELPER.auto_save_alive:
-                HELPER.auto_save_alive = False
-            else:
-                HELPER.auto_save_alive = True
-                HELPER.auto_save()
-        elif '?save time?' in text:
-            hp.SAVE_TIME = float(re.findall(r'(\d+\.?\d*)', text)[0])
-            return 'SAVE_TIME改为%f分钟' % hp.SAVE_TIME
+        
+        
         elif '?remind wait?' in text:
             hp.REMIND_WAIT = float(re.findall(r'(\d+\.?\d*)', text)[0])
             return 'REMIND_WAIT改为%f分钟' % hp.REMIND_WAIT

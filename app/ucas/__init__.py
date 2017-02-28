@@ -1,3 +1,5 @@
+'小助手, 线上版'
+import time
 from logging import getLogger
 
 logger = getLogger('itchat')
@@ -9,3 +11,8 @@ EXCEPTIONS = (
     IndentationError, InterruptedError, KeyError, StopIteration,
     )
 TIMEOUT = 10
+
+def info(msg):
+    '打印日志'
+    msg = time.ctime() + '\n' + msg
+    logger.info(msg)
