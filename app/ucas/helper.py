@@ -277,9 +277,8 @@ class Helper(object):
 
         def _remind_main(user):
             if user['is_open']:
+                self. __remind_list_update(user)
                 nick_name = user['nick_name']
-                if 'remind_list' not in user.keys() or not user['remind_list']:
-                    self. __remind_list_update(user)
                 try:
                     remind_list = user['remind_list']
                     result = self._show_remind_list(nick_name, remind_list)
@@ -299,9 +298,8 @@ class Helper(object):
             for user in self.user_list:
                 if user['is_open']:
                     _remind_main(user)
-            info('成功提醒')
             self.save_user_list()
-            info('成功保存')
+            info('成功提醒并保存')
             time.sleep(int(REMIND_WAIT * 60))
             if self.host:
                 try:

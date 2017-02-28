@@ -38,8 +38,7 @@ def reply(msg):
                 HELPER.remind_alive = True
                 HELPER.remind()
             return 'remind_alive已更改'
-        
-        
+
         elif '?remind wait?' in text:
             hp.REMIND_WAIT = float(re.findall(r'(\d+\.?\d*)', text)[0])
             return 'REMIND_WAIT改为%f分钟' % hp.REMIND_WAIT
