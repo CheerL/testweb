@@ -8,16 +8,13 @@ from .wheel.recognize import spech_recognize
 
 HELPER = Helper()
 ADMIN_HELP = '''?data.csv?   None
-?autosave?      None
 ?update?        None
 ?remind?        None
 ?user?          None
-?save time?     \\f
 ?remind wait?   \\f
 ?remind before? \\f
 ?course dict?   \\d:\\d:\\d
 ?send?          用户:\\s 内容:\\s'''
-
 
 def reply(msg):
     '回复函数'
@@ -126,7 +123,6 @@ def download_files(msg):
 def main():
     '开始运行'
     HELPER.remind()
-    HELPER.auto_save()
     itchat.run()
 
 if __name__ == '__main__':

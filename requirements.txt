@@ -2,7 +2,7 @@ beautifulsoup4==4.5.3
 Django==1.10.5
 docopt==0.6.2
 gunicorn==19.6.0
-itchat==1.2.26
+itchat==1.2.27
 numpy==1.12.0
 olefile==0.44
 pandas==0.19.2

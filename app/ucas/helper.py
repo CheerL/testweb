@@ -319,6 +319,7 @@ class Helper(object):
             user = self.search_list(nick_name)
             user['is_open'] = True
             self.send('打开提醒成功', now_user)
+
         else:
             try:
                 if self.remind_alive:
