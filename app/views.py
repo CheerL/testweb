@@ -6,8 +6,7 @@ from .ucas.login import login as LG
 from .ucas import EXCEPTIONS, main, info
 
 QR_name = 'static/QR.png'
-COUNT = 0
-LIMIT = 0
+#COUNT = 0
 LOGIN = LG(QR_name)
 
 # Create your views here.
@@ -21,11 +20,9 @@ def login(request):
     if not request:
         return no_request()
     try:
-        global LIMIT, LOGIN
+        global LOGIN
         if not main.HELPER.is_login and not main.HELPER.is_wait:
             LOGIN = LG(QR_name)
-            LIMIT = 0
-        LIMIT += 1
         response = next(LOGIN)
         return HttpResponse(response)
     except EXCEPTIONS:
@@ -64,6 +61,16 @@ def remind(request):
     main.HELPER.remind()
     info('提醒中')
     return HttpResponse('')
+
+def reload(requset):
+    '重启'
+    if not requset:
+        return no_request()
+    main.HELPER.is_login = False
+    main.HELPER.is_run = False
+    main.HELPER.is_wait = False
+    global LOGIN
+    LOGIN = LG(QR_name)
 
 def no_request():
     '请求不存在时'

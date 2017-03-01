@@ -7,4 +7,5 @@ urlpatterns = [
     url(r'^run$', views.run),
     url(r'^logout$', views.logout),
     url(r'^remind$', views.remind),
+    url(r'reload', views.reload),
 ]

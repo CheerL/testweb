@@ -118,7 +118,7 @@ def text_reply(msg):
 def add_friend(msg):
     '自动接受好友申请'
     itchat.add_friend(**msg['Text'])
-    return 'Nice to see you!\n你可以试着输入"???"来查看帮助信息'
+    itchat.send('Nice to see you!\n你可以试着输入"???"来查看帮助信息', msg['Text']['userName'])
 
 @itchat.msg_register(['Recording', 'Attachment', 'Video'])
 def download_files(msg):

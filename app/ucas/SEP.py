@@ -29,7 +29,7 @@ class UCASSEP(object):
     user_id = ''
     password = ''
     user_name = ''
-    course_list = []
+    course_list = None
     session = requests.Session()
     is_login = False
     is_course = False
@@ -206,7 +206,7 @@ class UCASSEP(object):
 
     def get_course_list(self):
         '获取已选择课程, 并储存'
-        self.course_list.clear()
+        self.course_list = list()
         url = 'http://jwxk.ucas.ac.cn/courseManageBachelor/main'
         soup = self._get_page(url)
         pattern = re.compile(r'/course/coursetime/(\d*)')
@@ -227,7 +227,7 @@ class UCASSEP(object):
                 ) for each in times]
             course = dict(num=num, name=name, weeks=weeks, place=place, times=times)
             self.course_list.append(course)
-        _rep('课表获取成功')
+        _rep('%s 课表获取成功' % self.user_name)
 
     def get_course_list_pic(self, pic_name):
         '生成图片'

@@ -267,6 +267,7 @@ class Helper(object):
         '保存用户信息为csv'
         data = pd.DataFrame(self.user_list)
         data.to_csv(FILE_NAME, encoding='utf-8', index=False)
+        info('用户信息保存成功')
         if now_user:
             self.send('保存成功', now_user)
 
