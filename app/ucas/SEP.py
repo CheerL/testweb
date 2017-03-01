@@ -9,7 +9,7 @@ import numpy as np
 from bs4 import BeautifulSoup as Bs
 from PIL import Image, ImageDraw, ImageFont
 from .wheel import parallel as pl
-from . import logger, EXCEPTIONS, WEEK, TIMEOUT
+from . import info, EXCEPTIONS, WEEK, TIMEOUT
 
 PHANTOMJS_PATH = 'static/phantomjs.exe'
 
@@ -17,10 +17,10 @@ def _info(msg):
     return '%s\n%s' % (time.ctime(), str(msg))
 
 def _rep(msg):
-    logger.info(msg)
+    info(msg)
 
 def _error(error, is_up_rep=True):
-    _rep(error)
+    info(msg)
     if is_up_rep:
         raise NotImplementedError(error)
 

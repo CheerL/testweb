@@ -82,7 +82,7 @@ class Helper(object):
         if up_rep:
             raise NotImplementedError(error)
         else:
-            Helper.send(error, user)
+            Helper.send(str(error), user)
 
     @staticmethod
     def send(msg, user=None):
