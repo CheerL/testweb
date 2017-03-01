@@ -17,10 +17,10 @@ def _info(msg):
     return '%s\n%s' % (time.ctime(), str(msg))
 
 def _rep(msg):
-    info(msg)
+    info(str(msg))
 
 def _error(error, is_up_rep=True):
-    info(msg)
+    info(error)
     if is_up_rep:
         raise NotImplementedError(error)
 

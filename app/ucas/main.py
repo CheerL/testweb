@@ -35,7 +35,8 @@ def reply(msg):
             return '@fil@static/run.log'
 
         elif '?update?' in text:
-            HELPER.update_info()
+            HELPER.remind_list_update()
+            HELPER.save_user_list()
             return '所有用户信息更新成功'
         elif '?remind?' in text:
             if HELPER.remind_alive:
@@ -44,6 +45,10 @@ def reply(msg):
                 HELPER.remind_alive = True
                 HELPER.remind()
             return 'remind_alive已更改为%s' % HELPER.remind_alive
+
+        elif '?save?' in text:
+            HELPER.save_user_list()
+            return '保存成功'
 
         elif '?status?' in text:
             return 'remind_alive:%s REMIND_WAIT:%s REMIND_BEFORE:%s' % (
@@ -91,7 +96,9 @@ def reply(msg):
         elif '选课' in text and '成功' not in text:
             HELPER.add_course(now_user, nick_name, text)
         elif '更新' in text and '成功' not in text:
-            HELPER.remind_list_update(now_user, nick_name)
+            HELPER.remind_list_update(nick_name)
+            HELPER.save_user_list()
+            return '信息更新成功'
         elif '提醒' in text and '成功' not in text:
             HELPER.show_remind_list(now_user, nick_name)
         elif '课表' in text and '成功' not in text:

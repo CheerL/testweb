@@ -186,7 +186,7 @@ class Helper(object):
 
     def update_info(self, user=None):
         '更新用户信息'
-        if user:
+        if user and isinstance(user, dict):
             try:
                 sep = UCASSEP(user)
                 sep.get_course_list()
@@ -360,12 +360,26 @@ class Helper(object):
         week = self.get_now_week()
         _remind_list_update_main(week, course_list)
 
-    def remind_list_update(self, now_user, nick_name):
+    def remind_list_update(self, nick_name=None, user=None):
         '手动更新信息'
         try:
-            user = self.search_list(nick_name)
+            if user and isinstance(user, dict):
+                pass
+            elif nick_name and isinstance(nick_name, str):
+                user = self.search_list(nick_name)
+            else:
+                for _user in self.user_list:
+                    self.remind_list_update(user=_user)
+                return
+
+            is_update = False
+            while not is_update:
+                try:
+                    self.update_info(user)
+                    is_update = True
+                except EXCEPTIONS:
+                    pass
             self.__remind_list_update(user)
-            self.send('信息更新成功', now_user)
         except EXCEPTIONS as error:
             self.my_error(error)
 
@@ -455,7 +469,7 @@ class Helper(object):
         except EXCEPTIONS as error:
             self.my_error(error)
 
-    
+
     def logout(self):
         '退出登陆'
         itchat.logout()
