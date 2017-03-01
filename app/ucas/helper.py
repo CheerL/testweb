@@ -279,23 +279,22 @@ class Helper(object):
             self.send(msg, user)
 
         def _remind_main(user):
-            if user['is_open']:
-                self. __remind_list_update(user)
-                nick_name = user['nick_name']
-                try:
-                    remind_list = user['remind_list']
-                    result = self._show_remind_list(nick_name, remind_list)
-                    if result[1] > 0:                               #当上课时间到, 把课程清理出提醒队列
-                        remind_list.pop(0)
-                        self.__remind_list_update(user)
-                    elif result[1] + REMIND_BEFORE * 60 >= 0:       #当提醒时间到, 主动提醒一次
-                        if not user['have_remind']:                 #当没有提醒过
-                            _remind_do(remind_list[0], user)        #提醒
-                            user['have_remind'] = True              #修改为已经提醒过
-                    else:                                           #没有到提醒时间
-                        user['have_remind'] = False
-                except EXCEPTIONS as error:
-                    self.my_error(error, user)
+            self. __remind_list_update(user)
+            nick_name = user['nick_name']
+            try:
+                remind_list = user['remind_list']
+                result = self._show_remind_list(nick_name, remind_list)
+                if result[1] > 0:                               #当上课时间到, 把课程清理出提醒队列
+                    remind_list.pop(0)
+                    self.__remind_list_update(user)
+                elif result[1] + REMIND_BEFORE * 60 >= 0:       #当提醒时间到, 主动提醒一次
+                    if not user['have_remind']:                 #当没有提醒过
+                        _remind_do(remind_list[0], user)        #提醒
+                        user['have_remind'] = True              #修改为已经提醒过
+                else:                                           #没有到提醒时间
+                    user['have_remind'] = False
+            except EXCEPTIONS as error:
+                self.my_error(error, user)
 
         def _remind():
             for user in self.user_list:
@@ -334,6 +333,13 @@ class Helper(object):
             if week + count > END_WEEK:
                 user['is_open'] = False
                 raise NotImplementedError('%s本学期已经没有课了' % (user['nick_name']))
+            while not course_list:
+                try:
+                    self.update_info(user)
+                    course_list = user['course_list']
+                except EXCEPTIONS:
+                    pass
+
             now = time.time()
             remind_list = list()
             for course in course_list:
@@ -350,13 +356,7 @@ class Helper(object):
             else:
                 return _remind_list_update_main(week, course_list, count + 1)
 
-        course_list = None
-        while not course_list:
-            try:
-                self.update_info(user)
-                course_list = user['course_list']
-            except EXCEPTIONS:
-                pass
+        course_list = user['course_list']
         week = self.get_now_week()
         _remind_list_update_main(week, course_list)
 
