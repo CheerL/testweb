@@ -71,6 +71,7 @@ def reload(requset):
     main.HELPER.is_wait = False
     global LOGIN
     LOGIN = LG(QR_name)
+    return HttpResponse('')
 
 def no_request():
     '请求不存在时'
