@@ -3,7 +3,7 @@ import re
 import itchat
 from . import helper as hp
 from .helper import Helper
-from . import EXCEPTIONS
+from . import EXCEPTIONS, info
 #from .wheel.recognize import spech_recognize
 
 HELPER = Helper()
@@ -28,6 +28,7 @@ def reply(msg):
         keys_1 = ['重新绑定', '取消绑定', '取消提醒', '打开提醒', '文字课表']
         keys_2 = ['绑定', '退课', '选课', '刷新', '保存', '提醒', '课表']
         keys_3 = ['???', '？？？']
+        info('收到消息 %s' % text)
         if '?data?' in text:
             return '@fil@static/data.csv'
 
