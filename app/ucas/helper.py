@@ -7,6 +7,8 @@ import datetime
 import requests
 import itchat
 import pandas as pd
+import numpy as np
+from PIL import Image, ImageDraw, ImageFont
 from .wheel import parallel as pl
 from .SEP import UCASSEP
 from . import EXCEPTIONS, info, WEEK, TIMEOUT
@@ -32,7 +34,7 @@ class Helper(object):
     is_run = False
     user_list = None
     remind_alive = True
-    robot_reply =False
+    robot_reply = False
     host = None
 
     @staticmethod
@@ -329,39 +331,6 @@ class Helper(object):
             except EXCEPTIONS as error:
                 info(error)
 
-    def __remind_list_update(self, user):
-        '更新提醒列表'
-        def _remind_list_update_main(week, course_list, count=0):
-            if week + count > END_WEEK:
-                user['is_open'] = False
-                raise NotImplementedError('%s本学期已经没有课了' % (user['nick_name']))
-            while not course_list:
-                try:
-                    self.update_info(user)
-                    course_list = user['course_list']
-                except EXCEPTIONS:
-                    pass
-
-            now = time.time()
-            remind_list = list()
-            for course in course_list:
-                place = course['place']
-                name = course['name']
-                remind_list += [(name, place, self.get_course_time(day, num[0]) + A_WEEK * count)
-                                for (day, num) in course['times']
-                                if week <= int(course['weeks'][1])
-                                and week >= int(course['weeks'][0])]
-            remind_list = list(filter(lambda x: x[2] > now, remind_list))
-            if remind_list:
-                remind_list.sort(key=lambda x: x[2])
-                user['remind_list'] = remind_list
-            else:
-                return _remind_list_update_main(week, course_list, count + 1)
-
-        course_list = user['course_list']
-        week = self.get_now_week()
-        _remind_list_update_main(week, course_list)
-
     def remind_list_update(self, nick_name=None, user=None):
         '手动更新信息'
         try:
@@ -396,17 +365,11 @@ class Helper(object):
         try:
             user = self.search_list(nick_name)
             if is_pic:
-                try:
-                    pic_name = 'static/%s.course.png' % nick_name
-                    sep = UCASSEP(user)
-                    sep.get_course_list()
-                    sep.get_course_list_pic(pic_name)
-                    self.send('@img@' + pic_name, now_user)
-                except EXCEPTIONS as error:
-                    if os.path.isfile(pic_name):
-                        self.send('@img@' + pic_name, now_user)
-                        self.send('更新课表出错, 返回旧课表')
-                    self.my_error(error, now_user)
+                course_list = user['course_list']
+                pic_name = 'static/%s.course.png' % nick_name
+                self.__get_course_list_pic(pic_name, course_list)
+                self.send('@img@' + pic_name, now_user)
+                os.remove(pic_name)
             else:
                 course_list = user['course_list']
                 _course_list = list()
@@ -444,7 +407,7 @@ class Helper(object):
             if '编号' in text:
                 num = re.findall(r'编号[:：\s]*(.*?)\s*$', text)[0]
             else:
-                raise IOError('输入格式错误, 应为"选课 编号:***"')
+                raise IOError('输入格式错误, 应为"选课 编号:***", 你可以输入"编号"查看已选课程编号')
             sep = UCASSEP(user)
             sep.get_course_list()
             if sep.add_course(num):
@@ -461,7 +424,7 @@ class Helper(object):
             if '编号' in text:
                 num = re.findall(r'编号[:：\s]*(.*?)\s*$', text)[0]
             else:
-                raise IOError('输入格式错误, 应为"退课 编号:***"')
+                raise IOError('输入格式错误, 应为"退课 编号:***", 你可以输入"编号"查看已选课程编号')
             sep = UCASSEP(user)
             sep.get_course_list()
             if sep.drop_course(num):
@@ -470,6 +433,154 @@ class Helper(object):
                 self.send('退课失败', now_user)
         except EXCEPTIONS as error:
             self.my_error(error)
+
+    @staticmethod
+    def __get_course_list_pic(pic_name, course_list):
+        '生成图片'
+        def get_time_table(course_list):
+            '转换课表为矩阵形式'
+            table = np.zeros((7, 11)).astype(str)
+            for index, day in enumerate(WEEK):
+                for num in range(1, 12):
+                    for course in course_list:
+                        week = 1
+                        if week > int(course['weeks'][1]) or week < int(course['weeks'][0]):
+                            continue
+                        func = lambda x:\
+                            True\
+                            if list(filter(\
+                                lambda x: True if x[0] == day and str(num) in x[1] else False,\
+                                x['times']))\
+                            else False
+                        if func(course):
+                            table[index, num - 1] = course['name']
+            return table
+
+        def draw_font(x, y, text, color=(0, 0, 0), indent=0.5):
+            '打印第y行x列的字, 根据该块大小和字数进行分行打印, 调整应该打印的位置'
+            #自动计算调整参数
+            line_max = int((width_list[x + 1] - width_list[x]) / font_size - indent * 2)
+            if len(text) % line_max:
+                line_num = len(text) // line_max + 1
+            else:
+                line_num = len(text) // line_max
+            font_x = width_list[x] + indent * font_size
+            font_y = height_list[y] + (height_list[y + 1] - height_list[y] - \
+            (font_size + space) * line_num + space) / 2
+
+            #分行打印
+            for num in range(line_num):
+                line = text[num * line_max : (num + 1) * line_max]
+                if line != '':
+                    draw.text(
+                        (font_x, font_y + num * (font_size + space)),
+                        line, font=font, fill=color
+                        )
+
+        #颜色
+        white = (255, 255, 255)
+        grey_0 = (245, 245, 245)
+        grey_1 = (204, 204, 204)
+        blue_0 = (225, 234, 240)
+        blue_1 = (0, 136, 205)
+        line_color = (221, 221, 221)
+
+        #图像和字体大小
+        space = 5
+        font_size = 14
+        width = 900
+        height = 800
+
+        img = Image.new('RGB', (width, height), white)
+        draw = ImageDraw.Draw(img)
+        font = ImageFont.truetype('static/Deng.ttf', font_size, encoding='utf-8')
+        table = get_time_table(course_list)
+
+        part_w = 7
+        part_h = 12
+        _change = font_size * 7
+        _width = width - _change
+        width_list = [0] + [num + _change for num in range(0, _width, int(_width/part_w))]
+        height_list = [num for num in range(0, height, int(height/part_h))]
+        width_list[-1] = width
+        height_list[-1] = height
+
+        #划块填色
+        for index_w, num_w in enumerate(width_list):
+            for index_h, num_h in enumerate(height_list):
+                if not index_h or not index_w:
+                    continue
+                #第一行第一列
+                elif index_h is 1 and index_w is 1:
+                    draw.rectangle([0, 0, num_w, num_h], grey_1, line_color)
+                #第一行
+                elif index_h is 1 and index_w is not 1:
+                    width_last = width_list[index_w - 1]
+                    draw.rectangle([width_last, 0, num_w, num_h], grey_1, line_color)
+                #第一列
+                elif index_w is 1 and index_h is not 1:
+                    height_last = height_list[index_h - 1]
+                    draw.rectangle([0, height_last, num_w, num_h], blue_0, line_color)
+                #主体
+                else:
+                    height_last = height_list[index_h - 1]
+                    width_last = width_list[index_w - 1]
+                    #偶数行
+                    if not index_h % 2:
+                        draw.rectangle(
+                            [width_last, height_last, num_w, num_h], grey_0, line_color
+                            )
+                    #奇数行
+                    else:
+                        draw.rectangle(
+                            [width_last, height_last, num_w, num_h], white, line_color
+                            )
+
+        #画字
+        draw_font(0, 0, "节次/星期")
+        for num, day in enumerate(WEEK):
+            draw_font(num + 1, 0, day)
+        for num in range(1, 12):
+            draw_font(0, num, '第%d节'%num)
+        for i in range(7):
+            for j in range(11):
+                if table[i, j] != '0.0':
+                    draw_font(i + 1, j + 1, table[i, j], blue_1)
+        #保存
+        img.save(pic_name, 'png')
+
+    def __remind_list_update(self, user):
+        '更新提醒列表'
+        def _remind_list_update_main(week, course_list, count=0):
+            if week + count > END_WEEK:
+                user['is_open'] = False
+                raise NotImplementedError('%s本学期已经没有课了' % (user['nick_name']))
+            while not course_list:
+                try:
+                    self.update_info(user)
+                    course_list = user['course_list']
+                except EXCEPTIONS:
+                    pass
+
+            now = time.time()
+            remind_list = list()
+            for course in course_list:
+                place = course['place']
+                name = course['name']
+                remind_list += [(name, place, self.get_course_time(day, num[0]) + A_WEEK * count)
+                                for (day, num) in course['times']
+                                if week <= int(course['weeks'][1])
+                                and week >= int(course['weeks'][0])]
+            remind_list = list(filter(lambda x: x[2] > now, remind_list))
+            if remind_list:
+                remind_list.sort(key=lambda x: x[2])
+                user['remind_list'] = remind_list
+            else:
+                return _remind_list_update_main(week, course_list, count + 1)
+
+        course_list = user['course_list']
+        week = self.get_now_week()
+        _remind_list_update_main(week, course_list)
 
     def logout(self):
         '退出登陆'

@@ -26,7 +26,7 @@ def reply(msg):
         user = itchat.search_friends(userName=now_user)
         nick_name = user['NickName']
         keys_1 = ['重新绑定', '取消绑定', '取消提醒', '打开提醒', '文字课表']
-        keys_2 = ['绑定', '退课', '选课', '更新', '保存', '提醒', '课表']
+        keys_2 = ['绑定', '退课', '选课', '刷新', '保存', '提醒', '课表']
         keys_3 = ['???', '？？？']
         if '?data?' in text:
             return '@fil@static/data.csv'
@@ -90,23 +90,18 @@ def reply(msg):
         elif '保存' in text:
             HELPER.save_user_list(now_user)
         elif '退课' in text:
-            try:
-                HELPER.drop_course(now_user, nick_name, text)
-            except IOError as error:
-                return str(error) + ' ,你可以输入"编号"来查看当前已经选课的编号'
+            HELPER.drop_course(now_user, nick_name, text)
         elif '选课' in text:
-            try:
-                HELPER.add_course(now_user, nick_name, text)
-            except IOError as error:
-                return str(error) + ' ,你可以输入"编号"来查看当前已经选课的编号'
-        elif '更新' in text:
+            HELPER.add_course(now_user, nick_name, text)
+        elif '刷新' in text:
             HELPER.remind_list_update(nick_name)
             HELPER.save_user_list()
-            return '信息更新成功'
+            return '个人信息刷新成功'
         elif '提醒' in text:
             HELPER.show_remind_list(now_user, nick_name)
         elif '课表' in text:
             HELPER.show_course_list(now_user, nick_name)
+            return '若课表不正确, 可以试着回复"刷新"来刷新课程信息'
         elif '绑定' in text:
             HELPER.add_user(now_user, nick_name, text)
         else:
