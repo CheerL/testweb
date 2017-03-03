@@ -4,7 +4,7 @@ import itchat
 from . import helper as hp
 from .helper import Helper
 from . import EXCEPTIONS, info
-#from .wheel.recognize import spech_recognize
+from .wheel.recognize import spech_recognize
 
 HELPER = Helper()
 ADMIN_HELP = '''?data?   None
@@ -22,7 +22,6 @@ ADMIN_HELP = '''?data?   None
 def reply(msg):
     '回复函数'
     try:
-        info('get')
         now_user = msg['FromUserName']
         text = msg['Text']
         user = itchat.search_friends(userName=now_user)
@@ -121,14 +120,14 @@ def add_friend(msg):
     '自动接受好友申请'
     itchat.add_friend(**msg['Text'])
     itchat.send('Nice to see you!\n你可以试着输入"???"来查看帮助信息', msg['Text']['userName'])
-
+'''
 @itchat.msg_register(['Recording', 'Attachment', 'Video'])
 def download_files(msg):
     '接收语音'
     voice_path = 'static/' + msg['FileName']
     msg['Text'](voice_path)
     #return spech_recognize(voice_path)
-    '''
+    
     itchat.send(
         '@%s@%s'%('img' if msg['Type'] == 'Picture' else 'fil', voice_name),
         msg['FromUserName']
