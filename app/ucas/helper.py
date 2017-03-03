@@ -36,6 +36,8 @@ class Helper(object):
     remind_alive = True
     robot_reply = True
     host = None
+    admin = None
+    admin_report = False
 
     @staticmethod
     def get_now_week():

@@ -8,6 +8,7 @@ from . import EXCEPTIONS, info
 
 HELPER = Helper()
 ADMIN_HELP = '''?data?   None
+?robot          None
 ?log?           None
 ?update?        None
 ?remind?        None
@@ -21,6 +22,7 @@ ADMIN_HELP = '''?data?   None
 def reply(msg):
     '回复函数'
     try:
+        info('get')
         now_user = msg['FromUserName']
         text = msg['Text']
         user = itchat.search_friends(userName=now_user)
@@ -29,6 +31,8 @@ def reply(msg):
         keys_2 = ['绑定', '退课', '选课', '刷新', '保存', '提醒', '课表']
         keys_3 = ['???', '？？？']
         info('收到来自%s的消息: %s' % (nick_name, text))
+        if HELPER.admin_report:
+            pass
         if '?data?' in text:
             return '@fil@static/data.csv'
         elif '?robot?' in text:
@@ -79,9 +83,7 @@ def reply(msg):
             HELPER.cancel_remind(now_user, nick_name)
         elif '打开提醒' in text:
             HELPER.remind(now_user, nick_name)
-        elif '???' in text:
-            HELPER.help(now_user, [keys_2, keys_1, keys_3[:1]])
-        elif '？？？' in text:
+        elif '???' in text or '？？？' in text:
             HELPER.help(now_user, [keys_2, keys_1, keys_3[:1]])
         elif '文字课表' in text:
             HELPER.show_course_list(now_user, nick_name, False)
