@@ -32,6 +32,7 @@ class Helper(object):
     is_run = False
     user_list = None
     remind_alive = True
+    robot_reply =False
     host = None
 
     @staticmethod
@@ -460,7 +461,7 @@ class Helper(object):
             if '编号' in text:
                 num = re.findall(r'编号[:：\s]*(.*?)\s*$', text)[0]
             else:
-                raise IOError('输入格式错误, 应为"选课 编号:***"')
+                raise IOError('输入格式错误, 应为"退课 编号:***"')
             sep = UCASSEP(user)
             sep.get_course_list()
             if sep.drop_course(num):
@@ -469,7 +470,6 @@ class Helper(object):
                 self.send('退课失败', now_user)
         except EXCEPTIONS as error:
             self.my_error(error)
-
 
     def logout(self):
         '退出登陆'

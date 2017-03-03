@@ -31,9 +31,11 @@ def reply(msg):
         if '?data?' in text:
             return '@fil@static/data.csv'
 
+        elif '?robot?' in text:
+            HELPER.robot_reply = bool(1 - HELPER.robot_reply)
+            return '机器人回复已经%s' % ('打开' if HELPER.robot_reply else '关闭')
         elif '?log?' in text:
             return '@fil@static/run.log'
-
         elif '?update?' in text:
             HELPER.remind_list_update()
             HELPER.save_user_list()
@@ -44,16 +46,13 @@ def reply(msg):
             else:
                 HELPER.remind_alive = True
                 HELPER.remind()
-            return 'remind_alive已更改为%s' % HELPER.remind_alive
-
+            return 'remind_alive已经%s' % ('打开' if HELPER.remind_alive else '关闭')
         elif '?save?' in text:
             HELPER.save_user_list()
             return '保存成功'
-
         elif '?status?' in text:
-            return 'remind_alive:%s REMIND_WAIT:%s REMIND_BEFORE:%s' % (
-                HELPER.remind_alive, hp.REMIND_WAIT, hp.REMIND_BEFORE)
-
+            return 'remind_alive:%s REMIND_WAIT:%s REMIND_BEFORE:%s robot_reply:%s' % (
+                HELPER.remind_alive, hp.REMIND_WAIT, hp.REMIND_BEFORE, HELPER.robot_reply)
         elif '?remind wait?' in text:
             hp.REMIND_WAIT = float(re.findall(r'(\d+\.?\d*)', text)[0])
             return 'REMIND_WAIT改为%f分钟' % hp.REMIND_WAIT
@@ -72,41 +71,47 @@ def reply(msg):
             return ', '.join([user['nick_name'] for user in HELPER.user_list])
         elif '?admin?' in text:
             return ADMIN_HELP
-        elif '重新绑定' in text and '成功' not in text:
+        elif '重新绑定' in text:
             HELPER.change_user(now_user, nick_name, text)
-        elif '取消绑定' in text and '成功' not in text:
+        elif '取消绑定' in text:
             HELPER.del_user(now_user, nick_name)
-        elif '取消提醒' in text and '成功' not in text:
+        elif '取消提醒' in text:
             HELPER.cancel_remind(now_user, nick_name)
-        elif '打开提醒' in text and '成功' not in text:
+        elif '打开提醒' in text:
             HELPER.remind(now_user, nick_name)
         elif '???' in text:
             HELPER.help(now_user, [keys_2, keys_1, keys_3[:1]])
         elif '？？？' in text:
             HELPER.help(now_user, [keys_2, keys_1, keys_3[:1]])
         elif '文字课表' in text:
-            if '编号' in text:
-                HELPER.show_course_list(now_user, nick_name, False, is_with_num=True)
-            else:
-                HELPER.show_course_list(now_user, nick_name, False)
-        elif '保存' in text and '成功' not in text:
+            HELPER.show_course_list(now_user, nick_name, False)
+        elif '编号' in text:
+            HELPER.show_course_list(now_user, nick_name, False, is_with_num=True)
+        elif '保存' in text:
             HELPER.save_user_list(now_user)
-        elif '退课' in text and '成功' not in text:
-            HELPER.drop_course(now_user, nick_name, text)
-        elif '选课' in text and '成功' not in text:
-            HELPER.add_course(now_user, nick_name, text)
-        elif '更新' in text and '成功' not in text:
+        elif '退课' in text:
+            try:
+                HELPER.drop_course(now_user, nick_name, text)
+            except IOError as error:
+                return str(error) + ' ,你可以输入"编号"来查看当前已经选课的编号'
+        elif '选课' in text:
+            try:
+                HELPER.add_course(now_user, nick_name, text)
+            except IOError as error:
+                return str(error) + ' ,你可以输入"编号"来查看当前已经选课的编号'
+        elif '更新' in text:
             HELPER.remind_list_update(nick_name)
             HELPER.save_user_list()
             return '信息更新成功'
-        elif '提醒' in text and '成功' not in text:
+        elif '提醒' in text:
             HELPER.show_remind_list(now_user, nick_name)
-        elif '课表' in text and '成功' not in text:
+        elif '课表' in text:
             HELPER.show_course_list(now_user, nick_name)
-        elif '绑定' in text and '成功' not in text:
+        elif '绑定' in text:
             HELPER.add_user(now_user, nick_name, text)
         else:
-            return Helper.get_response(text)
+            if HELPER.robot_reply:
+                return Helper.get_response(text)
     except EXCEPTIONS as error:
         HELPER.my_error(error, now_user, False)
 
