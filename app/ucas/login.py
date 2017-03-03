@@ -21,7 +21,7 @@ def login(pic_dir):
         __login_after_qr(uuid)
         os.remove(pic_dir)
         HELPER.is_wait = False
-        yield
+        yield 'success'
     except EXCEPTIONS as error:
         info(error)
         raise NotImplementedError('登陆出错, 请重新登陆')

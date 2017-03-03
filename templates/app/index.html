@@ -44,17 +44,17 @@
             login.text("重启");
             $.get("login", function(data){
                 login.show();
-                if (data == "错误, 请重新登陆"){
-                    text.text(data);
-                    $.get('', function(){
-                        hide_pic();
-                    });
-                }
-                else{
+                if (data == '/static/QR.png'){
                     pic[0].src = data;
                     pic.show();
                     text.text("请扫描二维码");
-                    setTimeout('after_scan()', 2000)
+                    setTimeout('after_scan()', 500)
+                }
+                else{
+                    text.text(data);
+                    $.get('', function(){
+                        pic.hide();
+                    });
                 }
             });
         }
@@ -65,15 +65,15 @@
         }
         function after_scan(){
             $.get("login", function(data){
-                if (data == "错误, 请重新登陆"){
-                    text.text(data);
-                    pic.hide();
-                }
-                else{
+                if (data == "success"){
                     pic.hide();
                     run.show();
                     exit.show();
                     text.text("登陆成功, 请点击运行");
+                }
+                else{
+                    text.text("登陆出错, 请重新登陆");
+                    pic.hide();
                 }
             });
         }
