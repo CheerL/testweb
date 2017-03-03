@@ -31,7 +31,6 @@ def reply(msg):
         info('收到来自%s的消息: %s' % (nick_name, text))
         if '?data?' in text:
             return '@fil@static/data.csv'
-
         elif '?robot?' in text:
             HELPER.robot_reply = bool(1 - HELPER.robot_reply)
             return '机器人回复已经%s' % ('打开' if HELPER.robot_reply else '关闭')
