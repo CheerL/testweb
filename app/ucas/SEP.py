@@ -8,8 +8,6 @@ from bs4 import BeautifulSoup as Bs
 from .wheel import parallel as pl
 from . import info, EXCEPTIONS, TIMEOUT
 
-PHANTOMJS_PATH = 'static/phantomjs.exe'
-
 def _info(msg):
     return '%s\n%s' % (time.ctime(), str(msg))
 

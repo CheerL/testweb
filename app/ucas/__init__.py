@@ -20,7 +20,7 @@ EXCEPTIONS = (
     ValueError, TypeError, RuntimeError, ConnectionAbortedError,
     IndentationError, InterruptedError, KeyError, StopIteration,
     )
-TIMEOUT = 10
+TIMEOUT = 2
 
 def info(msg):
     '打印日志'
