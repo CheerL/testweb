@@ -13,7 +13,9 @@ LOGIN = LG(QR_name)
 def index(request):
     'app初始界面, 有可能是唯一的界面'
     return render(request, 'app/index.html',
-                  {'is_login':main.HELPER.is_login, 'is_run':main.HELPER.is_run})
+                  {'is_login':main.HELPER.is_login,
+                   'is_run':main.HELPER.is_run,
+                   'is_wait':main.HELPER.is_wait})
 
 def login(request):
     '终于登陆了'
