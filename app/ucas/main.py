@@ -54,8 +54,8 @@ def reply(msg):
             HELPER.save_user_list()
             return '保存成功'
         elif '?status?' in text:
-            return 'remind_alive:%s REMIND_WAIT:%s REMIND_BEFORE:%s robot_reply:%s' % (
-                HELPER.remind_alive, hp.REMIND_WAIT, hp.REMIND_BEFORE, HELPER.robot_reply)
+            return 'remind_alive:%s\nrobot_reply:%sREMIND_WAIT:%s\nREMIND_BEFORE:%s\n' % (
+                HELPER.remind_alive, HELPER.robot_reply, hp.REMIND_WAIT, hp.REMIND_BEFORE)
         elif '?remind wait?' in text:
             hp.REMIND_WAIT = float(re.findall(r'(\d+\.?\d*)', text)[0])
             return 'REMIND_WAIT改为%f分钟' % hp.REMIND_WAIT
@@ -67,8 +67,13 @@ def reply(msg):
             hp.COURSE_DICT[result[0]] = [int(result[1]), int(result[2])]
             return "COURSE_DICT['%d']改为(%d, %d)" % result
         elif '?send?' in text:
-            result = re.findall(r'用户[:：\s]*(.+?)\s*内容[:：\s]*(.*)$', text)
-            HELPER.send(result[0][1], result[0][0])
+            if '用户' in text:
+                result = re.findall(r'用户[:：\s]*(.+?)\s*内容[:：\s]*(.*)$', text)
+                HELPER.send(result[0][1], result[0][0])
+            else:
+                msg = re.findall(r'?send? (.*)$', text)[0]
+                for user in HELPER.user_list:
+                    HELPER.send(user['nick_name'], msg)
             return '发送成功'
         elif '?user?' in text:
             return ', '.join([user['nick_name'] for user in HELPER.user_list])
