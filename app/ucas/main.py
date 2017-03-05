@@ -67,13 +67,12 @@ def reply(msg):
             hp.COURSE_DICT[result[0]] = [int(result[1]), int(result[2])]
             return "COURSE_DICT['%d']改为(%d, %d)" % result
         elif '?send?' in text:
-            if '用户' in text:
-                result = re.findall(r'用户[:：\s]*(.+?)\s*内容[:：\s]*(.*)$', text)
-                HELPER.send(result[0][1], result[0][0])
-            else:
-                msg = re.findall(r'?send? (.*)$', text)[0]
+            result = re.findall(r'用户[:：\s]*(.+?)\s*内容[:：\s]*(.*)$', text)
+            if result[0][0] == 'all':
                 for user in HELPER.user_list:
-                    HELPER.send(user['nick_name'], msg)
+                    HELPER.send(result[0][1], user['nick_name'])
+            else:
+                HELPER.send(result[0][1], result[0][0])    
             return '发送成功'
         elif '?user?' in text:
             return ', '.join([user['nick_name'] for user in HELPER.user_list])
