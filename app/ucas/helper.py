@@ -48,11 +48,9 @@ class Helper(object):
         self.robot_reply = self.remind_alive = True
         self.host = self.admin = None
         self.last_update = 0
-        thread = pl.search_thread(ident=self.remind_tid, part=True)
-        if thread.is_alive():
-            pl.kill_thread(tid=self.remind_tid)
-            time.sleep(1)
-            info('线程已关闭')
+        pl.kill_thread(tid=self.remind_tid)
+        time.sleep(1)
+        info('线程已关闭')
 
     @staticmethod
     def get_now_week():
@@ -339,12 +337,18 @@ class Helper(object):
                     _remind_main(user)
             self.save_user_list()
             info('成功提醒并保存')
-            try:
-                requests.get('http://%s/app/remind' % self.host, timeout=TIMEOUT)
-                info('线程关闭, id:%s' % self.remind_tid)
-            except EXCEPTIONS:
-                info('打开新线程失败, 自动提醒结束')
-                self.remind_alive = False
+            error_count = 0
+            while True:
+                try:
+                    requests.get('http://%s/app/remind' % self.host, timeout=TIMEOUT)
+                    info('线程关闭, id:%s' % self.remind_tid)
+                    break
+                except EXCEPTIONS:
+                    if error_count < 5:
+                        error_count += 1
+                    else:
+                        info('打开新线程失败, 自动提醒结束')
+                        self.remind_alive = False
 
         if self.get_now_week() > END_WEEK:
             self.remind_alive = False
