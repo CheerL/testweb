@@ -349,6 +349,7 @@ class Helper(object):
                     else:
                         info('打开新线程失败, 自动提醒结束')
                         self.remind_alive = False
+                        return
 
         if self.get_now_week() > END_WEEK:
             self.remind_alive = False
