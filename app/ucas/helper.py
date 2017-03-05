@@ -299,7 +299,7 @@ class Helper(object):
         if now_user:
             self.send('保存成功', now_user)
 
-    def remind(self, now_user=None, nick_name=None):
+    def remind(self, now_user=None, nick_name=None, host=host):
         '定时提醒'
         def _remind_do(remind, user):
             _time = time.strftime('%H:%M', time.localtime(remind[2]))
@@ -338,6 +338,8 @@ class Helper(object):
             self.save_user_list()
             info('成功提醒并保存')
             error_count = 0
+            if not self.host:
+                self.host = host
             while True:
                 try:
                     requests.get('http://%s/app/remind' % self.host, timeout=TIMEOUT)
