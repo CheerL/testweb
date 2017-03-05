@@ -314,6 +314,7 @@ class Helper(object):
                 self.my_error(error, user)
 
         def _remind():
+            time.sleep(1)
             self.remind_tid = pl.get_id()
             info('打开新线程, id %s' % self.remind_tid)
             for user in self.user_list:
