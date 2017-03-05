@@ -53,7 +53,7 @@ def run_thread(req_list, name=None, is_lock=True, limit_num=8):
                         *
                         ]
         name        线程名, str, 默认为None
-        if_debug    debug模式开关, bool, 默认为False, 为True时会显示运行时间
+        is_lock     阻塞模式开关, bool, 默认为True, 阻塞运行, False时不阻塞
         limit_num   最大线程数, int, 默认为8
         '''
     queue = deque(req_list)

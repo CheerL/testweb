@@ -152,7 +152,7 @@ def download_files(msg):
 def main():
     '开始运行'
     requests.get('http://%s/app/remind' % HELPER.host, timeout=TIMEOUT)
-    itchat.run(blockThread=False)
+    itchat.run()
 
 if __name__ == '__main__':
     try:

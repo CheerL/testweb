@@ -327,6 +327,11 @@ class Helper(object):
                 self.my_error(error, user)
 
         def _remind():
+            time.sleep(1)
+            self.remind_tid = pl.get_id()
+            if time.time() - self.last_update > AUTO_UPDATE * 60:
+                self.update_info()
+            info('打开新线程, id:%s' % self.remind_tid)
             for user in self.user_list:
                 if user['is_open']:
                     _remind_main(user)
@@ -353,12 +358,8 @@ class Helper(object):
         else:
             try:
                 if self.remind_alive:
-                    time.sleep(1)
-                    self.remind_tid = pl.get_id()
-                    info('打开新线程, id:%s' % self.remind_tid)
-                    if time.time() - self.last_update > AUTO_UPDATE * 60:
-                        self.update_info()
                     _remind()
+                    pl.run_thread([(_remind, ())], 'remind', False)
             except EXCEPTIONS as error:
                 info(error)
 
