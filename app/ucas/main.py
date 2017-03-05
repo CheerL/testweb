@@ -1,7 +1,7 @@
 '程序运行主体'
 import re
-import itchat
 import time
+import itchat
 from . import helper as hp
 from .helper import Helper
 from . import EXCEPTIONS, info
