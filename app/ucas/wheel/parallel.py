@@ -1,6 +1,7 @@
 '多线程 与 多进程'
 import os
 import sys
+import signal
 import time
 import inspect
 import ctypes
@@ -150,11 +151,16 @@ def kill_thread(thread=None, name=None, tid=0, exctype=SystemExit):
     # and you should call it again with exc=NULL to revert the effect"""
         ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, 0)
         raise SystemError("PyThreadState_SetAsyncExc failed")
-    
+
+def kill_process(pid):
+    '杀死指定进程'
+    os.kill(pid, signal.SIGILL)
+
 def get_pid():
+    '返回当前进程pid'
     return os.getpid()
 
-def get_id(thread=None):
+def get_tid(thread=None):
     '获取进程id, 默认获取当前进程'
     if not thread:
         thread = threading.current_thread()
