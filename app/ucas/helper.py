@@ -337,13 +337,12 @@ class Helper(object):
                     _remind_main(user)
             self.save_user_list()
             info('成功提醒并保存')
-            if self.host:
-                try:
-                    requests.get('http://%s/app/remind' % self.host, timeout=TIMEOUT)
-                    info('线程关闭, id:%s' % self.remind_tid)
-                except EXCEPTIONS:
-                    info('打开新线程失败, 自动提醒结束')
-                    self.remind_alive = False
+            try:
+                requests.get('http://%s/app/remind' % self.host, timeout=TIMEOUT)
+                info('线程关闭, id:%s' % self.remind_tid)
+            except EXCEPTIONS:
+                info('打开新线程失败, 自动提醒结束')
+                self.remind_alive = False
 
         if self.get_now_week() > END_WEEK:
             self.remind_alive = False
