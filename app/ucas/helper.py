@@ -588,7 +588,8 @@ class Helper(object):
                 user['remind_list'] = remind_list
             else:
                 return _remind_list_update_main(week, course_list, count + 1)
-
+        
+        self.update_info(user)
         course_list = user['course_list']
         week = self.get_now_week()
         _remind_list_update_main(week, course_list)
