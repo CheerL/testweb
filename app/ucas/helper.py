@@ -36,6 +36,7 @@ class Helper(object):
     user_list = None
     remind_alive = True
     remind_tid = None
+    remind_pid = None
     robot_reply = True
     host = None
     admin = None
@@ -48,11 +49,16 @@ class Helper(object):
         self.robot_reply = self.remind_alive = True
         self.host = self.admin = None
         self.last_update = 0
+        '''
         thread = pl.search_thread(ident=self.remind_tid, part=True)
         if thread.is_alive():
             pl.kill_thread(tid=self.remind_tid)
             time.sleep(2)
             info('线程已关闭')
+            '''
+        pl.kill_process(self.remind_pid)
+        info('进程已关闭')
+
 
     @staticmethod
     def get_now_week():
@@ -329,9 +335,10 @@ class Helper(object):
 
         def _remind():
             time.sleep(int(REMIND_WAIT * 60))
-            self.remind_tid = pl.get_id()
-            #self.remind_pid = pl.
-            info('打开新线程, id:%s' % self.remind_tid)
+            #self.remind_tid = pl.get_tid()
+            #info('打开新线程, id:%s' % self.remind_tid)
+            self.remind_pid = pl.get_pid()
+            info('打开进程线程, id:%s' % self.remind_pid)
             if time.time() - self.last_update > AUTO_UPDATE * 60:
                 self.update_info()
             for user in self.user_list:
@@ -341,7 +348,8 @@ class Helper(object):
             info('成功提醒并保存')
             try:
                 requests.get('http://%s/app/remind' % self.host, timeout=TIMEOUT)
-                info('线程关闭, id:%s' % self.remind_tid)
+                #info('线程关闭, id:%s' % self.remind_tid)
+                info('进程关闭, id:%s' % self.remind_pid)
             except EXCEPTIONS:
                 info('打开新线程失败, 自动提醒结束')
                 self.remind_alive = False
@@ -358,7 +366,7 @@ class Helper(object):
         else:
             try:
                 if self.remind_alive:
-                    pl.run_thread_pool([(_remind, ())], False)
+                    pl.run_process_pool([(_remind, ())], False)
             except EXCEPTIONS as error:
                 info(error)
 
