@@ -16,6 +16,7 @@ from . import EXCEPTIONS, info, WEEK, TIMEOUT
 TL_KEY = '71f28bf79c820df10d39b4074345ef8c' #图灵机器人密钥
 REMIND_WAIT = 5#分钟
 REMIND_BEFORE = 30#分钟
+AUTO_UPDATE = 60#分钟
 A_WEEK = 60 * 60 * 24 * 7#秒
 END_WEEK = 20
 FILE_NAME = 'static/data.csv'
@@ -39,12 +40,14 @@ class Helper(object):
     host = None
     admin = None
     admin_report = False
+    last_update = 0
 
     def init(self):
         '所有参数修改为初始值, 结束remind进程'
         self.is_login = self.is_wait = self.is_run = self.admin_report = False
         self.robot_reply = self.remind_alive = True
         self.host = self.admin = None
+        self.last_update = 0
         if pl.search_thread('remind'):
             pl.kill_thread(tid=self.remind_tid)
             time.sleep(2)
@@ -220,6 +223,7 @@ class Helper(object):
         else:
             for user in self.user_list:
                 self.update_info(user)
+            self.last_update = time.time()
 
     def add_user(self, now_user, nick_name, text):
         '新增提醒用户'
@@ -325,6 +329,8 @@ class Helper(object):
         def _remind():
             time.sleep(2)
             self.remind_tid = pl.get_id()
+            if time.time() - self.last_update > AUTO_UPDATE * 60:
+                self.update_info()
             info('打开新线程, id:%s' % self.remind_tid)
             for user in self.user_list:
                 if user['is_open']:
@@ -356,7 +362,7 @@ class Helper(object):
             except EXCEPTIONS as error:
                 info(error)
 
-    def remind_list_update(self, nick_name=None, user=None):
+    def remind_list_update(self, nick_name=None, user=None, is_update=False):
         '手动更新信息'
         try:
             if user and isinstance(user, dict):
@@ -364,11 +370,11 @@ class Helper(object):
             elif nick_name and isinstance(nick_name, str):
                 user = self.search_list(nick_name)
             else:
+                self.update_info()
                 for _user in self.user_list:
-                    self.remind_list_update(user=_user)
+                    self.remind_list_update(user=_user, is_update=True)
                 return
 
-            is_update = False
             while not is_update:
                 try:
                     self.update_info(user)
@@ -603,7 +609,6 @@ class Helper(object):
             else:
                 return _remind_list_update_main(week, course_list, count + 1)
 
-        self.update_info(user)
         course_list = user['course_list']
         week = self.get_now_week()
         _remind_list_update_main(week, course_list)

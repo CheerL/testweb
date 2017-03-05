@@ -1,6 +1,7 @@
 '程序运行主体'
 import re
 import itchat
+import time
 from . import helper as hp
 from .helper import Helper
 from . import EXCEPTIONS, info
@@ -54,8 +55,14 @@ def reply(msg):
             HELPER.save_user_list()
             return '保存成功'
         elif '?status?' in text:
-            return 'remind_alive:%s\nrobot_reply:%s\nREMIND_WAIT:%s\nREMIND_BEFORE:%s' % (
-                HELPER.remind_alive, HELPER.robot_reply, hp.REMIND_WAIT, hp.REMIND_BEFORE)
+            return 'remind_alive:%s\nrobot_reply:%s\nlast_update:%d mins ago\n\
+                REMIND_WAIT:%s mins\nREMIND_BEFORE:%s mins\nAUTO_UPDATE:%s mins' % \
+                (
+                    '打开' if HELPER.remind_alive else '关闭',
+                    '打开' if HELPER.robot_reply else '关闭',
+                    (time.time()-HELPER.last_update)/60,
+                    hp.REMIND_WAIT, hp.REMIND_BEFORE, hp.AUTO_UPDATE
+                    )
         elif '?remind wait?' in text:
             hp.REMIND_WAIT = float(re.findall(r'(\d+\.?\d*)', text)[0])
             return 'REMIND_WAIT改为%f分钟' % hp.REMIND_WAIT
