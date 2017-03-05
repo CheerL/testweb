@@ -48,9 +48,10 @@ class Helper(object):
         self.robot_reply = self.remind_alive = True
         self.host = self.admin = None
         self.last_update = 0
-        pl.kill_thread(tid=self.remind_tid)
-        time.sleep(1)
-        info('线程已关闭')
+        if pl.search_thread('remind'):
+            pl.kill_thread(tid=self.remind_tid)
+            time.sleep(1)
+            info('线程已关闭')
 
     @staticmethod
     def get_now_week():
