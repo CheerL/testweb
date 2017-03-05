@@ -47,6 +47,7 @@ class Helper(object):
         if pl.search_thread('remind'):
             thread = pl.search_thread('remind', True)
             pl.kill_thread(thread)
+            info('线程已关闭 %s' % pl.search_thread('remind'))
 
     @staticmethod
     def get_now_week():

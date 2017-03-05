@@ -37,13 +37,6 @@ def func_io(para, model=0, max_sleep_time=10):
     time.sleep(sleep_time)
     my_print('%s, 运行结束, 休眠%d秒' % (para, sleep_time), file_name, model)
 
-def test_func(num):
-    count = 0
-    while True:
-        print(count)
-        count += 1
-        time.sleep(1)
-
 def func_cpu(para, model=0, some=0):
     'test cpu func'
     file_name = 'temp.cpu.txt'
