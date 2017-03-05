@@ -85,25 +85,20 @@ class UCASSEP(object):
             'remember': 'checked'
             }
         url = 'http://onestop.ucas.ac.cn/Ajax/Login/0'
-        count = 0
-        while not self.is_login:
-            try:
-                result = self._get_json(url=url, data=data)
-                if result['f'] is True:
-                    self.is_login = True
-                    soup = self._get_page(result['msg'])
-                    self.temp_page = result['msg']
-                    self.user_name = str(soup.find('li', 'btnav-info').contents[0])\
-                        .replace('\r', '').replace('\n', '').replace('\t', '').replace(' ', '')\
-                        .replace(u'\x80', '').replace(u'\x90', '').replace(u'\xa0', ' ')
-                    _rep('%s登陆成功, 尝试次数%d次' % (self.user_name, count + 1))
-                else:
-                    raise NotImplementedError(result['msg'])
-            except EXCEPTIONS as error:
-                if count < 5:
-                    count += 1
-                else:
-                    _error(error)
+        try:
+            result = self._get_json(url=url, data=data)
+            if result['f'] is True:
+                self.is_login = True
+                soup = self._get_page(result['msg'])
+                self.temp_page = result['msg']
+                self.user_name = str(soup.find('li', 'btnav-info').contents[0])\
+                    .replace('\r', '').replace('\n', '').replace('\t', '').replace(' ', '')\
+                    .replace(u'\x80', '').replace(u'\x90', '').replace(u'\xa0', ' ')
+                _rep('%s登陆成功' % (self.user_name, count + 1))
+            else:
+                raise NotImplementedError(result['msg'])
+        except EXCEPTIONS as error:
+            _error(error)
 
     def logout(self):
         '退出登陆'

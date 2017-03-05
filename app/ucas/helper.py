@@ -203,13 +203,20 @@ class Helper(object):
     def update_info(self, user=None):
         '更新用户信息'
         if user and isinstance(user, dict):
-            try:
-                sep = UCASSEP(user)
-                sep.get_course_list()
-                user['user_name'] = sep.user_name
-                user['course_list'] = sep.course_list
-            except EXCEPTIONS as error:
-                self.my_error(error, user)
+            count = 0
+            while True:
+                try:
+                    sep = UCASSEP(user)
+                    sep.get_course_list()
+                    user['user_name'] = sep.user_name
+                    user['course_list'] = sep.course_list
+                    info('更新成功, 尝试%d次' % (count + 1))
+                    break
+                except EXCEPTIONS as error:
+                    if count < 5:
+                        count += 1
+                    else:
+                        self.my_error(error, user)
         else:
             for user in self.user_list:
                 self.update_info(user)
@@ -238,6 +245,7 @@ class Helper(object):
                 self.user_list.append(user)
                 self.send('绑定成功', now_user)
             except EXCEPTIONS as error:
+                user['is_open'] = False
                 self.my_error(error, now_user)
 
     def change_user(self, now_user, nick_name, text):
@@ -259,6 +267,7 @@ class Helper(object):
             self.update_info(user)
             self.send('修改绑定信息成功', now_user)
         except EXCEPTIONS as error:
+            user['is_open'] = False
             self.my_error(error, now_user)
 
     def del_user(self, now_user, nick_name):
