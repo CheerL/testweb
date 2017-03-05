@@ -60,7 +60,7 @@ def __login_after_qr(uuid):
             break
         elif status == '201':
             if wait_confirm:
-                info('请扫码')
+                info('请点击确认')
                 wait_confirm = False
         elif status == '408':
             info('请重新登陆')
