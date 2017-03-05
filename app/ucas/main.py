@@ -4,7 +4,7 @@ import itchat
 from . import helper as hp
 from .helper import Helper
 from . import EXCEPTIONS, info
-from .wheel.recognize import spech_recognize
+#from .wheel.recognize import spech_recognize
 
 HELPER = Helper()
 ADMIN_HELP = '''?data?   None

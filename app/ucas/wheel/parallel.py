@@ -1,6 +1,8 @@
 '多线程 与 多进程'
 import sys
 import time
+import inspect
+import ctypes
 from collections import deque
 import threading
 import multiprocessing
@@ -34,6 +36,13 @@ def func_io(para, model=0, max_sleep_time=10):
     sleep_time = random.randint(0, max_sleep_time)
     time.sleep(sleep_time)
     my_print('%s, 运行结束, 休眠%d秒' % (para, sleep_time), file_name, model)
+
+def test_func(num):
+    count = 0
+    while True:
+        print(count)
+        count += 1
+        time.sleep(1)
 
 def func_cpu(para, model=0, some=0):
     'test cpu func'
@@ -105,16 +114,33 @@ def run_thread_pool(req_list, is_lock=True, limit_num=8):
 
 def search_thread(name, part=False):
     '返回是否存在名为name的线程'
-    thread_list = [thread.getName() for thread in threading.enumerate()]
-    if not part:
-        return name in thread_list
+    thread_list = threading.enumerate()
+    for thread in thread_list:
+        if thread.name == name:
+            if part:
+                return thread
+            else:
+                return True
+    if part:
+        return None
     else:
-        for each in thread_list:
-            if name in each:
-                break
-        else:
-            return False
-        return True
+        return False
+
+def kill_thread(thread, exctype=SystemExit):
+    """raises the exception, performs cleanup if needed"""
+    if not thread.is_alive():
+        return '进程已经关闭'
+    tid = thread.ident
+    if not inspect.isclass(exctype):
+        raise TypeError("Only types can be raised (not instances)")
+    res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
+    if res == 0:
+        raise ValueError("invalid thread id")
+    elif res != 1:
+    # """if it returns a number greater than one, you're in trouble,
+    # and you should call it again with exc=NULL to revert the effect"""
+        ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, 0)
+        raise SystemError("PyThreadState_SetAsyncExc failed")
 
 def main():
     '主函数'
@@ -145,4 +171,4 @@ def pause(_time=10):
     time.sleep(int(_time))
 
 if __name__ == '__main__':
-    time_it(1)
+    main()

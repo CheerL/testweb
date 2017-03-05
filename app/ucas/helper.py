@@ -39,6 +39,15 @@ class Helper(object):
     admin = None
     admin_report = False
 
+    def init(self):
+        '所有参数修改为初始值, 结束remind进程'
+        self.is_login = self.is_wait = self.is_run = self.admin_report = False
+        self.robot_reply = self.remind_alive = True
+        self.host = self.admin = None
+        if pl.search_thread('remind'):
+            thread = pl.search_thread('remind', True)
+            pl.kill_thread(thread)
+
     @staticmethod
     def get_now_week():
         '返回当前周次'
@@ -586,6 +595,5 @@ class Helper(object):
 
     def logout(self):
         '退出登陆'
+        self.init()
         itchat.logout()
-        self.is_login = False
-        self.is_run = False

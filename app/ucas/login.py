@@ -9,22 +9,26 @@ from pyqrcode import QRCode
 from . import info, EXCEPTIONS, TIMEOUT
 from .main import HELPER
 
-def login(pic_dir):
+def login(pic_dir, status, uuid=None):
     '来吧复杂的登陆函数'
     #如果无法链接, 就退出
     try:
-        url = 'https://login.weixin.qq.com/'
-        requests.get(url, timeout=TIMEOUT)
-        uuid = __open_qr(pic_dir)
-        HELPER.is_wait = True
-        yield '/' + pic_dir
-        __login_after_qr(uuid)
-        os.remove(pic_dir)
-        HELPER.is_wait = False
-        yield 'success'
+        if status == '0':
+            url = 'https://login.weixin.qq.com/'
+            requests.get(url, timeout=TIMEOUT)
+            uuid = __open_qr(pic_dir)
+            HELPER.is_wait = True
+            return {'res':'uuid success', 'uuid':uuid}
+        elif status == '1':
+            __login_after_qr(uuid)
+            os.remove(pic_dir)
+            HELPER.is_wait = False
+            return {'res':'login success'}
+        else:
+            return {'res':'fail'}
     except EXCEPTIONS as error:
         info(error)
-        raise NotImplementedError('登陆出错, 请重新登陆')
+        raise
 
 def __open_qr(pic_dir):
     for _ in range(3):
