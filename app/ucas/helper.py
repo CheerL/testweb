@@ -45,6 +45,7 @@ class Helper(object):
         self.is_login = self.is_wait = self.is_run = self.admin_report = False
         self.robot_reply = self.remind_alive = True
         self.host = self.admin = None
+        info(self.remind_tid)
         if pl.search_thread('remind'):
             thread = pl.search_thread('remind', True)
             pl.kill_thread(thread)
@@ -314,7 +315,7 @@ class Helper(object):
                 self.my_error(error, user)
 
         def _remind():
-            self.remind_tid = 
+            self.remind_tid = pl.get_id()
             for user in self.user_list:
                 if user['is_open']:
                     _remind_main(user)
