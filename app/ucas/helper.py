@@ -48,7 +48,8 @@ class Helper(object):
         self.robot_reply = self.remind_alive = True
         self.host = self.admin = None
         self.last_update = 0
-        if pl.search_thread('remind'):
+        thread = pl.search_thread(ident=self.remind_tid, part=True)
+        if thread.is_alive():
             pl.kill_thread(tid=self.remind_tid)
             time.sleep(2)
             info('线程已关闭')
@@ -329,6 +330,7 @@ class Helper(object):
         def _remind():
             time.sleep(int(REMIND_WAIT * 60))
             self.remind_tid = pl.get_id()
+            #self.remind_pid = pl.
             info('打开新线程, id:%s' % self.remind_tid)
             if time.time() - self.last_update > AUTO_UPDATE * 60:
                 self.update_info()
@@ -356,7 +358,7 @@ class Helper(object):
         else:
             try:
                 if self.remind_alive:
-                    pl.run_thread_pool([(_remind, ())], 'remind', False)
+                    pl.run_thread_pool([(_remind, ())], False)
             except EXCEPTIONS as error:
                 info(error)
 

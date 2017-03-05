@@ -1,4 +1,5 @@
 '多线程 与 多进程'
+import os
 import sys
 import time
 import inspect
@@ -105,15 +106,23 @@ def run_thread_pool(req_list, is_lock=True, limit_num=8):
     if is_lock:
         pool.wait()
 
-def search_thread(name, part=False):
+def search_thread(name=None, ident=None, part=False):
     '返回是否存在名为name的线程'
+    def _res(thread, part):
+        if part:
+            return thread
+        else:
+            return True
+
     thread_list = threading.enumerate()
     for thread in thread_list:
-        if thread.name == name:
-            if part:
-                return thread
-            else:
-                return True
+        if ident:
+            if thread.ident == ident:
+                _res(thread, part)
+        elif name:
+            if thread.name == name:
+                _res(thread, part)
+            
     if part:
         return None
     else:
@@ -141,6 +150,9 @@ def kill_thread(thread=None, name=None, tid=0, exctype=SystemExit):
     # and you should call it again with exc=NULL to revert the effect"""
         ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, 0)
         raise SystemError("PyThreadState_SetAsyncExc failed")
+    
+def get_pid():
+    return os.getpid()
 
 def get_id(thread=None):
     '获取进程id, 默认获取当前进程'
