@@ -358,7 +358,6 @@ class Helper(object):
         else:
             try:
                 if self.remind_alive:
-                    _remind()
                     pl.run_thread([(_remind, ())], 'remind', False)
             except EXCEPTIONS as error:
                 info(error)
