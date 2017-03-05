@@ -154,6 +154,7 @@ def main():
     HELPER.update_info()
     requests.get('http://%s/app/remind' % HELPER.host, timeout=TIMEOUT)
     itchat.run()
+    HELPER.is_run = True
 
 if __name__ == '__main__':
     try:
