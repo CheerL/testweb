@@ -37,7 +37,7 @@ def run(request):
     '开始执行'
     try:
         HELPER.host = request.get_host()
-        pl.run_thread([(main.main, ())], None, False)
+        pl.run_thread([(main.main, ())], 'mainThread', False)
         HELPER.is_run = True
         return info_and_response('正在运行')
 
