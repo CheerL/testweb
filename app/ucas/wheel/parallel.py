@@ -135,6 +135,17 @@ def kill_thread(thread, exctype=SystemExit):
         ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, 0)
         raise SystemError("PyThreadState_SetAsyncExc failed")
 
+def get_id(thread=None):
+    '获取进程id, 默认获取当前进程'
+    if not thread:
+        thread = threading.current_thread()
+    elif isinstance(thread, threading.Thread):
+        pass
+    else:
+        raise NotImplementedError('参数错误, 这不是一个进程')
+    return thread.ident
+
+
 def main():
     '主函数'
     req_list = [(func_cpu, (num, 1, 0, )) for num in range(100)]

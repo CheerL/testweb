@@ -34,6 +34,7 @@ class Helper(object):
     is_run = False
     user_list = None
     remind_alive = True
+    remind_tid = None
     robot_reply = True
     host = None
     admin = None
@@ -313,6 +314,7 @@ class Helper(object):
                 self.my_error(error, user)
 
         def _remind():
+            self.remind_tid = 
             for user in self.user_list:
                 if user['is_open']:
                     _remind_main(user)
@@ -589,7 +591,7 @@ class Helper(object):
                 user['remind_list'] = remind_list
             else:
                 return _remind_list_update_main(week, course_list, count + 1)
-        
+
         self.update_info(user)
         course_list = user['course_list']
         week = self.get_now_week()
