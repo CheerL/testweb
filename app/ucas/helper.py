@@ -14,7 +14,7 @@ from .SEP import UCASSEP
 from . import EXCEPTIONS, info, WEEK, TIMEOUT
 
 TL_KEY = '71f28bf79c820df10d39b4074345ef8c' #图灵机器人密钥
-REMIND_WAIT = 5#分钟
+REMIND_WAIT = .5#分钟
 REMIND_BEFORE = 30#分钟
 A_WEEK = 60 * 60 * 24 * 7#秒
 END_WEEK = 20
@@ -314,9 +314,9 @@ class Helper(object):
                 self.my_error(error, user)
 
         def _remind():
-            time.sleep(1)
+            time.sleep(2)
             self.remind_tid = pl.get_id()
-            info('打开新线程, id %s' % self.remind_tid)
+            info('打开新线程, id:%s' % self.remind_tid)
             for user in self.user_list:
                 if user['is_open']:
                     _remind_main(user)
@@ -326,6 +326,7 @@ class Helper(object):
             if self.host:
                 try:
                     requests.get('http://%s/app/remind' % self.host, timeout=TIMEOUT)
+                    info('线程关闭, id:%s' % self.remind_tid)
                 except EXCEPTIONS:
                     info('打开新线程失败, 自动提醒结束')
                     self.remind_alive = False
