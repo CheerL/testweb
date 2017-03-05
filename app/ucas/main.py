@@ -118,6 +118,7 @@ def reply(msg):
 @itchat.msg_register(itchat.content.TEXT)
 def text_reply(msg):
     '回复文字'
+    info('get')
     return reply(msg)
 @itchat.msg_register(itchat.content.FRIENDS)
 def add_friend(msg):

@@ -45,7 +45,6 @@ class Helper(object):
         self.is_login = self.is_wait = self.is_run = self.admin_report = False
         self.robot_reply = self.remind_alive = True
         self.host = self.admin = None
-        info(self.remind_tid)
         if pl.search_thread('remind'):
             pl.kill_thread(tid=self.remind_tid)
             time.sleep(2)
@@ -316,6 +315,7 @@ class Helper(object):
 
         def _remind():
             self.remind_tid = pl.get_id()
+            info('打开新线程, id %s' % self.remind_tid)
             for user in self.user_list:
                 if user['is_open']:
                     _remind_main(user)
@@ -328,7 +328,6 @@ class Helper(object):
                 except EXCEPTIONS:
                     info('打开新线程失败, 自动提醒结束')
                     self.remind_alive = False
-
 
         if self.get_now_week() > END_WEEK:
             self.remind_alive = False
