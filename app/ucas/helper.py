@@ -34,6 +34,7 @@ class Helper(object):
     is_run = False
     user_list = None
     remind_alive = True
+    remind_tid = None
     robot_reply = True
     host = None
     admin = None
@@ -44,8 +45,9 @@ class Helper(object):
         self.is_login = self.is_wait = self.is_run = self.admin_report = False
         self.robot_reply = self.remind_alive = True
         self.host = self.admin = None
+        info(self.remind_tid)
         if pl.search_thread('remind'):
-            pl.kill_thread(name='remind')
+            pl.kill_thread(tid=self.remind_tid)
             time.sleep(2)
             info('线程已关闭')
 
@@ -313,6 +315,7 @@ class Helper(object):
                 self.my_error(error, user)
 
         def _remind():
+            self.remind_tid = pl.get_id()
             for user in self.user_list:
                 if user['is_open']:
                     _remind_main(user)
