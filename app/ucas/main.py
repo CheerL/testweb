@@ -54,7 +54,7 @@ def reply(msg):
             HELPER.save_user_list()
             return '保存成功'
         elif '?status?' in text:
-            return 'remind_alive:%s\nrobot_reply:%sREMIND_WAIT:%s\nREMIND_BEFORE:%s\n' % (
+            return 'remind_alive:%s\nrobot_reply:%s\nREMIND_WAIT:%s\nREMIND_BEFORE:%s' % (
                 HELPER.remind_alive, HELPER.robot_reply, hp.REMIND_WAIT, hp.REMIND_BEFORE)
         elif '?remind wait?' in text:
             hp.REMIND_WAIT = float(re.findall(r'(\d+\.?\d*)', text)[0])
