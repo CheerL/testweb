@@ -119,7 +119,7 @@ def search_thread(name, part=False):
     else:
         return False
 
-def kill_thread(thread=None, name=None, tid=None, exctype=SystemExit):
+def kill_thread(thread=None, name=None, tid=0, exctype=SystemExit):
     """raises the exception, performs cleanup if needed"""
     if name:
         thread = search_thread(name, True)
@@ -129,6 +129,7 @@ def kill_thread(thread=None, name=None, tid=None, exctype=SystemExit):
         tid = thread.ident
     if not tid:
         raise NotImplementedError('参数错误, 线程名, 线程id, 线程对象至少输入一个')
+    tid = ctypes.c_long(tid)
     if not inspect.isclass(exctype):
         raise TypeError("Only types can be raised (not instances)")
     res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
