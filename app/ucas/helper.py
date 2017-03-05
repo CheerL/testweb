@@ -51,7 +51,7 @@ class Helper(object):
         thread = pl.search_thread(ident=self.remind_tid, part=True)
         if thread.is_alive():
             pl.kill_thread(tid=self.remind_tid)
-            time.sleep(2)
+            time.sleep(1)
             info('线程已关闭')
 
     @staticmethod
