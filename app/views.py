@@ -52,7 +52,7 @@ def logout(request):
 
 def remind(request):
     '提醒'
-    HELPER.remind()
+    pl.run_thread([(HELPER.remind(), ())], 'remind', False)
     return info_and_response('提醒中')
 
 def reload(requset):

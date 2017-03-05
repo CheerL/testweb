@@ -1,8 +1,9 @@
 '程序运行主体'
 import re
 import time
+import requests
 import itchat
-from . import helper as hp
+from . import helper as hp, TIMEOUT
 from .helper import Helper
 from . import EXCEPTIONS, info
 #from .wheel.recognize import spech_recognize
@@ -55,8 +56,8 @@ def reply(msg):
             HELPER.save_user_list()
             return '保存成功'
         elif '?status?' in text:
-            return 'remind_alive:%s\nrobot_reply:%s\nlast_update:%d mins ago\n\
-                REMIND_WAIT:%s mins\nREMIND_BEFORE:%s mins\nAUTO_UPDATE:%s mins' % \
+            return 'remind_alive:%s\nrobot_reply:%s\nlast_update:%d mins ago\
+            \nREMIND_WAIT:%s mins\nREMIND_BEFORE:%s mins\nAUTO_UPDATE:%s mins' % \
                 (
                     '打开' if HELPER.remind_alive else '关闭',
                     '打开' if HELPER.robot_reply else '关闭',
@@ -150,8 +151,8 @@ def download_files(msg):
 
 def main():
     '开始运行'
-    HELPER.remind()
-    itchat.run()
+    requests.get('http://%s/app/remind' % HELPER.host, timeout=TIMEOUT)
+    itchat.run(blockThread=False)
 
 if __name__ == '__main__':
     try:
