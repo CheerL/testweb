@@ -52,9 +52,7 @@ def logout(request):
 
 def remind(request):
     '提醒'
-    info(pl.get_id())
     HELPER.remind()
-    info('sb')
     return info_and_response('提醒中')
 
 def reload(requset):
