@@ -329,7 +329,7 @@ class Helper(object):
 
         def _remind():
             time.sleep(int(REMIND_WAIT * 60))
-            self.remind_tid = pl.get_id()
+            self.remind_tid = pl.get_tid()
             #self.remind_pid = pl.
             info('打开新线程, id:%s' % self.remind_tid)
             if time.time() - self.last_update > AUTO_UPDATE * 60:
