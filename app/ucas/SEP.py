@@ -94,7 +94,7 @@ class UCASSEP(object):
                 self.user_name = str(soup.find('li', 'btnav-info').contents[0])\
                     .replace('\r', '').replace('\n', '').replace('\t', '').replace(' ', '')\
                     .replace(u'\x80', '').replace(u'\x90', '').replace(u'\xa0', ' ')
-                _rep('%s登陆成功' % (self.user_name, count + 1))
+                _rep('%s登陆成功' % self.user_name)
             else:
                 raise NotImplementedError(result['msg'])
         except EXCEPTIONS as error:
