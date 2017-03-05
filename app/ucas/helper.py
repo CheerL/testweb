@@ -499,6 +499,7 @@ class Helper(object):
             font_y = height_list[y] + (height_list[y + 1] - height_list[y] - \
             (font_size + space) * line_num + space) / 2
 
+
             #分行打印
             for num in range(line_num):
                 line = text[num * line_max : (num + 1) * line_max]
