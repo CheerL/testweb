@@ -72,7 +72,7 @@ def reply(msg):
                 for user in HELPER.user_list:
                     HELPER.send(result[0][1], user['nick_name'])
             else:
-                HELPER.send(result[0][1], result[0][0])    
+                HELPER.send(result[0][1], result[0][0])
             return '发送成功'
         elif '?user?' in text:
             return ', '.join([user['nick_name'] for user in HELPER.user_list])

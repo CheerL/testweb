@@ -71,6 +71,7 @@ def reload(requset):
     main.HELPER.is_login = False
     main.HELPER.is_run = False
     main.HELPER.is_wait = False
+    main.HELPER.remind_alive = False
     global LOGIN
     LOGIN = LG(QR_name)
     return HttpResponse('')
