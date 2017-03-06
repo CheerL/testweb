@@ -106,28 +106,31 @@ class Helper(object):
     @staticmethod
     def send(msg, user=None):
         '搜索用户并发送, 默认发给自己'
-        try:
+        def get_user_name(user):
+            '自动处理  获取用户名'
             if user:
                 if isinstance(user, dict):
                     if 'UserName' in user.keys():
-                        user_name = user['UserName']
+                        return user['UserName']
                     elif 'nick_name' in user.keys():
-                        _user = itchat.search_friends(nickName=user['nick_name'])[0]
-                        user_name = _user['UserName']
+                        if itchat.search_friends(nickName=user['nick_name']):
+                            _user = itchat.search_friends(nickName=user['nick_name'])[0]
+                            return _user['UserName']
+
                 elif isinstance(user, str):
                     if '@' in user:
-                        user_name = user
+                        return user
                     else:
-                        _user = itchat.search_friends(name=user)[0]
-                        user_name = _user['UserName']
-                else:
-                    user_name = None
-            else:
-                user_name = None
+                        if itchat.search_friends(name=user):
+                            _user = itchat.search_friends(name=user)[0]
+                            return _user['UserName']
+            return None
+
+        try:
+            user_name = get_user_name(user)
             itchat.send(msg, user_name)
         except EXCEPTIONS as error:
             info(error)
-            itchat.send(msg)
 
     @staticmethod
     def get_response(msg):
@@ -330,7 +333,6 @@ class Helper(object):
             time.sleep(int(REMIND_WAIT * 60))
             self.remind_tid = pl.get_tid()
             #self.remind_pid = pl.
-            info('打开新线程, id:%s' % self.remind_tid)
             if time.time() - self.last_update > AUTO_UPDATE * 60:
                 self.update_info()
             for user in self.user_list:
@@ -344,7 +346,6 @@ class Helper(object):
             while True:
                 try:
                     requests.get('http://%s/app/remind' % self.host, timeout=TIMEOUT)
-                    info('线程关闭, id:%s' % self.remind_tid)
                     break
                 except EXCEPTIONS:
                     if error_count < 5:

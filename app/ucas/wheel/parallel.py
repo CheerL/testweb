@@ -123,7 +123,7 @@ def search_thread(name=None, ident=None, part=False):
         elif name:
             if thread.name == name:
                 _res(thread, part)
-            
+
     if part:
         return None
     else:
