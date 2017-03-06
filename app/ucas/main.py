@@ -47,8 +47,8 @@ def reply(msg):
             HELPER.save_user_list()
             return '所有用户信息更新成功'
         elif '?kill?' in text:
-            tid = re.findall(r'(\d+)', text)[0]
-            pl.kill_thread(tid=int(tid))
+            tid = int(re.findall(r'(\d+)', text)[0])
+            pl.kill_thread(tid=tid)
             return '已经关闭线程%d' % tid
         elif '?remind?' in text:
             if HELPER.remind_alive:
