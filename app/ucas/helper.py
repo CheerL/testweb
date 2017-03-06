@@ -483,7 +483,7 @@ class Helper(object):
             for index, day in enumerate(WEEK):
                 for num in range(1, 12):
                     for course in course_list:
-                        week = 1
+                        week = Helper.get_now_week()
                         if week > int(course['weeks'][1]) or week < int(course['weeks'][0]):
                             continue
                         func = lambda x:\
