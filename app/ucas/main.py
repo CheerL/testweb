@@ -3,9 +3,10 @@ import re
 import time
 import requests
 import itchat
+from . import EXCEPTIONS, info
 from . import helper as hp, TIMEOUT
 from .helper import Helper
-from . import EXCEPTIONS, info
+from .wheel import parallel as pl
 #from .wheel.recognize import spech_recognize
 
 HELPER = Helper()
@@ -45,6 +46,10 @@ def reply(msg):
             HELPER.remind_list_update()
             HELPER.save_user_list()
             return '所有用户信息更新成功'
+        elif '?kill?' in text:
+            tid = re.findall(r'(\d*)', text)[0]
+            pl.kill_thread(tid=tid)
+            return '已经关闭线程%d' % tid
         elif '?remind?' in text:
             if HELPER.remind_alive:
                 HELPER.remind_alive = False

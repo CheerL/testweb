@@ -330,8 +330,10 @@ class Helper(object):
                 self.my_error(error, user)
 
         def _remind():
-            time.sleep(int(REMIND_WAIT * 60))
+            time.sleep(1)
             self.remind_tid = pl.get_tid()
+            info('打开新线程:%d' % self.remind_tid)
+            time.sleep(int(REMIND_WAIT * 60))            
             #self.remind_pid = pl.
             if time.time() - self.last_update > AUTO_UPDATE * 60:
                 self.update_info()
@@ -341,11 +343,9 @@ class Helper(object):
             self.save_user_list()
             info('成功提醒并保存')
             error_count = 0
-            if not self.host:
-                self.host = host
             while True:
                 try:
-                    requests.get('http://%s/app/remind' % self.host, timeout=TIMEOUT)
+                    requests.get('http://%s/app/remind' % host, timeout=TIMEOUT)
                     break
                 except EXCEPTIONS:
                     if error_count < 5:
