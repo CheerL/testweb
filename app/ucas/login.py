@@ -78,6 +78,7 @@ def __login_after_qr(uuid):
     info(itchat.instanceList[0].alive)
 
 def exitCallback():
+    info(len(itchat.instanceList))
     info('异常退出')
 
 def __get_qr(uuid, pic_dir):
