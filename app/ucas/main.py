@@ -158,12 +158,12 @@ def main():
     '开始运行'
     info(len(itchat.instanceList))
     requests.get('http://%s/app/remind' % HELPER.host, timeout=TIMEOUT)
+    info(itchat.instanceList[0].alive)
     count = 0
-    while HELPER.is_run:
+    while HELPER.is_run and count <= 5:
         try:
             itchat.run()
             time.sleep(1)
-            info(itchat.instanceList[0].alive)
             info(count)
         except EXCEPTIONS as error:
             if count < 5:
