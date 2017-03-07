@@ -157,7 +157,7 @@ def download_files(msg):
 def main():
     '开始运行'
     requests.get('http://%s/app/remind' % HELPER.host, timeout=TIMEOUT)
-    HELPER.is_run = True
+    info(HELPER.is_run)
     count = 0
     while HELPER.is_run:
         try:

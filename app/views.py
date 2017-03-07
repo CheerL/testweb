@@ -37,12 +37,12 @@ def run(request):
     '开始执行'
     try:
         HELPER.host = request.get_host()
-        pl.run_thread([(main.main, ())], 'mainThread', False)
         HELPER.is_run = True
+        pl.run_thread([(main.main, ())], 'mainThread', False)
         return info_and_response('正在运行')
 
     except EXCEPTIONS:
-        HELPER.is_login = False
+        HELPER.logout()
         return info_and_response("错误, 请重新登陆")
 
 def logout(request):
