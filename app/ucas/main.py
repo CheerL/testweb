@@ -156,14 +156,13 @@ def download_files(msg):
 
 def main():
     '开始运行'
+    info(len(itchat.instanceList))
     requests.get('http://%s/app/remind' % HELPER.host, timeout=TIMEOUT)
     count = 0
     while HELPER.is_run:
         try:
-            info(len(itchat.instanceList))
             itchat.run()
             time.sleep(1)
-            
             info(itchat.instanceList[0].alive)
             info(count)
         except EXCEPTIONS as error:
