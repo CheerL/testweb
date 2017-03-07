@@ -11,7 +11,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from .wheel import parallel as pl
 from .SEP import UCASSEP
-from . import EXCEPTIONS, info, WEEK, TIMEOUT
+from . import EXCEPTIONS, info, WEEK, TIMEOUT, pkl_dir
 
 TL_KEY = '71f28bf79c820df10d39b4074345ef8c' #图灵机器人密钥
 REMIND_WAIT = 0.3#分钟
@@ -303,7 +303,7 @@ class Helper(object):
         if now_user:
             self.send('保存成功', now_user)
 
-    def remind(self, now_user=None, nick_name=None):
+    def remind(self, now_user=None, nick_name=None, host=None):
         '定时提醒'
         def _remind_do(remind, user):
             _time = time.strftime('%H:%M', time.localtime(remind[2]))
@@ -342,15 +342,23 @@ class Helper(object):
                     _remind_main(user)
             self.save_user_list()
             info('成功提醒并保存')
+
+            if not self.host:
+                if host:
+                    self.host = host
+                else:
+                    info('host不存在')
+
             error_count = 0
             while True:
                 try:
                     requests.get('http://%s/app/remind' % self.host, timeout=TIMEOUT)
                     break
-                except EXCEPTIONS:
+                except EXCEPTIONS as error:
+                    info(error)
                     if error_count < 5:
                         error_count += 1
-                        time.sleep(5)
+                        time.sleep(3)
                     else:
                         info('打开新线程失败, 自动提醒结束, 尝试%d次' % (error_count))
                         info(self.host)
@@ -630,3 +638,10 @@ class Helper(object):
         '退出登陆'
         self.init()
         itchat.logout()
+
+    def check_login(self):
+        if not itchat.instanceList[0].alive:
+            if itchat.load_login_status(pkl_dir):
+                info('Hotreload成功')
+            else:
+                info('尚未成功登陆')
