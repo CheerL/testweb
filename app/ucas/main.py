@@ -162,6 +162,8 @@ def main():
     while HELPER.is_run:
         try:
             itchat.run()
+            time.sleep(1)
+            info(count)
         except EXCEPTIONS as error:
             if count < 5:
                 count += 1

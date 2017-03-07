@@ -350,8 +350,10 @@ class Helper(object):
                 except EXCEPTIONS:
                     if error_count < 5:
                         error_count += 1
+                        time.sleep(5)
                     else:
-                        info('打开新线程失败, 自动提醒结束')
+                        info('打开新线程失败, 自动提醒结束, 尝试%d次' % (error_count))
+                        info(self.host)
                         self.remind_alive = False
                         return
 
