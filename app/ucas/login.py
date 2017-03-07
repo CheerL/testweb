@@ -77,6 +77,7 @@ def __login_after_qr(uuid):
     msg = '%s 成功登录' % userInfo['User']['NickName']
     HELPER.is_login = True
     info(msg)
+    itchat.start_receiving()
     itchat.dump_login_status(pkl_dir)
 
 def __get_qr(uuid, pic_dir):
