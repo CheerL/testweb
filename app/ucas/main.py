@@ -91,6 +91,8 @@ def reply(msg):
             return ', '.join([user['nick_name'] for user in HELPER.user_list])
         elif '?admin?' in text:
             return ADMIN_HELP
+        elif '?thread?' in text:
+            return len(pl.threading.enumerate())
         elif '重新绑定' in text:
             HELPER.change_user(now_user, nick_name, text)
         elif '取消绑定' in text:
