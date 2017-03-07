@@ -640,6 +640,7 @@ class Helper(object):
         itchat.logout()
 
     def check_login(self):
+        '热登陆检查'
         if not itchat.instanceList[0].alive:
             if itchat.load_login_status(pkl_dir):
                 info('Hotreload成功')
