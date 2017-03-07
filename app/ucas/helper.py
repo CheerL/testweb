@@ -303,7 +303,7 @@ class Helper(object):
         if now_user:
             self.send('保存成功', now_user)
 
-    def remind(self, now_user=None, nick_name=None, host=host):
+    def remind(self, now_user=None, nick_name=None):
         '定时提醒'
         def _remind_do(remind, user):
             _time = time.strftime('%H:%M', time.localtime(remind[2]))
@@ -330,10 +330,10 @@ class Helper(object):
                 self.my_error(error, user)
 
         def _remind():
-            time.sleep(1)
+            #time.sleep(1)
             self.remind_tid = pl.get_tid()
             info('打开新线程:%d' % self.remind_tid)
-            time.sleep(int(REMIND_WAIT * 60))            
+            time.sleep(int(REMIND_WAIT * 60))
             #self.remind_pid = pl.
             if time.time() - self.last_update > AUTO_UPDATE * 60:
                 self.update_info()
@@ -366,6 +366,7 @@ class Helper(object):
 
         else:
             try:
+                info('remind %s' % self.remind_alive)
                 if self.remind_alive:
                     pl.run_thread([(_remind, ())], 'remind', False)
             except EXCEPTIONS as error:
