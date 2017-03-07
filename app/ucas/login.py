@@ -73,13 +73,7 @@ def __login_after_qr(uuid):
     msg = '%s 成功登录' % userInfo['User']['NickName']
     HELPER.is_login = True
     info(msg)
-    info(itchat.instanceList[0].alive)
-    itchat.start_receiving(exitCallback=exitCallback)
-    info(itchat.instanceList[0].alive)
-
-def exitCallback():
-    info(len(itchat.instanceList))
-    info('异常退出')
+    itchat.start_receiving()
 
 def __get_qr(uuid, pic_dir):
     qrStorage = io.BytesIO()
