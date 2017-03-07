@@ -4,7 +4,7 @@ import time
 import requests
 import itchat
 from . import EXCEPTIONS, info
-from . import helper as hp, TIMEOUT
+from . import helper as hp, TIMEOUT, try_more_times
 from .helper import Helper
 from .wheel import parallel as pl
 #from .wheel.recognize import spech_recognize
@@ -156,20 +156,14 @@ def download_files(msg):
 
 def main():
     '开始运行'
+    @try_more_times(error_func=HELPER.logout)
+    def run():
+        '运行'
+        itchat.run()
+
     HELPER.check_login()
     requests.get('http://%s/app/remind' % HELPER.host, timeout=TIMEOUT)
-    count = 0
-    while HELPER.is_run and count <= 5:
-        time.sleep(1)
-        count += 1
-        try:
-            itchat.run()
-        except EXCEPTIONS as error:
-            info(error)
-            if count < 5:
-                pass
-            else:
-                HELPER.logout()
+    run()
 
 if __name__ == '__main__':
     try:

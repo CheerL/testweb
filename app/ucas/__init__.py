@@ -29,3 +29,25 @@ def info(msg):
     '打印日志'
     #msg = '%s %s' % (time.ctime(), msg)
     logger.info(msg)
+
+def try_more_times(error_func=None, times=5, sleep_time=0, re_run=False):
+    '多次运行函数, 默认次数5次, 不休眠, 不重复'
+    def _try(func):
+        def __try(*arg, **kwargs):
+            run_count = 1
+            while True:
+                try:
+                    func(*arg, **kwargs)
+                    if not re_run or run_count >= times:
+                        break
+                except EXCEPTIONS as error:
+                    info(error)
+                    if run_count >= times:
+                        if error_func:
+                            error_func()
+                        break
+                run_count += 1
+                time.sleep(sleep_time)
+                info('开始第%d次尝试' % run_count)
+        return __try
+    return _try
