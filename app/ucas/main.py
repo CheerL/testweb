@@ -163,6 +163,7 @@ def main():
         try:
             itchat.run()
             time.sleep(1)
+            info(itchat.instanceList[0].alive)
             info(count)
         except EXCEPTIONS as error:
             if count < 5:
