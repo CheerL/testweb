@@ -73,9 +73,9 @@ def __login_after_qr(uuid):
     userInfo = itchat.web_init()
     itchat.show_mobile_login()
     itchat.get_contact(True)
-
     msg = '%s 成功登录' % userInfo['User']['NickName']
     info(msg)
+    itchat.start_receiving()
     itchat.dump_login_status(pkl_dir)
 
 def __get_qr(uuid, pic_dir):
