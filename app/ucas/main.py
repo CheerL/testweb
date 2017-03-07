@@ -162,7 +162,6 @@ def main():
         itchat.start_receiving()
         itchat.run()
 
-
     HELPER.check_login()
     requests.get('http://%s/app/remind' % HELPER.host, timeout=TIMEOUT)
     run()
