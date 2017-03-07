@@ -14,6 +14,7 @@ def login(pic_dir, status, uuid=None):
     #如果无法链接, 就退出
     try:
         if os.path.isfile(pkl_dir) and itchat.load_login_status(pkl_dir):
+            HELPER.is_login = True
             return {'res':'hot reload success'}
 
         if status == '0':
