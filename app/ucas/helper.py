@@ -649,5 +649,4 @@ class Helper(object):
                 self.logout()
                 info('尚未成功登陆')
         else:
-            itchat.start_receiving()
             self.is_run = True
