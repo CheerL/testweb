@@ -159,6 +159,7 @@ def main():
     @try_more_times(error_func=HELPER.logout)
     def run():
         '运行'
+        itchat.start_receiving()
         itchat.run()
 
     HELPER.check_login()

@@ -52,6 +52,12 @@
                     uuid = data.uuid
                     setTimeout('after_scan(uuid)', 500)
                 }
+                else if (data.res == 'hot reload success'){
+                    pic.hide();
+                    run.show();
+                    exit.show();
+                    text.text("登陆成功, 请点击运行");
+                }
                 else{
                     text.text('登陆出错, 请重新登陆');
                     pic.hide();

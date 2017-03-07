@@ -13,6 +13,9 @@ def login(pic_dir, status, uuid=None):
     '来吧复杂的登陆函数'
     #如果无法链接, 就退出
     try:
+        if os.path.isfile(pkl_dir) and itchat.load_login_status(pkl_dir):
+            return {'res':'hot reload success'}
+
         if status == '0':
             url = 'https://login.weixin.qq.com/'
             requests.get(url, timeout=TIMEOUT)
@@ -74,7 +77,6 @@ def __login_after_qr(uuid):
     HELPER.is_login = True
     info(msg)
     itchat.dump_login_status(pkl_dir)
-    itchat.start_receiving()
 
 def __get_qr(uuid, pic_dir):
     qrStorage = io.BytesIO()
