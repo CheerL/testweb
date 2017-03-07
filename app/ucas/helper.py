@@ -643,6 +643,11 @@ class Helper(object):
         '热登陆检查'
         if not itchat.instanceList[0].alive:
             if itchat.load_login_status(pkl_dir):
+                self.is_run = True
                 info('Hotreload成功')
             else:
+                self.logout()
                 info('尚未成功登陆')
+        else:
+            itchat.start_receiving()
+            self.is_run = True
