@@ -160,9 +160,10 @@ def main():
     count = 0
     while HELPER.is_run:
         try:
+            info(len(itchat.instanceList))
             itchat.run()
             time.sleep(1)
-            info(len(itchat.instanceList))
+            
             info(itchat.instanceList[0].alive)
             info(count)
         except EXCEPTIONS as error:
