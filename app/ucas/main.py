@@ -158,11 +158,16 @@ def main():
     '开始运行'
     requests.get('http://%s/app/remind' % HELPER.host, timeout=TIMEOUT)
     HELPER.is_run = True
+    count = 0
     while HELPER.is_run:
         try:
             itchat.run()
-        except EXCEPTIONS:
-            pass
+        except EXCEPTIONS as error:
+            if count < 5:
+                count += 1
+            else:
+                HELPER.logout()
+                info(error)
 
 if __name__ == '__main__':
     try:
