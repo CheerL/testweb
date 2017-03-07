@@ -6,7 +6,7 @@ import sys
 import itchat
 import requests
 from pyqrcode import QRCode
-from . import info, EXCEPTIONS, TIMEOUT
+from . import info, EXCEPTIONS, TIMEOUT, pkl_dir
 from .main import HELPER
 
 def login(pic_dir, status, uuid=None):
@@ -73,6 +73,7 @@ def __login_after_qr(uuid):
     msg = '%s 成功登录' % userInfo['User']['NickName']
     HELPER.is_login = True
     info(msg)
+    itchat.dump_login_status(pkl_dir)
     itchat.start_receiving()
 
 def __get_qr(uuid, pic_dir):

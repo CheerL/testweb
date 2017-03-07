@@ -13,6 +13,9 @@ handle.setFormatter(formatter)
 logger = logging.getLogger('itchat')
 logger.addHandler(handle)
 
+pic_dir = 'static/QR.png'
+pkl_dir = 'static/helper.pkl'
+
 WEEK = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
 EXCEPTIONS = (
     AttributeError, IOError, NotImplementedError,

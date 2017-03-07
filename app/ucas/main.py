@@ -3,7 +3,7 @@ import re
 import time
 import requests
 import itchat
-from . import EXCEPTIONS, info
+from . import EXCEPTIONS, info, pkl_dir
 from . import helper as hp, TIMEOUT
 from .helper import Helper
 from .wheel import parallel as pl
@@ -156,7 +156,13 @@ def download_files(msg):
 
 def main():
     '开始运行'
-    info(len(itchat.instanceList))
+    if not itchat.instanceList[0].alive:
+        if itchat.load_login_status(pkl_dir):
+            info('Hotreload成功')
+        else:
+            info('尚未成功登陆')
+            return
+
     requests.get('http://%s/app/remind' % HELPER.host, timeout=TIMEOUT)
     info(itchat.instanceList[0].alive)
     count = 0
