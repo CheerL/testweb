@@ -448,22 +448,7 @@ class Helper(object):
 
     def remind_list_update(self, nick_name=None, user=None):
         '手动更新信息'
-        try:
-            if user and isinstance(user, Helper_User):
-                pass
-            elif nick_name and isinstance(nick_name, str):
-                user = self.search_list(nick_name)
-            else:
-                for _user in self.search_list():
-                    self.remind_list_update(user=_user)
-                return
-
-            self.update_info(user)
-            __remind_list_update(user)
-        except EXCEPTIONS as error:
-            self.my_error(error)
-
-        def __remind_list_update(self, user):
+        def __remind_list_update(user):
             '更新提醒列表'
             def remind_list_update_main(week, course_list, count=0):
                 if week + count > END_WEEK:
@@ -499,6 +484,23 @@ class Helper(object):
             course_list = literal_eval(user.course_list)
             week = self.__get_now_week()
             remind_list_update_main(week, course_list)
+
+        try:
+            if user and isinstance(user, Helper_User):
+                pass
+            elif nick_name and isinstance(nick_name, str):
+                user = self.search_list(nick_name)
+            else:
+                for _user in self.search_list():
+                    self.remind_list_update(user=_user)
+                return
+
+            self.update_info(user)
+            __remind_list_update(user)
+        except EXCEPTIONS as error:
+            self.my_error(error)
+
+        
 
     def my_help(self, now_user, keys):
         '显示帮助'

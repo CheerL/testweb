@@ -28,7 +28,7 @@ def login(request):
         raise NotImplementedError('访问错误')
     except EXCEPTIONS as error:
         info(error)
-        HELPER.init()
+        HELPER.__init__()
         if os.path.isfile(QR_name):
             os.remove(QR_name)
         return JsonResponse({'res':'fail'})
