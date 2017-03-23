@@ -1,4 +1,5 @@
 from django.contrib import admin
+from .models import Helper_User
 
 # Register your models here.
-None
+admin.site.register(Helper_User)

@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib import admin
 
 # Create your models here.
 class Blogs(models.Model):
@@ -17,6 +16,3 @@ class Categorys(models.Model):
 
     def __str__(self):
         return self.name
-
-admin.site.register(Blogs)
-admin.site.register(Categorys)

@@ -3,6 +3,7 @@
 import os
 import re
 import time
+from ast import literal_eval
 import datetime
 import requests
 import itchat
@@ -11,7 +12,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from .wheel import parallel as pl
 from .SEP import UCASSEP
-from . import EXCEPTIONS, info, WEEK, TIMEOUT, pkl_dir
+from . import EXCEPTIONS, info, WEEK, TIMEOUT, pkl_dir, Helper_User
 
 TL_KEY = '71f28bf79c820df10d39b4074345ef8c' #图灵机器人密钥
 REMIND_WAIT = 1#分钟
@@ -156,38 +157,11 @@ class Helper(object):
         '初始化'
         if os.path.isfile(FILE_NAME) and os.path.getsize(FILE_NAME) > 100:
             temp = pd.read_csv(FILE_NAME).fillna(value=False).T
-            def _get_course_list(item):
-                if not 'course_list' in item.keys():
-                    return
-                if item['course_list']:
-                    temp_list = re.findall(r'{(.*?)}', item['course_list'])
-                    weeks = [re.findall(r"'weeks': \('(.*?)', '(.*?)'\)", a)[0] for a in temp_list]
-                    _times = [re.findall(r"'times': \[(\(.*?\))\]", a)[0].split(r'), ')
-                              for a in temp_list]
-                    times = [[(re.findall(r"'(星期.)'", x)[0], tuple(re.findall(r"'(\d*?)'", x)))
-                              for x in a] for a in _times]
-                    name = [re.findall(r"'{}': '(.*?)'".format('name'), a)[0] for a in temp_list]
-                    num = [re.findall(r"'{}': '(.*?)'".format('num'), a)[0] for a in temp_list]
-                    place = [re.findall(r"'{}': '(.*?)'".format('place'), a)[0] for a in temp_list]
-                    return [dict(num=num[i],
-                                 place=place[i],
-                                 weeks=weeks[i],
-                                 times=times[i],
-                                 name=name[i]) for i in range(len(temp_list))]
-
-            def _get_remind_list(item):
-                if not 'remind_list' in item.keys():
-                    return
-                if item['remind_list']:
-                    return [(each[0], each[1], float(each[2]))
-                            for each in re.findall(
-                                r"\('(.*?)', '(.*?)', (.*?)\)", item['remind_list']
-                                )]
-
             for i in temp:
                 item = temp[i]
-                item['course_list'] = _get_course_list(item)
-                item['remind_list'] = _get_remind_list(item)
+                if isinstance(item['course_list'], str) and isinstance(item['remind_list'], str):
+                    item['course_list'] = literal_eval(item['course_list'])
+                    item['remind_list'] = literal_eval(item['remind_list'])
 
             self.user_list = [temp[num].to_dict() for num in temp]
         else:
@@ -249,6 +223,16 @@ class Helper(object):
                     have_remind=False
                     )
                 self.update_info(user)
+                if not Helper_User.objects.filter(nick_name=nick_name):
+                    Helper_User.objects.create(
+                        user_name=user['user_name'],
+                        course_list=user['course_list'],
+                        nick_name=nick_name,
+                        user_id=user_id,
+                        password=password,
+                        is_open=True,
+                        have_remind=False
+                        )
                 self.user_list.append(user)
                 self.send('绑定成功', now_user)
             except EXCEPTIONS as error:
@@ -259,29 +243,38 @@ class Helper(object):
         '修改用户信息'
         try:
             user = self.search_list(nick_name)
+            _user = Helper_User.objects.get(nick_name=nick_name)
             if '用户名' in text:
                 user_ids = re.findall(r'用户名[:：\s]*(.*?)(\s*|\s+\S*\s*?)$', text)
                 if user_ids:
                     user['user_id'] = user_ids[0][0]
+                    _user.user_id = user_ids[0][0]
                 else:
                     raise IOError('输入格式错误, 请输入"绑定 用户名:***"')
             if '密码' in text:
                 passwords = re.findall(r'密码[:：\s]*(.*?)(\s*|\s+\S*\s*?)$', text)
                 if passwords:
                     user['password'] = passwords[0][0]
+                    _user.password = passwords[0][0]
                 else:
                     raise IOError('输入格式错误, 请输入"绑定 密码:***"')
             self.update_info(user)
             self.send('修改绑定信息成功', now_user)
         except EXCEPTIONS as error:
             user['is_open'] = False
+            _user.is_open = False
             self.my_error(error, now_user)
+        finally:
+            if _user:
+                _user.save()
 
     def del_user(self, now_user, nick_name):
         '删除用户'
         try:
             index = self.search_list(nick_name, is_index=True)
             self.user_list.pop(index)
+            for _user in Helper_User.objects.filter(nick_name=nick_name):
+                _user.delete()
             self.send('取消绑定成功', now_user)
         except EXCEPTIONS as error:
             self.my_error(error, now_user)
@@ -291,6 +284,9 @@ class Helper(object):
         try:
             user = self.search_list(nick_name)
             user['is_open'] = False
+            _user = Helper_User.objects.get(nick_name=nick_name)
+            _user.is_open = False
+            _user.save()
             self.send('取消提醒成功', now_user)
         except EXCEPTIONS as error:
             self.my_error(error)

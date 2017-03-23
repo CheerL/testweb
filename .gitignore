@@ -6,3 +6,4 @@ itchat.pkl
 test.*
 test/
 *.mp3
+migrations/

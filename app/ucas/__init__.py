@@ -2,6 +2,7 @@
 import time
 import sys
 import logging
+from ..models import Helper_User
 
 formatter = logging.Formatter(
     '%(asctime)s %(filename)s [line:%(lineno)d]\n[%(levelname)s]  %(message)s',
