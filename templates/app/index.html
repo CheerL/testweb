@@ -15,6 +15,25 @@
             <div id="reload" class="button" style="display: none" onclick="reload_func()">重启</div>
         </div>
     </div>
+
+    <div class="sidebar_block" id="sidebar_main" style="display: none;">
+        <div class="sidebar_block" id="sidebar_head"><br></div>
+        <ul id="siderbae_list">
+            <li class="on">
+                <a>登录</a>
+            </li>
+            <li class="off">
+                <a>聊天</a>
+            </li>
+            <li class="off">
+                <a>日志</a>
+            </li>
+            <li class="off">
+                <a>管理</a>
+            </li>
+        </ul>
+        <div class="sidebar_block" id="sidebar_foot">微信小助手<br>By Cheer.L</div>
+    </div>
     <div id='is_login' style="display: none">{{is_login}}</div>
     <div id='is_run' style="display: none">{{is_run}}</div>
     <div id='is_wait' style="display: none">{{is_wait}}</div>
@@ -27,12 +46,15 @@
         var pic = $("#pic");
         var exit = $("#exit");
         var reload = $('#reload')
+        var sidebar = $('#sidebar_main')
         function run_func(){
             $.get("run", function(data){
                 pic[0].src = '/static/images/begin.png';
                 text.text(data);
                 reload.hide();
                 exit.show();
+                sidebar.show();
+                move_login_block();
             });
         }
         function exit_func(){
@@ -69,6 +91,7 @@
                 window.location.reload();
             });
         }
+
         function after_scan(uuid){
             $.post("login", {status:1, uuid:uuid}, function(data){
                 if (data.res == "login success"){
@@ -79,6 +102,13 @@
                     pic[0].src = '/static/images/begin.png';
                 }
             }, 'json');
+        }
+        function move_login_block(){
+            var temp = document.body.scrollWidth  - $('.login_block').width();
+            if ($('.sidebar_block').css('display') != 'none'){
+                temp += $('.sidebar_block').width();
+            }
+            $('.login_block').offset({left:temp/2});
         }
         $(document).ready(function(){
             var is_login = $('#is_login').text();
@@ -102,10 +132,49 @@
                     run_func();
                 }
                 else {
+                    sidebar.show();
+                    move_login_block();
                     text.text('正在运行');
                 }
             }
         });
+        $(window).resize(move_login_block);
+    </script>
+    <script src="http://code.jquery.com/color/jquery.color-2.1.2.min.js"
+            integrity="sha256-H28SdxWrZ387Ldn0qogCzFiUDDxfPiNIyJX7BECQkDE="
+            crossorigin="anonymous">
+    </script>
+    <script>
+        var list = $("li");
+        var ul = $('ul');
+
+        list.click(function(){
+            var the_class = $(this).attr('class');
+            if(the_class == "off"){
+                $('li.on').css('background-color', '');
+                $('li.on').css('border-color', 'rgba(0,0,0, .15)');
+                $('li.on').attr('class', 'off');
+                $(this).attr('class', 'on');
+            }
+        });
+        list.hover(
+            function(){
+                var the_class = $(this).attr('class');
+                if(the_class == "off"){
+                    $(this).css('background-color', 'rgba(0,0,0, .15)');
+                    $(this).css('border-color', 'rgba(0,0,0, 0)');
+                }
+            },
+            function(){
+                var the_class = $(this).attr('class');
+                if(the_class == "off"){
+                    $(this).animate({
+                        backgroundColor: 'rgba(0,0,0,0)',
+                        borderColor: 'rgba(0,0,0, .15)'
+                    }, 300);
+                }
+            }
+        );
     </script>
 {% endblock %}
 
@@ -113,10 +182,11 @@
     <style>
         .login_block{
             position: absolute;
+            float: left;
             width: 300px;
             height: 400px;
             background-color: #ffffff;
-            margin-left: -175px;
+            margin-left: -150px;
             margin-top: -200px;
             text-align: center;
             left: 50%;
@@ -173,6 +243,54 @@
         }
         #exit, #reload{
             border: 1px solid dimgray;
+        }
+        .sidebar_block{
+            position: relative;
+            left: 0;
+            top: 0;
+            margin: 0;
+            border: 0px solid rgba(0,0,0, .15);
+            width: 200px;
+            color: #f6f9f6;
+        }
+        .sidebar_block#sidebar_main{
+            background-color: rgba(0,0,0, .6);
+            height: 100%;
+        }
+        .sidebar_block#sidebar_head{
+            border-bottom-width: 1px;
+            padding: 30px 0;
+            font: 20px Arial, sans-serif; 
+        }
+        .sidebar_block#sidebar_foot{
+            position: absolute;
+            margin-top: -50px;
+            top: 100%;
+            float: left;
+            font: 8px Arial, sans-serif;
+        }
+        .sidebar_block ul{
+            position: relative;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            text-align: center;
+        }
+        .sidebar_block li{
+            position: relative;
+            width: 100%;
+            float: left;
+            border: 0px solid rgba(0,0,0, .15);
+            border-bottom-width: 1px;
+        }
+        .sidebar_block li.on{
+            background-color: rgba(0,0,0, .15);
+            border-color: rgba(0,0,0, 0);
+        }
+        .sidebar_block li a{
+            float: left;
+            padding: 30px 0;
+            width: 100%;
         }
     </style>
 {% endblock %}

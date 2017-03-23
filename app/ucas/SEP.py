@@ -228,11 +228,7 @@ class UCASSEP(object):
 def main():
     '主函数'
     try:
-        userLCR = {
-            'user_id':'1017801883@qq.com',
-            'password':'lcr0717'
-            }
-        LCR = UCASSEP(userLCR)
+        LCR = UCASSEP('1017801883@qq.com', 'lcr0717')
         req = [(LCR.get_all_list, (num,)) for num in range(133000)]
         pl.run_thread_pool(req, is_lock=True, limit_num=30)
     except EXCEPTIONS as error:

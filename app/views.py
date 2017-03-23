@@ -38,7 +38,7 @@ def run(request):
     try:
         HELPER.host = request.get_host()
         HELPER.is_run = True
-        pl.run_thread([(main.main, ())], 'mainThread', False)
+        #pl.run_thread([(main.main, ())], 'mainThread', False)
         return info_and_response('正在运行')
 
     except EXCEPTIONS:
