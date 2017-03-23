@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib import admin
 
 class Helper_User(models.Model):
     user_name = models.CharField(max_length=20)

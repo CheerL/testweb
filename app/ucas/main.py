@@ -33,8 +33,6 @@ def reply(msg):
         keys_2 = ['绑定', '退课', '选课', '刷新', '保存', '提醒', '课表']
         keys_3 = ['???', '？？？']
         info('收到来自%s的消息: %s' % (nick_name, text))
-        if HELPER.admin_report:
-            pass
         if '?data?' in text:
             return '@fil@static/data.csv'
         elif '?robot?' in text:
@@ -44,7 +42,6 @@ def reply(msg):
             return '@fil@static/run.log'
         elif '?update?' in text:
             HELPER.remind_list_update()
-            HELPER.save_user_list()
             return '所有用户信息更新成功'
         elif '?kill?' in text:
             tid = int(re.findall(r'(\d+)', text)[0])
@@ -57,9 +54,6 @@ def reply(msg):
                 HELPER.remind_alive = True
                 HELPER.remind()
             return 'remind_alive已经%s' % ('打开' if HELPER.remind_alive else '关闭')
-        elif '?save?' in text:
-            HELPER.save_user_list()
-            return '保存成功'
         elif '?status?' in text:
             return 'remind_alive:%s\nrobot_reply:%s\nlast_update:%d mins ago\
             \nREMIND_WAIT:%s mins\nREMIND_BEFORE:%s mins\nAUTO_UPDATE:%s mins' % \
@@ -107,15 +101,12 @@ def reply(msg):
             HELPER.show_course_list(now_user, nick_name, False)
         elif '编号' in text:
             HELPER.show_course_list(now_user, nick_name, False, is_with_num=True)
-        elif '保存' in text:
-            HELPER.save_user_list(now_user)
         elif '退课' in text:
             HELPER.drop_course(now_user, nick_name, text)
         elif '选课' in text:
             HELPER.add_course(now_user, nick_name, text)
         elif '刷新' in text:
             HELPER.remind_list_update(nick_name)
-            HELPER.save_user_list()
             return '个人信息刷新成功'
         elif '提醒' in text:
             HELPER.show_remind_list(now_user, nick_name)
@@ -172,4 +163,3 @@ if __name__ == '__main__':
         main()
     except EXCEPTIONS as error:
         HELPER.my_error(error)
-        HELPER.save_user_list()
