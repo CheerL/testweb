@@ -57,23 +57,17 @@ class UCASSEP(object):
         except EXCEPTIONS:
             _error('无法解析该网页')
 
-    def __init__(self, user):
+    def __init__(self, user_id, password):
         try:
-            if isinstance(user, dict):
-                self.session.headers.update({
-                    'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
-                        AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.75 Safari/537.36',
-                    'X-Requested-With':'XMLHttpRequest',
-                    })
-                if user['user_id'] and user['password']:
-                    self.user_id = user['user_id']
-                    self.password = user['password']
-                else:
-                    raise KeyError('"user"中不存在用户名和密码')
-                self.login()
-                self.login_course()
-            else:
-                raise TypeError('"user"不是一个字典')
+            self.session.headers.update({
+                'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
+                    AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.75 Safari/537.36',
+                'X-Requested-With':'XMLHttpRequest',
+                })
+            self.user_id = user_id
+            self.password = password
+            self.login()
+            self.login_course()
         except EXCEPTIONS as error:
             _error('用户信息错误, {}'.format(error))
 

@@ -80,7 +80,7 @@ class Helper(object):
         return time.mktime(datetime.datetime.timetuple(now + delta))
 
     @staticmethod
-    def _show_remind_list(nick_name, remind_list):
+    def __show_remind_list(nick_name, remind_list):
         '显示提醒时间'
         if remind_list:
             name = remind_list[0][0]
@@ -113,18 +113,17 @@ class Helper(object):
                 if isinstance(user, dict):
                     if 'UserName' in user.keys():
                         return user['UserName']
-                    elif 'nick_name' in user.keys():
-                        if itchat.search_friends(nickName=user['nick_name']):
-                            _user = itchat.search_friends(nickName=user['nick_name'])[0]
-                            return _user['UserName']
+
+                elif isinstance(user, Helper_User):
+                    if itchat.search_friends(nickName=user.nick_name):
+                        return itchat.search_friends(nickName=user.nick_name)[0]['UserName']
 
                 elif isinstance(user, str):
                     if '@' in user:
                         return user
                     else:
                         if itchat.search_friends(name=user):
-                            _user = itchat.search_friends(name=user)[0]
-                            return _user['UserName']
+                            return itchat.search_friends(name=user)[0]['UserName']
             return None
 
         try:
@@ -167,29 +166,27 @@ class Helper(object):
         else:
             self.user_list = list()
 
-    def search_list(self, nick_name, is_rep=True, is_index=False):
+    def search_list(self, nick_name=None):
         '在用户列表中查找当前用户是否已经绑定'
-        for index, user in enumerate(self.user_list):
-            if user['nick_name'] == nick_name:
-                if is_index:
-                    return index
-                else:
-                    return user
-        if is_rep:
-            raise NotImplementedError('尚未绑定')
+        if nick_name:
+            try:
+                return Helper_User.objects.get(nick_name=nick_name)
+            except EXCEPTIONS:
+                raise NotImplementedError('尚未绑定')
         else:
-            return None
+            return Helper_User.objects.all()
 
     def update_info(self, user=None):
         '更新用户信息'
-        if user and isinstance(user, dict):
+        if user and isinstance(user, Helper_User):
             count = 0
             while True:
                 try:
-                    sep = UCASSEP(user)
+                    sep = UCASSEP(user.user_id, user.password)
                     sep.get_course_list()
-                    user['user_name'] = sep.user_name
-                    user['course_list'] = sep.course_list
+                    user.user_name = sep.user_name
+                    user.course_list = sep.course_list
+                    user.save()
                     info('更新成功, 尝试%d次' % (count + 1))
                     break
                 except EXCEPTIONS as error:
@@ -198,83 +195,66 @@ class Helper(object):
                     else:
                         self.my_error(error, user)
         else:
-            for user in self.user_list:
+            for user in self.search_list():
                 self.update_info(user)
             self.last_update = time.time()
 
     def add_user(self, now_user, nick_name, text):
         '新增提醒用户'
-        user = self.search_list(nick_name, is_rep=False)
-        if user:
+        try:    #如果用户已经存在, 回报告并返回, 不存在会报错, 但被pass, 进入下一个try
+            user = self.search_list(nick_name)
             self.send('你已经绑定过啦', now_user)
-        else:
-            try:
-                result = re.findall(r'用户名[:：\s]*(.+?)\s*密码[:：\s]*(.+?)$', text)
-                if result:
-                    user_id = result[0][0]
-                    password = result[0][1]
-                else:
-                    raise IOError('输入格式错误, 请输入"绑定 用户名:***  密码:***"')
-                user = dict(
-                    nick_name=nick_name,
-                    user_id=user_id,
-                    password=password,
-                    is_open=True,
-                    have_remind=False
-                    )
-                self.update_info(user)
-                if not Helper_User.objects.filter(nick_name=nick_name):
-                    Helper_User.objects.create(
-                        user_name=user['user_name'],
-                        course_list=user['course_list'],
-                        nick_name=nick_name,
-                        user_id=user_id,
-                        password=password,
-                        is_open=True,
-                        have_remind=False
-                        )
-                self.user_list.append(user)
-                self.send('绑定成功', now_user)
-            except EXCEPTIONS as error:
-                user['is_open'] = False
-                self.my_error(error, now_user)
+            return
+        except EXCEPTIONS:
+            pass
+
+        try:
+            result = re.findall(r'用户名[:：\s]*(.+?)\s*密码[:：\s]*(.+?)$', text)
+            if result:
+                user_id = result[0][0]
+                password = result[0][1]
+            else:
+                raise IOError('输入格式错误, 请输入"绑定 用户名:***  密码:***"')
+            user = Helper_User.objects.create(
+                nick_name=nick_name,
+                user_id=user_id,
+                password=password,
+                is_open=True,
+                have_remind=False
+                )
+            self.update_info(user)
+            self.send('绑定成功', now_user)
+        except EXCEPTIONS as error:
+            if user:
+                user.delete()
+            self.my_error(error, now_user)
 
     def change_user(self, now_user, nick_name, text):
         '修改用户信息'
         try:
             user = self.search_list(nick_name)
-            _user = Helper_User.objects.get(nick_name=nick_name)
             if '用户名' in text:
                 user_ids = re.findall(r'用户名[:：\s]*(.*?)(\s*|\s+\S*\s*?)$', text)
                 if user_ids:
-                    user['user_id'] = user_ids[0][0]
-                    _user.user_id = user_ids[0][0]
+                    user.user_id = user_ids[0][0]
                 else:
                     raise IOError('输入格式错误, 请输入"绑定 用户名:***"')
             if '密码' in text:
                 passwords = re.findall(r'密码[:：\s]*(.*?)(\s*|\s+\S*\s*?)$', text)
                 if passwords:
-                    user['password'] = passwords[0][0]
-                    _user.password = passwords[0][0]
+                    user.password = passwords[0][0]
                 else:
                     raise IOError('输入格式错误, 请输入"绑定 密码:***"')
             self.update_info(user)
             self.send('修改绑定信息成功', now_user)
         except EXCEPTIONS as error:
-            user['is_open'] = False
-            _user.is_open = False
             self.my_error(error, now_user)
-        finally:
-            if _user:
-                _user.save()
 
     def del_user(self, now_user, nick_name):
         '删除用户'
         try:
-            index = self.search_list(nick_name, is_index=True)
-            self.user_list.pop(index)
-            for _user in Helper_User.objects.filter(nick_name=nick_name):
-                _user.delete()
+            for user in Helper_User.objects.filter(nick_name=nick_name):
+                user.delete()
             self.send('取消绑定成功', now_user)
         except EXCEPTIONS as error:
             self.my_error(error, now_user)
@@ -283,21 +263,11 @@ class Helper(object):
         '取消提醒'
         try:
             user = self.search_list(nick_name)
-            user['is_open'] = False
-            _user = Helper_User.objects.get(nick_name=nick_name)
-            _user.is_open = False
-            _user.save()
+            user.is_open = False
+            user.save()
             self.send('取消提醒成功', now_user)
         except EXCEPTIONS as error:
             self.my_error(error)
-
-    def save_user_list(self, now_user=None):
-        '保存用户信息为csv'
-        data = pd.DataFrame(self.user_list)
-        data.to_csv(FILE_NAME, encoding='utf-8', index=False)
-        info('用户信息保存成功')
-        if now_user:
-            self.send('保存成功', now_user)
 
     def remind(self, now_user=None, nick_name=None, host=None):
         '定时提醒'
@@ -309,19 +279,20 @@ class Helper(object):
 
         def _remind_main(user):
             self. __remind_list_update(user)
-            nick_name = user['nick_name']
+            nick_name = user.nick_name
             try:
-                remind_list = user['remind_list']
-                result = self._show_remind_list(nick_name, remind_list)
+                remind_list = literal_eval(user.remind_list)
+                result = self.__show_remind_list(nick_name, remind_list)
                 if result[1] > 0:                               #当上课时间到, 把课程清理出提醒队列
                     remind_list.pop(0)
                     self.__remind_list_update(user)
                 elif result[1] + REMIND_BEFORE * 60 >= 0:       #当提醒时间到, 主动提醒一次
-                    if not user['have_remind']:                 #当没有提醒过
+                    if not user.have_remind:                    #当没有提醒过
                         _remind_do(remind_list[0], user)        #提醒
-                        user['have_remind'] = True              #修改为已经提醒过
+                        user.have_remind = True                 #修改为已经提醒过
                 else:                                           #没有到提醒时间
-                    user['have_remind'] = False
+                    user.have_remind = False
+                user.save()
             except EXCEPTIONS as error:
                 self.my_error(error, user)
 
@@ -333,10 +304,9 @@ class Helper(object):
             #self.remind_pid = pl.
             if time.time() - self.last_update > AUTO_UPDATE * 60:
                 self.update_info()
-            for user in self.user_list:
-                if user['is_open']:
+            for user in self.search_list():
+                if user.is_open:
                     _remind_main(user)
-            self.save_user_list()
             info('成功提醒并保存')
 
             if not self.host:
@@ -367,7 +337,8 @@ class Helper(object):
 
         if nick_name:
             user = self.search_list(nick_name)
-            user['is_open'] = True
+            user.is_open = True
+            user.save()
             self.send('打开提醒成功', now_user)
 
         else:
@@ -378,30 +349,24 @@ class Helper(object):
             except EXCEPTIONS as error:
                 info(error)
 
-    def remind_list_update(self, nick_name=None, user=None, is_update=False):
+    def remind_list_update(self, nick_name=None, user=None):
         '手动更新信息'
         try:
-            if user and isinstance(user, dict):
+            if user and isinstance(user, Helper_User):
                 pass
             elif nick_name and isinstance(nick_name, str):
                 user = self.search_list(nick_name)
             else:
-                self.update_info()
-                for _user in self.user_list:
-                    self.remind_list_update(user=_user, is_update=True)
+                for _user in self.search_list():
+                    self.remind_list_update(user=_user)
                 return
 
-            while not is_update:
-                try:
-                    self.update_info(user)
-                    is_update = True
-                except EXCEPTIONS:
-                    pass
+            self.update_info(user)
             self.__remind_list_update(user)
         except EXCEPTIONS as error:
             self.my_error(error)
 
-    def help(self, now_user, keys):
+    def my_help(self, now_user, keys):
         '显示帮助'
         msg = '功能有: ' + ', '.join([', '.join(each) for each in keys])
         self.send(msg, now_user)
@@ -411,28 +376,28 @@ class Helper(object):
         '显示课表'
         try:
             user = self.search_list(nick_name)
+            course_list = literal_eval(user.course_list)
             if is_pic:
-                course_list = user['course_list']
                 pic_name = 'static/%s.course.png' % nick_name
                 self.__get_course_list_pic(pic_name, course_list)
                 self.send('@img@' + pic_name, now_user)
                 os.remove(pic_name)
             else:
-                course_list = user['course_list']
-                _course_list = list()
+                temp_course_list = list()
                 for course in course_list:
                     para = [course['place'], course['name'], course['num']]
-                    _course_list += [(para[1], para[0], day, num, para[2])
-                                     for (day, num) in course['times']]
-                _course_list.sort(key=lambda x: self.get_course_time(x[2], x[3][0]))
+                    temp_course_list += [
+                        (para[1], para[0], day, num, para[2]) for (day, num) in course['times']
+                    ]
+                temp_course_list.sort(key=lambda x: self.get_course_time(x[2], x[3][0]))
                 if not is_with_num:
                     msg = '\n'.join(['{}, {}, {}, 第{}节'.format(
                         course[0], course[1], course[2],
-                        '.'.join(course[3])) for course in _course_list])
+                        '.'.join(course[3])) for course in temp_course_list])
                 else:
                     msg = '\n'.join(['{}, {}, {}, 第{}节, 编号{}'.format(
                         course[0], course[1], course[2],
-                        '.'.join(course[3]), course[4]) for course in _course_list])
+                        '.'.join(course[3]), course[4]) for course in temp_course_list])
                 self.send(msg, now_user)
         except EXCEPTIONS as error:
             self.my_error(error, now_user)
@@ -441,8 +406,8 @@ class Helper(object):
         '显示提醒时间'
         try:
             user = self.search_list(nick_name)
-            remind_list = user['remind_list']
-            result = self._show_remind_list(nick_name, remind_list)
+            remind_list = literal_eval(user.remind_list)
+            result = self.__show_remind_list(nick_name, remind_list)
             self.send(result[0], now_user)
         except EXCEPTIONS as error:
             self.my_error(error)
@@ -455,7 +420,7 @@ class Helper(object):
                 num = re.findall(r'编号[:：\s]*(.*?)\s*$', text)[0]
             else:
                 raise IOError('输入格式错误, 应为"选课 编号:***", 你可以输入"编号"查看已选课程编号')
-            sep = UCASSEP(user)
+            sep = UCASSEP(user.user_id, user.password)
             sep.get_course_list()
             if sep.add_course(num):
                 self.send('选课成功', now_user)
@@ -472,7 +437,7 @@ class Helper(object):
                 num = re.findall(r'编号[:：\s]*(.*?)\s*$', text)[0]
             else:
                 raise IOError('输入格式错误, 应为"退课 编号:***", 你可以输入"编号"查看已选课程编号')
-            sep = UCASSEP(user)
+            sep = UCASSEP(user.user_id, user.password)
             sep.get_course_list()
             if sep.drop_course(num):
                 self.send('退课成功', now_user)
@@ -514,8 +479,6 @@ class Helper(object):
             font_x = width_list[x] + indent * font_size
             font_y = height_list[y] + (height_list[y + 1] - height_list[y] - \
             (font_size + space) * line_num + space) / 2
-
-
             #分行打印
             for num in range(line_num):
                 line = text[num * line_max : (num + 1) * line_max]
@@ -601,12 +564,13 @@ class Helper(object):
         '更新提醒列表'
         def _remind_list_update_main(week, course_list, count=0):
             if week + count > END_WEEK:
-                user['is_open'] = False
+                user.is_open = False
+                user.save()
                 raise NotImplementedError('%s本学期已经没有课了' % (user['nick_name']))
             while not course_list:
                 try:
                     self.update_info(user)
-                    course_list = user['course_list']
+                    course_list = literal_eval(user.course_list)
                 except EXCEPTIONS:
                     pass
 
@@ -622,11 +586,12 @@ class Helper(object):
             remind_list = list(filter(lambda x: x[2] > now, remind_list))
             if remind_list:
                 remind_list.sort(key=lambda x: x[2])
-                user['remind_list'] = remind_list
+                user.remind_list = remind_list
+                user.save()
             else:
                 return _remind_list_update_main(week, course_list, count + 1)
 
-        course_list = user['course_list']
+        course_list = literal_eval(user.course_list)
         week = self.get_now_week()
         _remind_list_update_main(week, course_list)
 

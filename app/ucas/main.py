@@ -102,7 +102,7 @@ def reply(msg):
         elif '打开提醒' in text:
             HELPER.remind(now_user, nick_name)
         elif '???' in text or '？？？' in text:
-            HELPER.help(now_user, [keys_2, keys_1, keys_3[:1]])
+            HELPER.my_help(now_user, [keys_2, keys_1, keys_3[:1]])
         elif '文字课表' in text:
             HELPER.show_course_list(now_user, nick_name, False)
         elif '编号' in text:
