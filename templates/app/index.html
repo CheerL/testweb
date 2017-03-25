@@ -7,10 +7,10 @@
 
 {% block content %}
     <div class="login_block">
-        <img id="pic" src="{% static "images/begin.png" %}">
+        <img id="pic" src="">
         <div id="text"></div>
         <div class="button_block">  
-            <div id="login" class="button" onclick="login_func()">登录</div>
+            <div id="login" class="button" style="display: none;" onclick="login_func()">登录</div>
             <div id="exit" class="button" style="display: none;" onclick="exit_func()">退出</div>
             <div id="reload" class="button" style="display: none" onclick="reload_func()">重启</div>
         </div>
@@ -34,9 +34,6 @@
         </ul>
         <div class="sidebar_block" id="sidebar_foot">微信小助手<br>By Cheer.L</div>
     </div>
-    <div id='is_login' style="display: none">{{is_login}}</div>
-    <div id='is_run' style="display: none">{{is_run}}</div>
-    <div id='is_wait' style="display: none">{{is_wait}}</div>
 {% endblock %}
 
 {% block script %}
@@ -48,14 +45,11 @@
         var reload = $('#reload')
         var sidebar = $('#sidebar_main')
         function run_func(){
-            $.get("run", function(data){
-                pic[0].src = '/static/images/begin.png';
-                text.text(data);
-                reload.hide();
-                exit.show();
-                sidebar.show();
-                move_login_block();
-            });
+            reload.hide();
+            exit.show();
+            sidebar.show();
+            move_login_block();
+            $.get('remind')
         }
         function exit_func(){
             if (confirm("你确定要退出么?")) {
@@ -69,39 +63,33 @@
             text.text("正在获取二维码");
             login.hide();
             reload.show();
-            $.post("login", {status:0, uuid:null}, function(data){
-                if (data.res == 'uuid success'){
-                    pic[0].src = '/static/QR.png';
-                    pic.show();
-                    text.text("请扫描二维码");
-                    uuid = data.uuid
-                    setTimeout('after_scan(uuid)', 500)
+            $.get("login", function(data){
+                text.text(data.msg);
+                pic[0].src = '/' + data.pic;
+                if (data.status == true){
+                    if (data.info == 'uuid'){
+                        uuid = data.uuid;
+                        setTimeout('after_scan(uuid)', 500);
+                    }
+                    else if (data.info == 'hot'){
+                        run_func();
+                    }
                 }
-                else if (data.res == 'hot reload success'){
-                    run_func();
-                }
-                else{
-                    text.text('登录出错, 请重新登录');
-                    pic[0].src = '/static/images/begin.png';
-                }
-            }, 'json');
+            });
         }
         function reload_func(){
             $.get("reload", function(){
                 window.location.reload();
             });
         }
-
         function after_scan(uuid){
-            $.post("login", {status:1, uuid:uuid}, function(data){
-                if (data.res == "login success"){
+            $.get("login/" + uuid, function(data){
+                text.text(data.msg);
+                pic[0].src = '/' + data.pic;
+                if (data.status == true){
                     run_func();
                 }
-                else{
-                    text.text("登录出错, 请重新登录");
-                    pic[0].src = '/static/images/begin.png';
-                }
-            }, 'json');
+            });
         }
         function move_login_block(){
             var temp = document.body.scrollWidth  - $('.login_block').width();
@@ -111,32 +99,16 @@
             $('.login_block').offset({left:temp/2});
         }
         $(document).ready(function(){
-            var is_login = $('#is_login').text();
-            var is_run = $('#is_run').text();
-            var is_wait = $('#is_wait').text();
-            if (is_login == 'False') {
-                if (is_wait == 'True') {
-                    pic[0].src = '/static/QR.png';
-                    pic.show();
-                    text.text("请扫描二维码");
-                    setTimeout('after_scan()', 500)
-                }
-                else {
-                    text.text('请点击下面的按钮');
-                }
+            text.text('{{msg}}');
+            pic[0].src = '/' + '{{pic}}';
+            if('{{status}}' == 'False'){
+                login.show();
             }
-            else {
-                login.hide();
+            else if('{{status}}' == 'True'){
                 exit.show();
-                if (is_run == 'False') {
-                    run_func();
-                }
-                else {
-                    sidebar.show();
-                    move_login_block();
-                    text.text('正在运行');
-                }
+                sidebar.show();
             }
+            move_login_block();
         });
         $(window).resize(move_login_block);
     </script>
@@ -147,7 +119,6 @@
     <script>
         var list = $("li");
         var ul = $('ul');
-
         list.click(function(){
             var the_class = $(this).attr('class');
             if(the_class == "off"){

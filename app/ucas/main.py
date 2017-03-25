@@ -1,15 +1,12 @@
 '程序运行主体'
 import re
 import time
-import requests
 import itchat
-from . import EXCEPTIONS, info
-from . import helper as hp, TIMEOUT, try_more_times
-from .helper import Helper
+from . import helper as hp, EXCEPTIONS, info
 from .wheel import parallel as pl
 #from .wheel.recognize import spech_recognize
 
-HELPER = Helper()
+HELPER = hp.Helper()
 ADMIN_HELP = '''?data?   None
 ?robot          None
 ?log?           None
@@ -74,15 +71,9 @@ def reply(msg):
             hp.COURSE_DICT[result[0]] = [int(result[1]), int(result[2])]
             return "COURSE_DICT['%d']改为(%d, %d)" % result
         elif '?send?' in text:
-            result = re.findall(r'用户[:：\s]*(.+?)\s*内容[:：\s]*(.*)$', text)
-            if result[0][0] == 'all':
-                for user in HELPER.user_list:
-                    HELPER.send(result[0][1], user['nick_name'])
-            else:
-                HELPER.send(result[0][1], result[0][0])
-            return '发送成功'
+            pass
         elif '?user?' in text:
-            return ', '.join([user['nick_name'] for user in HELPER.user_list])
+            pass
         elif '?admin?' in text:
             return ADMIN_HELP
         elif '?thread?' in text:
@@ -146,20 +137,3 @@ def download_files(msg):
     #msg['Text'] = ''
     #msg['MsgType'] = 'Text'
     #return
-
-def main():
-    '开始运行'
-    @try_more_times(error_func=HELPER.logout)
-    def run():
-        '运行'
-        itchat.run()
-
-    HELPER.check_login()
-    requests.get('http://%s/app/remind' % HELPER.host, timeout=TIMEOUT)
-    run()
-
-if __name__ == '__main__':
-    try:
-        main()
-    except EXCEPTIONS as error:
-        HELPER.my_error(error)

@@ -1,78 +1,82 @@
 import os
-from django.views.decorators.csrf import csrf_exempt
+#from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from .ucas.wheel import parallel as pl
 from .ucas.login import login as LG
-from .ucas import EXCEPTIONS, main, info
 from .ucas.main import HELPER
+from .ucas import info as info_func, EXCEPTIONS
 
-QR_name = 'static/QR.png'
+QR_pic = 'static/QR.png'
+WX_pic = 'static/images/begin.png'
+
+MSG_init = '请点击登录按钮'
+MSG_error = '错误,请重新登录'
+MSG_login = '小助手运行中'
+MSG_scan = '请扫码二维码'
+MSG_logout = '成功退出'
+MSG_reload = '重新启动'
 
 # Create your views here.
+
 def index(request):
     'app初始界面, 有可能是唯一的界面'
-    return render(request, 'app/index.html',
-                  {'is_login':HELPER.is_login,
-                   'is_run':HELPER.is_run,
-                   'is_wait':HELPER.is_wait})
+    HELPER.host = request.get_host()
+    status = HELPER.is_login
+    msg = MSG_login if status else MSG_init
+    res = dict(
+        status=status,
+        msg=msg,
+        pic=WX_pic
+    )
+    return render(request, 'app/index.html', res)
 
-@csrf_exempt
-def login(request):
-    '终于登陆了'
+def login(request, uuid=None):
+    '终于登录了'
     try:
-        if request.method == 'POST':
-            status = request.POST['status']
-            uuid = request.POST['uuid'] or None
-            return JsonResponse(LG(QR_name, status, uuid))
-        raise NotImplementedError('访问错误')
+        if not uuid:
+            info, uuid = LG(QR_pic, 0)
+            (msg, pic) = (MSG_scan, QR_pic) if info == 'uuid' else (MSG_login, WX_pic)
+            return JsonResponse(dict(
+                status=True,
+                info=info,
+                uuid=uuid,
+                msg=msg,
+                pic=pic
+            ))
+        else:
+            (status, msg) = (True, MSG_login) if LG(QR_pic, 1, uuid) else (False, MSG_error)
+            return JsonResponse(dict(
+                status=status,
+                msg=msg,
+                pic=WX_pic
+            ))
     except EXCEPTIONS as error:
         info(error)
         HELPER.__init__()
-        if os.path.isfile(QR_name):
-            os.remove(QR_name)
-        return JsonResponse({'res':'fail'})
-
-def run(request):
-    '开始执行'
-    try:
-        HELPER.host = request.get_host()
-        HELPER.is_run = True
-        #pl.run_thread([(main.main, ())], 'mainThread', False)
-        return info_and_response('正在运行')
-
-    except EXCEPTIONS:
-        HELPER.logout()
-        return info_and_response("错误, 请重新登陆")
+        if os.path.isfile(QR_pic):
+            os.remove(QR_pic)
+        return JsonResponse(dict(
+            status=False,
+            msg=MSG_error,
+            pic=WX_pic
+        ))
 
 def logout(request):
-    '退出登陆'
+    '退出登录'
     HELPER.logout()
-    return info_and_response('成功退出')
+    return info_and_response(MSG_logout)
 
 def remind(request):
     '提醒'
-    HELPER.remind(host=request.get_host())
+    HELPER.remind()
     return info_and_response('提醒中')
 
 def reload(requset):
     '重启'
     HELPER.logout()
-    return info_and_response('重新启动')
+    return info_and_response(MSG_reload)
 
 def info_and_response(msg):
     '返回HTTP相应, 并输出日志'
-    info(msg)
+    info_func(msg)
     return HttpResponse(msg)
-
-'''
-def draw():
-    from random import randint
-    global COUNT
-    COUNT += 1
-    width = 100
-    height = 100
-    name = 'static/' + str(COUNT) + pic_name
-    image = Image.new('RGB', (width, height), (randint(0, 255), randint(0, 255), randint(0, 255)))
-    image.save(name, 'jpeg')
-'''

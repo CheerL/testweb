@@ -11,7 +11,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from .wheel import parallel as pl
 from .SEP import UCASSEP
-from . import EXCEPTIONS, info, WEEK, TIMEOUT, pkl_dir, Helper_User
+from . import EXCEPTIONS, info, WEEK, TIMEOUT, Helper_User
 
 TL_KEY = '71f28bf79c820df10d39b4074345ef8c' #图灵机器人密钥
 REMIND_WAIT = 1#分钟
@@ -31,8 +31,6 @@ COURSE_DICT = dict(map(lambda x, y: [x, y], COURSE_NUM, (
 class Helper(object):
     '助手类'
     is_login = False
-    is_wait = False
-    is_run = False
     remind_alive = True
     remind_tid = None
     robot_reply = True
@@ -41,7 +39,7 @@ class Helper(object):
 
     def __init__(self):
         '所有参数修改为初始值, 结束remind进程'
-        self.is_login = self.is_wait = self.is_run = False
+        self.is_login = False
         self.robot_reply = self.remind_alive = True
         self.host = None
         self.last_update = 0
@@ -366,7 +364,7 @@ class Helper(object):
         except EXCEPTIONS as error:
             self.my_error(error)
 
-    def remind(self, now_user=None, nick_name=None, host=None):
+    def remind(self, now_user=None, nick_name=None):
         '定时提醒'
         def _remind_do(remind, user):
             _time = time.strftime('%H:%M', time.localtime(remind[2]))
@@ -394,23 +392,15 @@ class Helper(object):
                 self.my_error(error, user)
 
         def _remind():
-            #time.sleep(1)
             self.remind_tid = pl.get_tid()
             info('打开新线程:%d, 提醒间隔%f分钟' % (self.remind_tid, REMIND_WAIT))
             time.sleep(int(REMIND_WAIT * 60))
-            #self.remind_pid = pl.
             if time.time() - self.last_update > AUTO_UPDATE * 60:
                 self.update_info()
             for user in self.search_list():
                 if user.is_open:
                     _remind_main(user)
             info('成功提醒并保存')
-
-            if not self.host:
-                if host:
-                    self.host = host
-                else:
-                    info('host不存在')
 
             error_count = 0
             while True:
@@ -424,7 +414,6 @@ class Helper(object):
                         time.sleep(3)
                     else:
                         info('打开新线程失败, 自动提醒结束, 尝试%d次' % (error_count))
-                        info(self.host)
                         self.remind_alive = False
                         return
 
@@ -440,17 +429,17 @@ class Helper(object):
 
         else:
             try:
-                info('remind %s' % self.remind_alive)
                 if self.remind_alive:
                     pl.run_thread([(_remind, ())], 'remind', False)
             except EXCEPTIONS as error:
                 info(error)
 
     def remind_list_update(self, nick_name=None, user=None):
-        '手动更新信息'
+        '手动更新信息, 允许外部调用'
         def __remind_list_update(user):
             '更新提醒列表'
             def remind_list_update_main(week, course_list, count=0):
+                '对特定列表进行更新'
                 if week + count > END_WEEK:
                     user.is_open = False
                     user.save()
@@ -494,13 +483,9 @@ class Helper(object):
                 for _user in self.search_list():
                     self.remind_list_update(user=_user)
                 return
-
-            self.update_info(user)
             __remind_list_update(user)
         except EXCEPTIONS as error:
             self.my_error(error)
-
-        
 
     def my_help(self, now_user, keys):
         '显示帮助'
@@ -586,15 +571,3 @@ class Helper(object):
         '退出登陆'
         self.__init__()
         itchat.logout()
-
-    def check_login(self):
-        '热登陆检查'
-        if not itchat.instanceList[0].alive:
-            if itchat.load_login_status(pkl_dir):
-                self.is_run = True
-                info('Hotreload成功')
-            else:
-                self.logout()
-                info('尚未成功登陆')
-        else:
-            self.is_run = True
