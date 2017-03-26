@@ -2,7 +2,7 @@
 import time
 import sys
 import logging
-from .. import views
+# from .. import views
 from ..views import send
 
 log_path = 'static/run.log'
