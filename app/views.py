@@ -4,17 +4,17 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from .ucas.login import login as LG
 from .ucas.main import HELPER
-from .ucas import info as info_func, EXCEPTIONS
-
-QR_pic = 'static/QR.png'
-WX_pic = 'static/images/begin.png'
+from .ucas import info as info_func, EXCEPTIONS, QR_pic, WX_pic
 
 MSG_init = '请点击登录按钮'
 MSG_error = '错误,请重新登录'
 MSG_login = '小助手运行中'
 MSG_scan = '请扫码二维码'
-MSG_logout = '成功退出'
+MSG_logout = '小助手成功退出'
 MSG_reload = '重新启动'
+MSG_remind = '小助手提醒中'
+
+SIDEBAR = ['登录', '聊天', '日志', '设置']
 
 # Create your views here.
 
@@ -26,7 +26,8 @@ def index(request):
     res = dict(
         status=status,
         msg=msg,
-        pic=WX_pic
+        pic=WX_pic,
+        sidebar=SIDEBAR
     )
     return render(request, 'app/index.html', res)
 
@@ -69,7 +70,7 @@ def logout(request):
 def remind(request):
     '提醒'
     HELPER.remind()
-    return info_and_response('提醒中')
+    return info_and_response(MSG_remind)
 
 def reload(requset):
     '重启'

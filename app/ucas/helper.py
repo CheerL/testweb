@@ -11,22 +11,14 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from .wheel import parallel as pl
 from .SEP import UCASSEP
-from . import EXCEPTIONS, info, WEEK, TIMEOUT, Helper_User
+from . import EXCEPTIONS, info, WEEK, TIMEOUT, END_WEEK, WEEK_DICT, COURSE_NUM, COURSE_DICT
+from ..models import Helper_User
 
 TL_KEY = '71f28bf79c820df10d39b4074345ef8c' #图灵机器人密钥
 REMIND_WAIT = 1#分钟
 REMIND_BEFORE = 30#分钟
 AUTO_UPDATE = 60#分钟
 A_WEEK = 60 * 60 * 24 * 7#秒
-END_WEEK = 20
-FILE_NAME = 'static/data.csv'
-WEEK_DICT = dict(map(lambda x, y: [x, y], WEEK, [i for i in range(7)]))
-COURSE_NUM = [str(i) for i in range(1, 12)]
-COURSE_DICT = dict(map(lambda x, y: [x, y], COURSE_NUM, (
-    [8, 30], [9, 20], [10, 30], [11, 20],
-    [13, 30], [14, 20], [15, 30], [16, 20],
-    [19, 00], [19, 50], [20, 50]
-    )))
 
 class Helper(object):
     '助手类'

@@ -6,14 +6,14 @@ import sys
 import itchat
 import requests
 from pyqrcode import QRCode
-from . import info, EXCEPTIONS, TIMEOUT, pkl_dir
+from . import info, EXCEPTIONS, TIMEOUT, pkl_path
 from .main import HELPER
 
 def login(pic_dir, status, uuid=None):
     '来吧登陆函数'
     #如果无法链接, 就退出
     try:
-        if os.path.isfile(pkl_dir) and itchat.load_login_status(pkl_dir):
+        if os.path.isfile(pkl_path) and itchat.load_login_status(pkl_path):
             info('HotReload成功')
             itchat.run(blockThread=False)
             HELPER.is_login = True
@@ -79,5 +79,5 @@ def __login_after_qr(uuid):
     info('%s 成功登录' % userInfo['User']['NickName'])
     itchat.start_receiving()
     itchat.run(blockThread=False)
-    itchat.dump_login_status(pkl_dir)
+    itchat.dump_login_status(pkl_path)
     HELPER.is_login = True

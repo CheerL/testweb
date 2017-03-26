@@ -19,18 +19,9 @@
     <div class="sidebar_block" id="sidebar_main" style="display: none;">
         <div class="sidebar_block" id="sidebar_head"><br></div>
         <ul id="siderbae_list">
-            <li class="on">
-                <a>登录</a>
-            </li>
-            <li class="off">
-                <a>聊天</a>
-            </li>
-            <li class="off">
-                <a>日志</a>
-            </li>
-            <li class="off">
-                <a>管理</a>
-            </li>
+            {% for bar in sidebar %}
+            <li class="off"><a>{{bar}}</a></li>
+            {% endfor %}
         </ul>
         <div class="sidebar_block" id="sidebar_foot">微信小助手<br>By Cheer.L</div>
     </div>
