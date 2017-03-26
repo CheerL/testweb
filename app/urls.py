@@ -3,8 +3,12 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.index),
-    url(r'^login/(?P<uuid>.*)$', views.login),
-    url(r'^logout$', views.logout),
+    url(r'^login/uuid=(?P<uuid>.*)$', views.login),
+    url(r'^login/$', views.login_page),
+    url(r'^run/$', views.run_page),
+    url(r'^logout/$', views.logout),
     url(r'^remind$', views.remind),
-    url(r'reload', views.reload),
+    url(r'^setting/$', views.setting),
+    url(r'^log/$', views.log),
+    url(r'^chat/$', views.chat),
 ]

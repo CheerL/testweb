@@ -13,12 +13,20 @@
     </body>
     
     <script src="{% static "js/jquery-3.1.1.min.js" %}"></script>
+    <script src="http://code.jquery.com/color/jquery.color-2.1.2.min.js"
+            integrity="sha256-H28SdxWrZ387Ldn0qogCzFiUDDxfPiNIyJX7BECQkDE="
+            crossorigin="anonymous">
+    </script>
     {% block script %}
     {% endblock %}
 
     <style>
-        body{
+        *{
+            border: 0;
             margin: 0;
+            padding: 0;
+        }
+        body{
             background-color: #f6f9f6;
         }
         div{
