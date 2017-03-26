@@ -2,6 +2,7 @@
 import time
 import sys
 import logging
+from .. import views
 
 log_path = 'static/run.log'
 pkl_path = 'static/helper.pkl'
@@ -9,7 +10,7 @@ QR_pic = 'static/QR.png'
 WX_pic = 'static/begin.png'
 
 formatter = logging.Formatter(
-    '%(asctime)s [%(levelname)s] %(message)s',
+    '[%(asctime)s] "%(levelname)s"  %(message)s',
     '%d/%b/%Y %H:%M:%S'
     )
 handle = logging.FileHandler(log_path)
@@ -37,6 +38,16 @@ EXCEPTIONS = (
     )
 TIMEOUT = 2
 
+def log_read(path=log_path, count=1, start=0):
+    with open(path, 'r') as file:
+        content = file.readlines()
+        if count is -1 and start is 0:
+            line_list = content[::-1]
+        else:
+            line_list = content[-1-start:-1-start-count:-1]
+    return line_list
+
 def info(msg):
     '打印日志'
     logger.info(msg)
+    views.send(log_read(log_path)[0])

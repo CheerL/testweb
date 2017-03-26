@@ -4,7 +4,195 @@
 {% block title %}
     微信小助手-聊天
 {% endblock %}
-
+    
 {% block content %}
-    聊天
+    <div id="people">
+        <div id='list_head'><img id="icon" src='/static/search_icon.png'></div>
+        <ul></ul>
+    </div>
+    <div id="chat_box">
+        <div id="info"><span></span></div>
+        <div id="msg_show"></div>
+        <textarea id="msg_input" ></textarea>
+        <div id="send_buttom">发送</div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        var buttom = $('div#send_buttom');
+        function send_to_user(msg, user){
+            $.post('/app/chat/send/', {msg:msg, user:user});
+        }
+        function get_user_list(){
+            $.get('/app/chat/user/', function (data) {
+                for (i = 0; i <　data.count; i++){
+                    var user = data.user_list[i];
+                    $('ul').append(
+                        '<li class="off" id="' + user +
+                        '"><div id="img"><img src="/static/head/' + user +
+                        '.png"></div>' + user + '</li>'
+                    );
+                }
+                var list = $("li");
+                list.click(function(){
+                    if($(this).attr('class') == "off"){
+                        var nick_name = $(this).attr('id');
+                        $('li.on').css('background-color', '');
+                        $('li.on').css('border-color', 'rgba(0,0,0, .15)');
+                        $('li.on').attr('class', 'off');
+                        $(this).attr('class', 'on');
+                        $('div#info').children().text(nick_name);
+                    }
+                });
+                list.hover(
+                    function(){
+                        if($(this).attr('class') == "off"){
+                            $(this).css('background-color', 'rgba(0,0,0, .15)');
+                            $(this).css('border-color', 'rgba(0,0,0, 0)');
+                        }
+                    },
+                    function(){
+                        if($(this).attr('class') == "off"){
+                            $(this).animate({
+                                backgroundColor: 'rgba(0,0,0,0)',
+                                borderColor: 'rgba(0,0,0, .15)'
+                            }, 300);
+                        }
+                    }
+                );
+            })
+        }
+        $(function(){
+            get_user_list();
+            buttom.click(function () {
+                var msg = $('#msg_input').val();
+                var user = $('li.on').attr('id');
+                if (msg != null && msg != '' && user != null && user != ''){
+                    send_to_user(msg, user);
+                    $('#msg_input').val('');
+                }
+            })
+            buttom.hover(
+                function(){
+                    $(this).animate({
+                        backgroundColor: 'rgba(50, 205, 50, 1)',
+                        color: 'rgba(255, 255, 255, 1)'
+                    }, 100);
+                },
+                function () {
+                    $(this).animate({
+                        backgroundColor: 'rgba(255, 255, 255, 1)',
+                        color: 'rgba(50, 205, 50, 1)'
+                    }, 100);
+                }
+            );
+        });
+    </script>
+{% endblock %}
+
+{% block style %}
+    <style>
+        div{
+            float: left;
+        }
+        div#people{
+            /*position: relative;*/
+            width: 20%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.07);
+        }
+        div#list_head{
+            width: 100%;
+            height: 10%;
+            border-bottom: 1px solid rgba(0,0,0, .15);
+        }
+        div#chat_box{
+            width: 80%;
+            height: 100%;
+            overflow-y: hidden;
+        }
+        div#msg_show{
+            width: 100%;
+            height: 61%;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-left: 0;
+            border-right: 0;
+        }
+        #msg_input{
+            z-index: 0;
+            outline: none;
+            padding: 20px 20px;
+            width: 100%;
+            height: 28%;
+            background-color: white;
+            font-size: 20px;
+            overflow: auto;
+            resize: none;
+        }
+        div#info{
+            width: 100%;
+            height: 10%;
+        }
+        div#info span{
+            position: relative;
+            float: left;
+            padding: 20px;
+            height: 30px;
+            width: 50%;
+            left: 25%;
+        }
+        div#send_buttom{
+            z-index: 100;
+            position: absolute;
+            left: 97%;
+            width: 40px;
+            top: 97%;
+            margin-left: -80px; 
+            margin-top: -32px; 
+            display: inline-block;
+            padding: 0 20px;
+            text-align: center;
+            font: 16px/30px Arial, sans-serif;
+
+            background-color: white;
+
+            -moz-border-radius: 30px;
+            border-radius: 30px;
+
+            -webkit-transition: all 0.15s ease;
+            -moz-transition: all 0.15s ease;
+            -o-transition: all 0.15s ease;
+            -ms-transition: all 0.15s ease;
+            transition: all 0.15s ease;
+            border: 1px solid limegreen;
+            text-decoration: none;
+            color: limegreen;
+        }
+        #people ul{
+            list-style: none;
+            text-align: left;
+        }
+        #people li{
+            padding: 30px 0;
+            width: 100%;
+            float: left;
+            border-bottom: 1px solid rgba(0,0,0, .15);
+            /*font-size: 16px;*/
+        }
+        #people li.on{
+            background-color: rgba(0,0,0, .15);
+            border-color: rgba(0,0,0, 0);
+        }
+        #people img{
+            height:21px;
+            width:21px;
+            padding:0px 15px;
+        }
+        #people #icon{
+            height: 20px;
+            width: 20px;
+            padding: 20px;
+        }
+    </style>
 {% endblock %}

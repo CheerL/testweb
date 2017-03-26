@@ -7,7 +7,7 @@
 
 {% block content %}
     <div class="siderbar" id="sidebar_main">
-        <div class="siderbar" id="sidebar_head"><br></div>
+        <div class="siderbar" id="sidebar_head"><img id='icon' src='/static/wx_icon.png'></div>
         <ul id="siderbae_list">
             {% for item in item_list %}
             <li class="off"><a id="{{item.id}}">{{item.text}}</a></li>
@@ -65,12 +65,12 @@
         .page{
             float: left;
             height: 100%;
-            width: 100%;
+            width: 99%;
         }
         .siderbar{
             float: left;
             border: 0px solid rgba(0,0,0, .15);
-            width: 200px;
+            width: 120px;
             color: #f6f9f6;
         }
         .siderbar#sidebar_main{
@@ -79,8 +79,8 @@
         }
         .siderbar#sidebar_head{
             border-bottom-width: 1px;
-            padding: 30px 0;
-            font: 20px Arial, sans-serif; 
+            /*padding: 30px 0;*/
+            height: 10%;
         }
         .siderbar#sidebar_foot{
             position: absolute;
@@ -108,6 +108,11 @@
             float: left;
             padding: 30px 0;
             width: 100%;
+        }
+        img#icon{
+            width: 45px;
+            height: 45px;
+            padding: 10px;
         }
     </style>
 {% endblock %}

@@ -108,7 +108,7 @@ def reply(msg):
             HELPER.add_user(now_user, nick_name, text)
         else:
             if HELPER.robot_reply:
-                return Helper.get_response(text)
+                return HELPER.get_response(text)
     except EXCEPTIONS as error:
         HELPER.my_error(error, now_user, False)
 

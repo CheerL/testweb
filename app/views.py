@@ -2,13 +2,13 @@ import os
 import uuid
 import json
 import threading
-#from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from dwebsocket.decorators import accept_websocket
 from .ucas.login import login as LG
 from .ucas.main import HELPER
-from .ucas import info, EXCEPTIONS, QR_pic, WX_pic
+from .ucas import info, EXCEPTIONS, QR_pic, WX_pic, log_read
 
 MSG_init = '请点击登录按钮'
 MSG_error = '错误,请重新登录'
@@ -31,7 +31,6 @@ clients = []
 def index(request):
     'app初始界面, 有可能是唯一的界面'
     HELPER.host = request.get_host()
-    print(HELPER.host)
     if HELPER.is_login:
         return run_page(request)
     else:
@@ -170,19 +169,53 @@ def info_and_response(msg):
     info(msg)
     return HttpResponse(msg)
 
-def send(request):
+def send_page(request):
     return render(request, 'app/send.html')
 
 def send_to_channel(request, content=None, channel=None):
+    msg = send(content, channel)
+    return HttpResponse(msg)
+
+def send(content=None, channel=None):
     try:
         reciever = []
         for count, client in enumerate(clients):
             if not channel or (channel and client[1] == channel):
                 if client[2]:
-                    client[2].send(content.encode())
+                    client[2].send(str(content).encode())
                     reciever.append(client[0])
                 else:
                     del clients[count]
-        return HttpResponse('send %s to %s:%s' % (content, channel if channel else 'all', reciever))
+        return 'send %s to %s:%s' % (content, channel if channel else 'all', reciever)
     except EXCEPTIONS as error:
-        return HttpResponse('send fail since %s' % error)
+        return 'send fail since %s' % error
+
+def get_log(request, start=0, count=1):
+    log_list = log_read(count=int(count), start=int(start))
+    return JsonResponse(dict(log_list=log_list))
+
+def get_log_all(request):
+    log_list = log_read(count=-1, start=0)
+    return HttpResponse('<br>'.join(log_list))
+
+def get_chat_user(request):
+    user_list = []
+    for user in HELPER.search_list():
+        HELPER.get_head_img(user)
+        user_list.append(user.nick_name)
+    return JsonResponse(dict(user_list=user_list, count=len(user_list)))
+
+@csrf_exempt
+def chat_send(request):
+    try:
+        if request.method == 'POST':
+            msg = request.POST['msg']
+            user = request.POST['user']
+            HELPER.send(msg, user)
+            return JsonResponse(dict(res=True))
+        else:
+            raise NotImplementedError('访问错误')
+    except EXCEPTIONS as error:
+        return JsonResponse(dict(res=False, msg=error))
+
+

@@ -216,8 +216,7 @@ class Helper(object):
                         return user['UserName']
 
                 elif isinstance(user, Helper_User):
-                    if itchat.search_friends(nickName=user.nick_name):
-                        return itchat.search_friends(nickName=user.nick_name)[0]['UserName']
+                    return user.wx_UserName
 
                 elif isinstance(user, str):
                     if '@' in user:
@@ -273,6 +272,7 @@ class Helper(object):
                     sep.get_course_list()
                     user.user_name = sep.user_name
                     user.course_list = str(sep.course_list)
+                    user.wx_UserName = itchat.search_friends(nickName=user.nick_name)[0]['UserName']
                     user.save()
                     info('更新成功, 尝试%d次' % (count + 1))
                     break
@@ -385,14 +385,13 @@ class Helper(object):
 
         def _remind():
             self.remind_tid = pl.get_tid()
-            info('打开新线程:%d, 提醒间隔%f分钟' % (self.remind_tid, REMIND_WAIT))
             time.sleep(int(REMIND_WAIT * 60))
+            info('打开新线程:%d, 提醒间隔%f分钟' % (self.remind_tid, REMIND_WAIT))
             if time.time() - self.last_update > AUTO_UPDATE * 60:
                 self.update_info()
             for user in self.search_list():
                 if user.is_open:
                     _remind_main(user)
-            info('成功提醒并保存')
 
             error_count = 0
             while True:
@@ -563,3 +562,11 @@ class Helper(object):
         '退出登陆'
         self.__init__()
         itchat.logout()
+
+    def get_head_img(self, user):
+        '获取用户头像'
+        nick_name = user.nick_name
+        user_name = user.wx_UserName
+        pic_dir = 'static/head/%s.png' % nick_name
+        if not os.path.isfile(pic_dir) or (time.time() - os.path.getctime(pic_dir) > 24 * 60 * 60):
+            itchat.get_head_img(userName=user_name, picDir=pic_dir)

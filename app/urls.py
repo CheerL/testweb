@@ -3,17 +3,26 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.index),
-    url(r'^login/uuid=(?P<uuid>.*)$', views.login),
     url(r'^login/$', views.login_page),
-    url(r'^run/$', views.run_page),
+    url(r'^run/$', views.run_page),    
+    
+    url(r'^login/uuid=(?P<uuid>.*)$', views.login),
     url(r'^logout/$', views.logout),
-    url(r'^remind$', views.remind),
-    url(r'^setting/$', views.setting),
+    url(r'^remind/$', views.remind),
+
     url(r'^log/$', views.log),
-    url(r'^chat/$', views.chat),
+    url(r'^log/all/', views.get_log_all),
+    url(r'^log/get/start=(?P<start>\d*)&count=(?P<count>\d*)$', views.get_log),
+
     url(r'^socket/test/client_id=(?P<client_id>.*)&channel=(?P<channel>.*)$', views.test_socket),
     url(r'^socket/open/client_id=(?P<client_id>.*)&channel=(?P<channel>.*)$', views.open_socket),
-    url(r'^socket/close/client_id=(?P<client_id>.*)&channel=(?P<channel>.*)$', views.close_socket),
-    url(r'^send/$', views.send),
+    url(r'^socket/close/client_id=(?P<client_id>.*)$', views.close_socket),
+    url(r'^send/$', views.send_page),
     url(r'^send/content=(?P<content>.*)&channel=(?P<channel>.*)$', views.send_to_channel),
+
+    url(r'^chat/$', views.chat),
+    url(r'^chat/user/', views.get_chat_user),
+    url(r'^chat/send/', views.chat_send),
+
+    url(r'^setting/$', views.setting),
 ]

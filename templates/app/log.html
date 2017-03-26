@@ -6,25 +6,39 @@
 {% endblock %}
 
 {% block content %}
+    <div id='main_body'>
     <div id="log_box"></div>
+    <div id="link_box">
+        <a href="/app/log/all/">查看全部日志</a>
+    </div>
+    </div>
 {% endblock %}
 
 {% block script %}
     <script>
+        var log_box = $('div#log_box');
+        var client_id = null;
+        var channel = 'log';
+        var test_url = '/app/socket/test';
+        var close_url = '/app/socket/close';
+        var open_url = '/app/socket/open';
+
+        function get_log(start, count){
+            $.get('/app/log/get/start=' + start + '&count=' + count, function(data){
+                for(i = 0; i < count; i++){
+                    log_box.append('<p>' + data.log_list[i] + '</p>');
+                }
+            });
+        }
+        function show_message(message){
+            log_box.prepend('<p>' + message.data + '</p>');
+        }
         $(function(){
-            var log_box = $('div#log_box');
-            var client_id = null;
-            var channel = 'log';
-            var test_url = '/app/socket/test';
-            var close_url = '/app/socket/close';
-            var open_url = '/app/socket/open';
-            function show_message(message){
-                log_box.prepend('<p>' + message.data + '</p>');
-            }
+            get_log(0,20);
             open_connection(test_url, open_url, client_id, channel, show_message);
             window.onbeforeunload = function(){
-                alert('关闭');
-                close_connection(close_url, client_id, channel);
+                close_connection(close_url, client_id);
+                console.log('close connection')
             };
         });
     </script>
@@ -32,9 +46,16 @@
 
 {% block style %}
     <style>
+        div{
+            float: left;
+        }
+        div#main_body{
+            width: 100%;
+            height: 100%;
+        }
         div#log_box{
             position: relative;
-            height: 85%;
+            height: 80%;
             width: 85%;
             left: 7.5%;
             top: 7.5%;
@@ -44,7 +65,7 @@
             font: 16px;
             word-wrap:break-word;
             word-break:break-all;
-            overflow-y: scroll;
+            overflow-y: visible;
             overflow-x: hidden;
 
             background-color: rgba(0,0,0, .65);
@@ -57,6 +78,32 @@
         p{
             padding: 5px 10px;
             padding-bottom: 0px; 
+        }
+        div#link_box{
+            position: relative;
+            text-decoration: none;
+            left: 42%;
+            width: 16%;
+            top: 10%;
+
+            display: inline-block;
+            padding: 0 20px;
+            text-align: center;
+            font: 16px/30px Arial, sans-serif;
+
+            -moz-border-radius: 30px;
+            border-radius: 30px;
+
+            -webkit-transition: all 0.15s ease;
+            -moz-transition: all 0.15s ease;
+            -o-transition: all 0.15s ease;
+            -ms-transition: all 0.15s ease;
+            transition: all 0.15s ease;
+            border: 1px solid rgba(0, 0, 0, 0.8);
+        }
+        a{
+            color: rgba(0, 0, 0, 0.8);
+            text-decoration: none;
         }
     </style>
 {% endblock %}
