@@ -9,13 +9,13 @@ QR_pic = 'static/QR.png'
 WX_pic = 'static/begin.png'
 
 formatter = logging.Formatter(
-    '%(asctime)s %(filename)s [line:%(lineno)d]\n[%(levelname)s]  %(message)s',
-    '[%d/%b/%Y %H:%M:%S]'
+    '%(asctime)s [%(levelname)s] %(message)s',
+    '%d/%b/%Y %H:%M:%S'
     )
 handle = logging.FileHandler(log_path)
 handle.setLevel(logging.INFO)
 handle.setFormatter(formatter)
-logger = logging.getLogger('ucas-helper')
+logger = logging.getLogger('itchat')
 logger.addHandler(handle)
 
 END_WEEK = 20

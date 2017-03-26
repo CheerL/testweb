@@ -1,0 +1,18 @@
+<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+<input type="text" id="content" value="Hello, World!" />
+<input type="text" id="channel" value="log" />
+<button type="button" id="send">Send message</button>
+<p id='text'></p>
+
+<script>
+    $(function(){
+        $('#send').click(function(){
+            var content = $('#content').val();
+            var channel = $('#channel').val();
+            var url = '/app/send/content=' + content + '&channel=' + channel;
+            $.get(url, function (data) {
+                $('p#text').text(data);
+            });
+        });
+    });
+</script>
