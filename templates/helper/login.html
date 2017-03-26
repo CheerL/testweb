@@ -1,4 +1,4 @@
-{% extends 'app/base.html' %}
+{% extends 'helper/base.html' %}
 {% load static staticfiles %}
 
 {% block title %}
@@ -28,12 +28,12 @@
         function run_func(){
             reload.hide();
             exit.show();
-            $.get('/app/remind');
+            $.get('/helper/remind');
             reload_func();
         }
         function exit_func(){
             if (confirm("你确定要退出么?")) {
-                $.get("/app/logout/", function(data){
+                $.get("/helper/logout/", function(data){
                     alert(data);
                     reload_func();
                 });
@@ -43,7 +43,7 @@
             text.text("正在获取二维码");
             login.hide();
             reload.show();
-            $.get("/app/login/uuid=", function(data){
+            $.get("/helper/login/uuid=", function(data){
                 text.text(data.msg);
                 pic[0].src = '/' + data.pic;
                 if (data.status == true){
@@ -58,10 +58,10 @@
             });
         }
         function reload_func(){
-            window.top.location.href = '/app/'
+            window.top.location.href = '/helper/'
         }
         function after_scan(uuid){
-            $.get("/app/login/uuid=" + uuid, function(data){
+            $.get("/helper/login/uuid=" + uuid, function(data){
                 text.text(data.msg);
                 pic[0].src = '/' + data.pic;
                 if (data.status == true){

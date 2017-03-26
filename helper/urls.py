@@ -4,8 +4,8 @@ from . import views
 urlpatterns = [
     url(r'^$', views.index),
     url(r'^login/$', views.login_page),
-    url(r'^run/$', views.run_page),    
-    
+    url(r'^run/$', views.run_page),
+
     url(r'^login/uuid=(?P<uuid>.*)$', views.login),
     url(r'^logout/$', views.logout),
     url(r'^remind/$', views.remind),

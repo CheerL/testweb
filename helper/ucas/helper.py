@@ -396,7 +396,7 @@ class Helper(object):
             error_count = 0
             while True:
                 try:
-                    requests.get('http://%s/app/remind' % self.host, timeout=TIMEOUT)
+                    requests.get('http://%s/helper/remind' % self.host, timeout=TIMEOUT)
                     break
                 except EXCEPTIONS as error:
                     info(error)

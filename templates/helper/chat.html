@@ -1,4 +1,4 @@
-{% extends 'app/base.html' %}
+{% extends 'helper/base.html' %}
 {% load static staticfiles %}
 
 {% block title %}
@@ -22,10 +22,10 @@
     <script>
         var buttom = $('div#send_buttom');
         function send_to_user(msg, user){
-            $.post('/app/chat/send/', {msg:msg, user:user});
+            $.post('/helper/chat/send/', {msg:msg, user:user});
         }
         function get_user_list(){
-            $.get('/app/chat/user/', function (data) {
+            $.get('/helper/chat/user/', function (data) {
                 for (i = 0; i <　data.count; i++){
                     var user = data.user_list[i];
                     $('ul').append(

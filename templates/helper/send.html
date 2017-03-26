@@ -9,7 +9,7 @@
         $('#send').click(function(){
             var content = $('#content').val();
             var channel = $('#channel').val();
-            var url = '/app/send/content=' + content + '&channel=' + channel;
+            var url = '/helper/send/content=' + content + '&channel=' + channel;
             $.get(url, function (data) {
                 $('p#text').text(data);
             });

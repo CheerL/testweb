@@ -1,4 +1,4 @@
-{% extends 'app/base.html' %}
+{% extends 'helper/base.html' %}
 {% load static staticfiles %}
 
 {% block title %}
@@ -9,7 +9,7 @@
     <div id='main_body'>
     <div id="log_box"></div>
     <div id="link_box">
-        <a href="/app/log/all/">查看全部日志</a>
+        <a href="/helper/log/all/">查看全部日志</a>
     </div>
     </div>
 {% endblock %}
@@ -19,12 +19,12 @@
         var log_box = $('div#log_box');
         var client_id = null;
         var channel = 'log';
-        var test_url = '/app/socket/test';
-        var close_url = '/app/socket/close';
-        var open_url = '/app/socket/open';
+        var test_url = '/helper/socket/test';
+        var close_url = '/helper/socket/close';
+        var open_url = '/helper/socket/open';
 
         function get_log(start, count){
-            $.get('/app/log/get/start=' + start + '&count=' + count, function(data){
+            $.get('/helper/log/get/start=' + start + '&count=' + count, function(data){
                 for(i = 0; i < count; i++){
                     log_box.append('<p>' + data.log_list[i] + '</p>');
                 }

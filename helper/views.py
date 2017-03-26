@@ -83,7 +83,7 @@ def run_page(request):
         item_list=ITEM_LIST,
         page='login'
     )
-    return render(request, 'app/run.html', res)
+    return render(request, 'helper/run.html', res)
 
 def login_page(request):
     status = HELPER.is_login
@@ -93,16 +93,16 @@ def login_page(request):
         msg=msg,
         pic=WX_pic
     )
-    return render(request, 'app/login.html', res)
+    return render(request, 'helper/login.html', res)
 
 def setting(request):
-    return render(request, 'app/setting.html')
+    return render(request, 'helper/setting.html')
 
 def log(request):
-    return render(request, 'app/log.html')
+    return render(request, 'helper/log.html')
 
 def chat(request):
-    return render(request, 'app/chat.html')
+    return render(request, 'helper/chat.html')
 
 def test_socket(request, client_id, channel):
     if not channel:
@@ -170,7 +170,7 @@ def info_and_response(msg):
     return HttpResponse(msg)
 
 def send_page(request):
-    return render(request, 'app/send.html')
+    return render(request, 'helper/send.html')
 
 def send_to_channel(request, content=None, channel=None):
     msg = send(content, channel)
