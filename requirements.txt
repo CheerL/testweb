@@ -21,3 +21,7 @@ whitenoise==3.3.0
 yarg==0.1.9
 itchat>=1.2.27
 dwebsocket==0.4.2
+eventlet==0.20.1
+gevent==1.2.1
+gevent-socketio==0.2.1
+gevent-websocket==0.10.1
