@@ -8,7 +8,7 @@ from django.http import HttpResponse, JsonResponse
 from dwebsocket.decorators import accept_websocket
 from .ucas.login import login as LG
 from .ucas.main import HELPER
-from .ucas import info, EXCEPTIONS, QR_pic, WX_pic, log_read
+from .ucas import info, EXCEPTIONS, QR_pic, WX_pic, log_read, send, clients
 
 MSG_init = '请点击登录按钮'
 MSG_error = '错误,请重新登录'
@@ -25,7 +25,6 @@ ITEM_LIST = [
     {'text':'设置', 'id':'setting'},
 ]
 
-clients = []
 # Create your views here.
 
 def index(request):
@@ -175,20 +174,6 @@ def send_page(request):
 def send_to_channel(request, content=None, channel=None):
     msg = send(content, channel)
     return HttpResponse(msg)
-
-def send(content=None, channel=None):
-    try:
-        reciever = []
-        for count, client in enumerate(clients):
-            if not channel or (channel and client[1] == channel):
-                if client[2]:
-                    client[2].send(str(content).encode())
-                    reciever.append(client[0])
-                else:
-                    del clients[count]
-        return 'send %s to %s:%s' % (content, channel if channel else 'all', reciever)
-    except EXCEPTIONS as error:
-        return 'send fail since %s' % error
 
 def get_log(request, start=0, count=1):
     log_list = log_read(count=int(count), start=int(start))

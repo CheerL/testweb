@@ -3,7 +3,7 @@ import time
 import sys
 import logging
 # from .. import views
-from ..views import send
+# from ..views import send
 
 log_path = 'static/run.log'
 pkl_path = 'static/helper.pkl'
@@ -39,6 +39,8 @@ EXCEPTIONS = (
     )
 TIMEOUT = 2
 
+clients = []
+
 def log_read(path=log_path, count=1, start=0):
     with open(path, 'r') as file:
         content = file.readlines()
@@ -53,3 +55,17 @@ def info(msg):
     logger.info(msg)
     # views.send(log_read(log_path)[0])
     send(log_read(log_path)[0])
+
+def send(content=None, channel=None):
+    try:
+        reciever = []
+        for count, client in enumerate(clients):
+            if not channel or (channel and client[1] == channel):
+                if client[2]:
+                    client[2].send(str(content).encode())
+                    reciever.append(client[0])
+                else:
+                    del clients[count]
+        return 'send %s to %s:%s' % (content, channel if channel else 'all', reciever)
+    except EXCEPTIONS as error:
+        return 'send fail since %s' % error
