@@ -3,6 +3,7 @@ import time
 import sys
 import logging
 from .. import views
+from ..views import send
 
 log_path = 'static/run.log'
 pkl_path = 'static/helper.pkl'
@@ -50,4 +51,5 @@ def log_read(path=log_path, count=1, start=0):
 def info(msg):
     '打印日志'
     logger.info(msg)
-    views.send(log_read(log_path)[0])
+    # views.send(log_read(log_path)[0])
+    send(log_read(log_path)[0])
