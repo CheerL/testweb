@@ -29,7 +29,6 @@ ITEM_LIST = [
 
 def index(request):
     'app初始界面, 有可能是唯一的界面'
-    HELPER.host = request.get_host()
     if HELPER.is_login:
         return run_page(request)
     else:

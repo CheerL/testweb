@@ -3,6 +3,7 @@
 import os
 import re
 import time
+import socket
 from ast import literal_eval
 import datetime
 import requests
@@ -26,7 +27,6 @@ class Helper(object):
     remind_alive = True
     remind_tid = None
     robot_reply = True
-    host = None
     last_update = 0
     keep_alive_name = None
 
@@ -34,7 +34,7 @@ class Helper(object):
         '所有参数修改为初始值, 结束remind进程'
         self.is_login = False
         self.robot_reply = self.remind_alive = True
-        self.host = None
+        self.host = socket.gethostbyname(socket.gethostbyname())
         self.last_update = 0
         if pl.search_thread('remind'):
             pl.kill_thread(tid=self.remind_tid)
