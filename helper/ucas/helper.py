@@ -570,3 +570,6 @@ class Helper(object):
         pic_dir = 'static/head/%s.png' % nick_name
         if not os.path.isfile(pic_dir) or (time.time() - os.path.getctime(pic_dir) > 24 * 60 * 60):
             itchat.get_head_img(userName=user_name, picDir=pic_dir)
+
+    def keep_alive():
+        pass

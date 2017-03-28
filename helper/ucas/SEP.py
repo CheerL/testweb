@@ -3,7 +3,6 @@
 import re
 import time
 import requests
-import pandas as pd
 from bs4 import BeautifulSoup as Bs
 from .wheel import parallel as pl
 from . import info, EXCEPTIONS, TIMEOUT
@@ -217,13 +216,6 @@ class UCASSEP(object):
             course = dict(num=num, name=name, weeks=weeks, place=place, times=times)
             self.course_list.append(course)
         _rep('%s 课表获取成功' % self.user_name)
-
-    def save_course_list(self):
-        '保存课程列表'
-        filename = '{}.csv'.format(self.user_name)
-        pd.DataFrame(self.course_list).to_csv(filename, encoding='utf-8')
-        _rep('课表已保存为{}'.format(filename))
-
 
 def main():
     '主函数'
