@@ -116,6 +116,7 @@ def reply(msg):
 def text_reply(msg):
     '回复文字'
     return reply(msg)
+
 @itchat.msg_register(itchat.content.FRIENDS)
 def add_friend(msg):
     '自动接受好友申请'

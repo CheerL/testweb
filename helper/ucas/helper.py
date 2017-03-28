@@ -15,7 +15,7 @@ from . import EXCEPTIONS, info, WEEK, TIMEOUT, END_WEEK, WEEK_DICT, COURSE_NUM, 
 from ..models import Helper_User
 
 TL_KEY = '71f28bf79c820df10d39b4074345ef8c' #图灵机器人密钥
-REMIND_WAIT = 1#分钟
+REMIND_WAIT = 5#分钟
 REMIND_BEFORE = 30#分钟
 AUTO_UPDATE = 60#分钟
 A_WEEK = 60 * 60 * 24 * 7#秒
@@ -28,6 +28,7 @@ class Helper(object):
     robot_reply = True
     host = None
     last_update = 0
+    keep_alive_name = None
 
     def __init__(self):
         '所有参数修改为初始值, 结束remind进程'
@@ -285,6 +286,13 @@ class Helper(object):
             for user in self.search_list():
                 self.update_info(user)
             self.last_update = time.time()
+
+    def user_name_update(self):
+        '更新用户名, 在登陆时调用'
+        for user in self.search_list():
+            user.wx_UserName = itchat.search_friends(nickName=user.nick_name)[0]['UserName']
+            user.save()
+        self.keep_alive_name = itchat.search_mps(name='微信支付')[0]['UserName']
 
     def add_user(self, now_user, nick_name, text):
         '新增提醒用户'
@@ -571,5 +579,6 @@ class Helper(object):
         if not os.path.isfile(pic_dir) or (time.time() - os.path.getctime(pic_dir) > 24 * 60 * 60):
             itchat.get_head_img(userName=user_name, picDir=pic_dir)
 
-    def keep_alive():
-        pass
+    def keep_alive(self):
+        '保活'
+        self.send('1', self.keep_alive_name)

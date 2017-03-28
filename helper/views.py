@@ -193,6 +193,7 @@ def get_chat_user(request):
 
 @csrf_exempt
 def chat_send(request):
+    '主动发送消息'
     try:
         if request.method == 'POST':
             msg = request.POST['msg']
