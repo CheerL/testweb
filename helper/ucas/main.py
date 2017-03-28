@@ -4,7 +4,7 @@ import time
 import itchat
 from . import helper as hp, EXCEPTIONS, info
 from .wheel import parallel as pl
-#from .wheel.recognize import spech_recognize
+from .wheel.recognize import spech_recognize
 
 HELPER = hp.Helper()
 ADMIN_HELP = '''?data?   None
@@ -121,19 +121,18 @@ def add_friend(msg):
     '自动接受好友申请'
     itchat.add_friend(**msg['Text'])
     itchat.send('Nice to see you!\n你可以试着输入"???"来查看帮助信息', msg['Text']['userName'])
-'''
+
 @itchat.msg_register(['Recording', 'Attachment', 'Video'])
 def download_files(msg):
     '接收语音'
     voice_path = 'static/' + msg['FileName']
     msg['Text'](voice_path)
-    #return spech_recognize(voice_path)
+    return spech_recognize(voice_path)
     
-    itchat.send(
-        '@%s@%s'%('img' if msg['Type'] == 'Picture' else 'fil', voice_name),
-        msg['FromUserName']
-        )
-    '''
-    #msg['Text'] = ''
-    #msg['MsgType'] = 'Text'
-    #return
+    # itchat.send(
+    #     '@%s@%s'%('img' if msg['Type'] == 'Picture' else 'fil', voice_name),
+    #     msg['FromUserName']
+    #     )
+    # msg['Text'] = ''
+    # msg['MsgType'] = 'Text'
+    # return
