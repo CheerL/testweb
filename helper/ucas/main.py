@@ -127,8 +127,11 @@ def download_files(msg):
     '接收语音'
     voice_path = 'static/' + msg['FileName']
     msg['Text'](voice_path)
+    now_user = msg['FromUserName']
+    user = itchat.search_friends(userName=now_user)
+    nick_name = user['NickName']
+    info('收到来自%s的语音' % (nick_name))
     return spech_recognize(voice_path)
-    
     # itchat.send(
     #     '@%s@%s'%('img' if msg['Type'] == 'Picture' else 'fil', voice_name),
     #     msg['FromUserName']
