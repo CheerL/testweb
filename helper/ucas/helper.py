@@ -34,7 +34,7 @@ class Helper(object):
         '所有参数修改为初始值, 结束remind进程'
         self.is_login = False
         self.robot_reply = self.remind_alive = True
-        self.host = socket.gethostbyname(socket.gethostname())
+        self.host = '127.0.0.1'#socket.gethostbyname(socket.gethostname())
         self.last_update = 0
         if pl.search_thread('remind'):
             pl.kill_thread(tid=self.remind_tid)
