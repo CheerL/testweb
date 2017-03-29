@@ -34,7 +34,6 @@ class Helper(object):
         '所有参数修改为初始值, 结束remind进程'
         self.is_login = False
         self.robot_reply = self.remind_alive = True
-        self.host = '127.0.0.1:8000'#socket.gethostbyname(socket.gethostname())
         self.last_update = 0
         if pl.search_thread('remind'):
             pl.kill_thread(tid=self.remind_tid)
@@ -395,7 +394,7 @@ class Helper(object):
             self.remind_tid = pl.get_tid()
             time.sleep(int(REMIND_WAIT * 60))
             info('打开新线程:%d, 提醒间隔%d分%d秒' % (self.remind_tid, REMIND_WAIT//1, REMIND_WAIT%1*60))
-            info('当前线程%s' % str(pl.thread_list('BOTH')))
+            #info('当前线程%s' % str(pl.thread_list('BOTH')))
             if time.time() - self.last_update > AUTO_UPDATE * 60:
                 self.update_info()
             for user in self.search_list():
