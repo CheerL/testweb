@@ -2,8 +2,9 @@ collected_static/
 itchat.pkl
 *.ipynb
 pic/*.png
-!data.csv
+*.csv
 test.*
 test/
 *.mp3
+*.pyc
 migrations/
