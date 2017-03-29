@@ -17,6 +17,7 @@ def login(pic_dir, status, uuid=None):
             info('HotReload成功')
             itchat.run(blockThread=False)
             HELPER.is_login = True
+            HELPER.remind()
             return 'hot', None
         if status == 0:
             url = 'https://login.weixin.qq.com/'
@@ -25,6 +26,7 @@ def login(pic_dir, status, uuid=None):
             return 'uuid', uuid
         elif status == 1:
             __login_after_qr(uuid)
+            HELPER.remind()
             os.remove(pic_dir)
             return True
         else:
@@ -81,5 +83,4 @@ def __login_after_qr(uuid):
     itchat.run(blockThread=False)
     itchat.dump_login_status(pkl_path)
     HELPER.user_name_update()
-    HELPER.remind()
     HELPER.is_login = True

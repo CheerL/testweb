@@ -107,6 +107,17 @@ def run_thread_pool(req_list, is_lock=True, limit_num=8):
     if is_lock:
         pool.wait()
 
+def thread_list(style="OBJ"):
+    '返回当前线程列表'
+    if style == "ID":
+        return [thread.ident for thread in thread_list()]
+    elif style == "NAME":
+        return [thread.name for thread in thread_list()]
+    if style == "BOTH":
+        return [(thread.name, thread.ident) for thread in thread_list()]
+    elif style == "OBJ":
+        return threading.enumerate()
+
 def search_thread(name=None, ident=None, part=False):
     '返回是否存在名为name的线程'
     def _res(thread, part):
@@ -114,9 +125,8 @@ def search_thread(name=None, ident=None, part=False):
             return thread
         else:
             return True
-
-    thread_list = threading.enumerate()
-    for thread in thread_list:
+ 
+    for thread in thread_list():
         if ident:
             if thread.ident == ident:
                 _res(thread, part)
