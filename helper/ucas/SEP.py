@@ -3,9 +3,11 @@
 import re
 import time
 import requests
+import lxml
 from bs4 import BeautifulSoup as Bs
 from .wheel import parallel as pl
 from . import info, EXCEPTIONS, TIMEOUT
+from .. import models
 
 def _info(msg):
     return '%s\n%s' % (time.ctime(), str(msg))
@@ -182,15 +184,74 @@ class UCASSEP(object):
             _rep('课程未选上, 无法退课')
             return False
 
-    def get_all_list(self, num):
+    def save_course(self, num):
         '获取课程列表'
-        base_url = 'http://jwxk.ucas.ac.cn/course/coursetime/'
+        def get_course_detail(num):
+            link = 'http://jwxk.ucas.ac.cn/course/coursetime/' + str(num)
+            # soup = self._get_page(link)
+            # if soup.find_all('title')[0].contents[0] != '课程时间地点信息-选课系统'\
+            # or not soup.find_all('th'):
+            #     return None
+            # name = soup.find_all('p')[0].contents[0]
+            # weeks = soup.find_all('th', text='上课周次')[0]\
+            #     .next_sibling.next_sibling.contents[0].split('、')
+            # weeks = (int(weeks[0]) - 1, int(weeks[-1]) - 1)
+            # place = soup.find_all('th', text='上课地点')[0].next_sibling.next_sibling.contents[0]
+            # times = [td.next_sibling.next_sibling.contents[0].replace('。', '').split('： ')\
+            #     for td in soup.find_all('th', text='上课时间')]
+            # times = [(
+            #     re.findall(re.compile(r'(星期.?)'), each[0])[0],
+            #     tuple(re.findall(re.compile(r'(\d*)[、节]'), each[1]))
+            #     ) for each in times]
+            # return dict(name=name, weeks=weeks, place=place, times=times)
+            tree = lxml.etree.HTML(self.session.get(url=link).content)
+            if tree.xpath('//title/text()')[0] != '课程时间地点信息-选课系统'\
+            or not tree.xpath('//th'):
+                return None
+            name = (tree.xpath('//p/text()'))[0][5:]
+            place = tree.xpath('//th[text()="上课地点"]/../td/text()')[0]
+            times = [(re.findall(r'(星期.?)：', each)[0], re.findall(r'(\d*)[、节]', each))
+                     for each in tree.xpath('//th[text()="上课时间"]/../td/text()')]
+            weeks_temp = tree.xpath('//th[text()="上课周次"]/../td/text()')[0].split('、')
+            weeks = (int(weeks_temp[0]) - 1, int(weeks_temp[-1]) - 1)
+            return dict(name=name, weeks=weeks, place=place, times=times)
+
         try:
-            soup = self._get_page(base_url + str(num))
-            title = str(soup.find('p').contents[0])
-            pl.my_print('%s %s' % (num, title), 'temp.txt', 2)
-        except EXCEPTIONS:
-            pass
+            new_course = models.Course.objects.get(ident=num)
+            if new_course.place:
+                # info('编号为为%d的课程已经存在' % num)
+                return
+        except models.Course.DoesNotExist:
+            new_course = models.Course.objects.create(ident=num)
+
+        try:
+            courese = get_course_detail(num)
+            if not courese:
+                # info('不存在编号%d对应的课程' % num)
+                new_course.delete()
+                return
+            #info(str(courese))
+            for times in courese['times']:
+                try:
+                    coursetime = models.Coursetime.objects.get(
+                        weekday=models.Weekday.objects.get(day=times[0]),
+                        start=int(times[1][0]),
+                        end=int(times[1][-1])
+                        )
+                except models.Coursetime.DoesNotExist:
+                    coursetime = models.Coursetime.objects.create(
+                        weekday=models.Weekday.objects.get(day=times[0]),
+                        start=int(times[1][0]),
+                        end=int(times[1][-1])
+                    )
+                new_course.coursetimes.add(coursetime)
+            new_course.start_week, new_course.end_week = courese['weeks'][0], courese['weeks'][1]
+            new_course.name = courese['name']
+            new_course.place = courese['place']
+            new_course.save()
+            # info('成功保存编号为%d的课程' % num)
+        except EXCEPTIONS as error:
+            info(error)
 
     def get_course_list(self):
         '获取已选择课程, 并储存'
@@ -200,29 +261,18 @@ class UCASSEP(object):
         pattern = re.compile(r'/course/coursetime/(\d*)')
         for item in soup.find_all('a', href=pattern):
             num = re.findall(pattern, item['href'])[0]
-            name = item.contents[0]
-            link = 'http://jwxk.ucas.ac.cn/course/coursetime/' + num
-            soup = self._get_page(link)
-            weeks = soup.find_all('th', text='上课周次')[0]\
-                .next_sibling.next_sibling.contents[0].split('、')
-            weeks = (str(int(weeks[0]) - 1), str(int(weeks[-1]) - 1))
-            place = soup.find_all('th', text='上课地点')[0].next_sibling.next_sibling.contents[0]
-            times = [td.next_sibling.next_sibling.contents[0].replace('。', '').split('： ')\
-                for td in soup.find_all('th', text='上课时间')]
-            times = [(
-                re.findall(re.compile(r'(星期.?)'), each[0])[0],
-                tuple(re.findall(re.compile(r'(\d*)[、节]'), each[1]))
-                ) for each in times]
-            course = dict(num=num, name=name, weeks=weeks, place=place, times=times)
-            self.course_list.append(course)
-        _rep('%s 课表获取成功' % self.user_name)
+            self.course_list.append(num)
+        info('%s 课表获取成功' % self.user_name)
 
 def main():
     '主函数'
     try:
         LCR = UCASSEP('1017801883@qq.com', 'lcr0717')
-        req = [(LCR.get_all_list, (num,)) for num in range(133000)]
-        pl.run_thread_pool(req, is_lock=True, limit_num=30)
+        for num in range(1780, 133500):
+            try:
+                LCR.save_course(num)
+            except EXCEPTIONS:
+                pass
     except EXCEPTIONS as error:
         _error(error, False)
 

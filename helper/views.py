@@ -8,7 +8,7 @@ from django.http import HttpResponse, JsonResponse
 from dwebsocket.decorators import accept_websocket
 from .ucas.login import login as LG
 from .ucas.main import HELPER
-from .ucas import info, EXCEPTIONS, QR_pic, WX_pic, log_read, send, clients
+from .ucas import info, EXCEPTIONS, QR_pic, WX_pic, log_read, send, clients, SEP
 
 MSG_init = '请点击登录按钮'
 MSG_error = '错误,请重新登录'
@@ -230,6 +230,7 @@ def open_socket(request, client_id, channel):
     return HttpResponse('socket close')
 
 def send_page(request):
+    SEP.main()
     return render(request, 'helper/send.html')
 
 def send_to_channel(request, content=None, channel=None):

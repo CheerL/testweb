@@ -1,5 +1,8 @@
 from django.contrib import admin
-from .models import Helper_User
+from . import models
 
 # Register your models here.
-admin.site.register(Helper_User)
+admin.site.register(models.Helper_User)
+admin.site.register(models.Course)
+admin.site.register(models.Coursetime)
+admin.site.register(models.Weekday)
