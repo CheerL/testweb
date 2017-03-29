@@ -16,7 +16,7 @@ from . import EXCEPTIONS, info, WEEK, TIMEOUT, END_WEEK, WEEK_DICT, COURSE_NUM, 
 from ..models import Helper_User
 
 TL_KEY = '71f28bf79c820df10d39b4074345ef8c' #图灵机器人密钥
-REMIND_WAIT = 5#分钟
+REMIND_WAIT = 0.5#分钟
 REMIND_BEFORE = 30#分钟
 AUTO_UPDATE = 60#分钟
 A_WEEK = 60 * 60 * 24 * 7#秒
@@ -394,7 +394,7 @@ class Helper(object):
         def _remind():
             self.remind_tid = pl.get_tid()
             time.sleep(int(REMIND_WAIT * 60))
-            info('打开新线程:%d, 提醒间隔%f分钟' % (self.remind_tid, REMIND_WAIT))
+            info('打开新线程:%d, 提醒间隔%d分%d秒' % (self.remind_tid, REMIND_WAIT//1, REMIND_WAIT%1*60))
             if time.time() - self.last_update > AUTO_UPDATE * 60:
                 self.update_info()
             for user in self.search_list():
@@ -402,19 +402,14 @@ class Helper(object):
                     _remind_main(user)
 
             error_count = 0
-            while True:
-                try:
-                    requests.get('http://%s/helper/remind' % self.host, timeout=TIMEOUT)
-                    break
-                except EXCEPTIONS as error:
-                    info(error)
-                    if error_count < 5:
-                        error_count += 1
-                        time.sleep(3)
-                    else:
-                        info('打开新线程失败, 自动提醒结束, 尝试%d次' % (error_count))
-                        self.remind_alive = False
-                        return
+            try:
+                self.remind()
+                return
+            except EXCEPTIONS as error:
+                info(error)
+                info('打开新线程失败, 自动提醒结束, 尝试%d次' % (error_count))
+                self.remind_alive = False
+                return
 
         if self.__get_now_week() > END_WEEK:
             self.remind_alive = False

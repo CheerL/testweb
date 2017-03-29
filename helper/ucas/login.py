@@ -81,4 +81,5 @@ def __login_after_qr(uuid):
     itchat.run(blockThread=False)
     itchat.dump_login_status(pkl_path)
     HELPER.user_name_update()
+    HELPER.remind()
     HELPER.is_login = True
