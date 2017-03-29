@@ -1,7 +1,7 @@
 import os
-import uuid
-import json
+from uuid import uuid1
 import threading
+from ast import literal_eval
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
@@ -29,11 +29,61 @@ ITEM_LIST = [
 
 def index(request):
     'app初始界面, 有可能是唯一的界面'
-    if HELPER.is_login:
+    if HELPER.IS_LOGIN:
         return run_page(request)
     else:
         return login_page(request)
+#跳转页面部分
+def run_page(request):
+    res = dict(
+        status=HELPER.IS_LOGIN,
+        item_list=ITEM_LIST,
+        page='login'
+    )
+    return render(request, 'helper/run.html', res)
 
+def login_page(request):
+    status = HELPER.IS_LOGIN
+    msg = MSG_login if status else MSG_init
+    res = dict(
+        status=status,
+        msg=msg,
+        pic=WX_pic
+    )
+    return render(request, 'helper/login.html', res)
+
+def log_page(request):
+    return render(request, 'helper/log.html')
+
+def chat_page(request):
+    return render(request, 'helper/chat.html')
+
+def setting_page(request):
+    item_list = vars(HELPER.settings).items()
+    bool_list = [
+        {
+            'name':name,
+            'show':HELPER.settings.trans_to_chinese(name),
+            'val':val
+        }
+        for name, val in item_list if isinstance(val, bool)
+    ]
+    num_list = [
+        {
+            'name':name,
+            'show':HELPER.settings.trans_to_chinese(name),
+            'val':val
+        }
+        for name, val in item_list if not isinstance(val, bool) and name != 'LAST_UPDATE'
+    ]
+    show_list = []
+    return render(
+        request,
+        'helper/setting.html',
+        {'bool_list':bool_list, 'num_list':num_list, 'show_list':show_list}
+        )
+
+#登陆 api
 def login(request, uuid=None):
     '终于登录了'
     try:
@@ -56,7 +106,6 @@ def login(request, uuid=None):
             ))
     except EXCEPTIONS as error:
         info(error)
-        HELPER.__init__()
         if os.path.isfile(QR_pic):
             os.remove(QR_pic)
         return JsonResponse(dict(
@@ -68,45 +117,63 @@ def login(request, uuid=None):
 def logout(request):
     '退出登录'
     HELPER.logout()
-    return info_and_response(MSG_logout)
+    info(MSG_logout)
+    return HttpResponse(MSG_logout)
 
-def remind(request):
-    '提醒'
-    HELPER.remind()
-    return info_and_response(MSG_remind)
+#日志 api
+def get_log(request, start=0, count=1):
+    log_list = log_read(count=int(count), start=int(start))
+    return JsonResponse(dict(log_list=log_list))
 
-def run_page(request):
-    res = dict(
-        status=HELPER.is_login,
-        item_list=ITEM_LIST,
-        page='login'
-    )
-    return render(request, 'helper/run.html', res)
+def get_log_all(request):
+    log_list = log_read(count=-1, start=0)
+    return HttpResponse('<br>'.join(log_list))
 
-def login_page(request):
-    status = HELPER.is_login
-    msg = MSG_login if status else MSG_init
-    res = dict(
-        status=status,
-        msg=msg,
-        pic=WX_pic
-    )
-    return render(request, 'helper/login.html', res)
+#聊天 api
+def get_chat_user(request):
+    user_list = []
+    for user in HELPER.search_list():
+        HELPER.get_head_img(user)
+        user_list.append(user.nick_name)
+    return JsonResponse(dict(user_list=user_list, count=len(user_list)))
 
-def setting(request):
-    return render(request, 'helper/setting.html')
+@csrf_exempt
+def chat_send(request):
+    '主动发送消息'
+    try:
+        if request.method == 'POST':
+            msg = request.POST['msg']
+            user = request.POST['user']
+            HELPER.send(msg, user)
+            return JsonResponse(dict(res=True))
+        else:
+            raise NotImplementedError('访问错误')
+    except EXCEPTIONS as error:
+        return JsonResponse(dict(res=False, msg=error))
 
-def log(request):
-    return render(request, 'helper/log.html')
+#设置api
+@csrf_exempt
+def setting_change(request):
+    if request.method == 'POST':
+        print(request.POST['res'])
+        items = literal_eval(request.POST['res'])
+        print(items)
+        HELPER.settings.VOICE_REPLY = items['VOICE_REPLY']
+        HELPER.settings.UPDATE_WAIT = items['UPDATE_WAIT']
+        HELPER.settings.REMIND_ALIVE = items['REMIND_ALIVE']
+        HELPER.settings.REMIND_BEFORE = items['REMIND_BEFORE']
+        HELPER.settings.REMIND_WAIT = items['REMIND_WAIT']
+        HELPER.settings.ROBOT_REPLY = items['ROBOT_REPLY']
+        return JsonResponse({'res':True, 'msg':'修改成功\n' + str(HELPER.settings)})
+    else:
+        return JsonResponse({'res':False, 'msg':'访问错误'})
 
-def chat(request):
-    return render(request, 'helper/chat.html')
-
+#socket api
 def test_socket(request, client_id, channel):
     if not channel:
         return JsonResponse({'res':False, 'msg':'channel is empty'})
     if not client_id or client_id == 'null':
-        client_id = str(uuid.uuid1())
+        client_id = str(uuid1())
     else:
         for count, client in enumerate(clients):
             if client[0] == client_id:
@@ -162,45 +229,9 @@ def open_socket(request, client_id, channel):
             lock.release()
     return HttpResponse('socket close')
 
-def info_and_response(msg):
-    '返回HTTP相应, 并输出日志'
-    info(msg)
-    return HttpResponse(msg)
-
 def send_page(request):
     return render(request, 'helper/send.html')
 
 def send_to_channel(request, content=None, channel=None):
     msg = send(content, channel)
     return HttpResponse(msg)
-
-def get_log(request, start=0, count=1):
-    log_list = log_read(count=int(count), start=int(start))
-    return JsonResponse(dict(log_list=log_list))
-
-def get_log_all(request):
-    log_list = log_read(count=-1, start=0)
-    return HttpResponse('<br>'.join(log_list))
-
-def get_chat_user(request):
-    user_list = []
-    for user in HELPER.search_list():
-        HELPER.get_head_img(user)
-        user_list.append(user.nick_name)
-    return JsonResponse(dict(user_list=user_list, count=len(user_list)))
-
-@csrf_exempt
-def chat_send(request):
-    '主动发送消息'
-    try:
-        if request.method == 'POST':
-            msg = request.POST['msg']
-            user = request.POST['user']
-            HELPER.send(msg, user)
-            return JsonResponse(dict(res=True))
-        else:
-            raise NotImplementedError('访问错误')
-    except EXCEPTIONS as error:
-        return JsonResponse(dict(res=False, msg=error))
-
-

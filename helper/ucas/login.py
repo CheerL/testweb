@@ -16,7 +16,7 @@ def login(pic_dir, status, uuid=None):
         if os.path.isfile(pkl_path) and itchat.load_login_status(pkl_path):
             info('HotReload成功')
             itchat.run(blockThread=False)
-            HELPER.is_login = True
+            HELPER.IS_LOGIN = True
             HELPER.remind()
             return 'hot', None
         if status == 0:
@@ -83,4 +83,4 @@ def __login_after_qr(uuid):
     itchat.run(blockThread=False)
     itchat.dump_login_status(pkl_path)
     HELPER.user_name_update()
-    HELPER.is_login = True
+    HELPER.IS_LOGIN = True

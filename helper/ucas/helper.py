@@ -3,7 +3,6 @@
 import os
 import re
 import time
-import socket
 from ast import literal_eval
 import datetime
 import requests
@@ -12,33 +11,17 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from .wheel import parallel as pl
 from .SEP import UCASSEP
-from . import EXCEPTIONS, info, WEEK, TIMEOUT, END_WEEK, WEEK_DICT, COURSE_NUM, COURSE_DICT
+from . import EXCEPTIONS, info, WEEK, END_WEEK, WEEK_DICT, COURSE_NUM, COURSE_DICT, setting
 from ..models import Helper_User
 
 TL_KEY = '71f28bf79c820df10d39b4074345ef8c' #图灵机器人密钥
-REMIND_WAIT = 1#分钟
-REMIND_BEFORE = 30#分钟
-AUTO_UPDATE = 60#分钟
-A_WEEK = 60 * 60 * 24 * 7#秒
 
 class Helper(object):
     '助手类'
-    is_login = False
-    remind_alive = True
-    remind_tid = None
-    robot_reply = True
-    last_update = 0
-    keep_alive_name = None
-
+    # keep_alive_name = None
     def __init__(self):
-        '所有参数修改为初始值, 结束remind进程'
-        self.is_login = False
-        self.robot_reply = self.remind_alive = True
-        self.last_update = 0
-        if pl.search_thread('remind'):
-            pl.kill_thread(tid=self.remind_tid)
-            time.sleep(1)
-            info('线程已关闭')
+        self.IS_LOGIN = False
+        self.settings = setting.Setting()
 
     @staticmethod
     def __get_now_week():
@@ -104,16 +87,16 @@ class Helper(object):
                             table[index, num - 1] = course['name']
             return table
 
-        def draw_font(x, y, text, color=(0, 0, 0), indent=0.5):
-            '打印第y行x列的字, 根据该块大小和字数进行分行打印, 调整应该打印的位置'
+        def draw_font(col, row, text, color=(0, 0, 0), indent=0.5):
+            '打印第row行col列的字, 根据该块大小和字数进行分行打印, 调整应该打印的位置'
             #自动计算调整参数
-            line_max = int((width_list[x + 1] - width_list[x]) / font_size - indent * 2)
+            line_max = int((width_list[col + 1] - width_list[col]) / font_size - indent * 2)
             if len(text) % line_max:
                 line_num = len(text) // line_max + 1
             else:
                 line_num = len(text) // line_max
-            font_x = width_list[x] + indent * font_size
-            font_y = height_list[y] + (height_list[y + 1] - height_list[y] - \
+            font_x = width_list[col] + indent * font_size
+            font_y = height_list[row] + (height_list[row + 1] - height_list[row] - \
             (font_size + space) * line_num + space) / 2
             #分行打印
             for num in range(line_num):
@@ -197,6 +180,15 @@ class Helper(object):
         img.save(pic_name, 'png')
 
     @staticmethod
+    def get_head_img(user):
+        '获取用户头像'
+        nick_name = user.nick_name
+        user_name = user.wx_UserName
+        pic_dir = 'static/head/%s.png' % nick_name
+        if not os.path.isfile(pic_dir) or (time.time() - os.path.getctime(pic_dir) > 24 * 60 * 60):
+            itchat.get_head_img(userName=user_name, picDir=pic_dir)
+
+    @staticmethod
     def my_error(error, user=None, up_rep=True):
         '错误处理, 向用户发送错误信息或继续上报错误'
         info(error)
@@ -252,7 +244,8 @@ class Helper(object):
             # 将会返回一个None
             return
 
-    def search_list(self, nick_name=None):
+    @staticmethod
+    def search_list(nick_name=None):
         '在用户列表中查找当前用户是否已经绑定'
         if nick_name:
             try:
@@ -261,6 +254,14 @@ class Helper(object):
                 raise NotImplementedError('尚未绑定')
         else:
             return Helper_User.objects.all()
+
+    @staticmethod
+    def user_name_update():
+        '更新用户名, 在登陆时调用'
+        for user in Helper.search_list():
+            user.wx_UserName = itchat.search_friends(nickName=user.nick_name)[0]['UserName']
+            user.save()
+        # self.keep_alive_name = itchat.search_mps(name='微信支付')[0]['UserName']
 
     def update_info(self, user=None):
         '更新用户信息'
@@ -282,16 +283,9 @@ class Helper(object):
                     else:
                         self.my_error(error, user)
         else:
-            for user in self.search_list():
+            for user in Helper.search_list():
                 self.update_info(user)
-            self.last_update = time.time()
-
-    def user_name_update(self):
-        '更新用户名, 在登陆时调用'
-        for user in self.search_list():
-            user.wx_UserName = itchat.search_friends(nickName=user.nick_name)[0]['UserName']
-            user.save()
-        self.keep_alive_name = itchat.search_mps(name='微信支付')[0]['UserName']
+            self.settings.LAST_UPDATE = time.time()
 
     def add_user(self, now_user, nick_name, text):
         '新增提醒用户'
@@ -380,7 +374,7 @@ class Helper(object):
                 if result[1] > 0:                               #当上课时间到, 把课程清理出提醒队列
                     remind_list.pop(0)
                     self.remind_list_update(user)
-                elif result[1] + REMIND_BEFORE * 60 >= 0:       #当提醒时间到, 主动提醒一次
+                elif result[1] + self.settings.REMIND_BEFORE * 60 >= 0:       #当提醒时间到, 主动提醒一次
                     if not user.have_remind:                    #当没有提醒过
                         _remind_do(remind_list[0], user)        #提醒
                         user.have_remind = True                 #修改为已经提醒过
@@ -391,13 +385,13 @@ class Helper(object):
                 self.my_error(error, user)
 
         def _remind():
-            self.remind_tid = pl.get_tid()
-            time.sleep(int(REMIND_WAIT * 60))
-            info('打开新线程:%d, 提醒间隔%d分%d秒' % (self.remind_tid, REMIND_WAIT//1, REMIND_WAIT%1*60))
+            time.sleep(int(self.settings.REMIND_WAIT * 60))
+            info('打开新线程:%d, 提醒间隔%d分%d秒' %
+                 (pl.get_tid(), self.settings.REMIND_WAIT//1, self.settings.REMIND_WAIT%1*60))
             #info('当前线程%s' % str(pl.thread_list('BOTH')))
-            if time.time() - self.last_update > AUTO_UPDATE * 60:
+            if time.time() - self.settings.LAST_UPDATE > self.settings.UPDATE_WAIT * 60:
                 self.update_info()
-            for user in self.search_list():
+            for user in Helper.search_list():
                 if user.is_open:
                     _remind_main(user)
 
@@ -407,11 +401,11 @@ class Helper(object):
             except EXCEPTIONS as error:
                 info(error)
                 info('打开新线程失败, 自动提醒结束')
-                self.remind_alive = False
+                self.settings.REMIND_ALIVE = False
                 return
 
         if self.__get_now_week() > END_WEEK:
-            self.remind_alive = False
+            self.settings.REMIND_ALIVE = False
             raise NotImplementedError('学期已经结束')
 
         if nick_name:
@@ -422,7 +416,7 @@ class Helper(object):
 
         else:
             try:
-                if self.remind_alive:
+                if self.settings.REMIND_ALIVE:
                     pl.run_thread([(_remind, ())], 'remind', False)
             except EXCEPTIONS as error:
                 info(error)
@@ -450,7 +444,7 @@ class Helper(object):
                     place = course['place']
                     name = course['name']
                     remind_list += [
-                        (name, place, self.__get_course_time(day, num[0]) + A_WEEK * count)
+                        (name, place, self.__get_course_time(day, num[0]) + 60*60*24*7*count)
                         for (day, num) in course['times']
                         if week <= int(course['weeks'][1])
                         and week >= int(course['weeks'][0])
@@ -473,7 +467,7 @@ class Helper(object):
             elif nick_name and isinstance(nick_name, str):
                 user = self.search_list(nick_name)
             else:
-                for _user in self.search_list():
+                for _user in Helper.search_list():
                     self.remind_list_update(user=_user)
                 return
             __remind_list_update(user)
@@ -562,17 +556,13 @@ class Helper(object):
 
     def logout(self):
         '退出登陆'
-        self.__init__()
+        self.settings.__init__()
+        thread_remind = pl.search_thread(name='remind', part=True)
+        if thread_remind:
+            pl.kill_thread(thread=thread_remind)
+            info('remind线程已关闭')
         itchat.logout()
 
-    def get_head_img(self, user):
-        '获取用户头像'
-        nick_name = user.nick_name
-        user_name = user.wx_UserName
-        pic_dir = 'static/head/%s.png' % nick_name
-        if not os.path.isfile(pic_dir) or (time.time() - os.path.getctime(pic_dir) > 24 * 60 * 60):
-            itchat.get_head_img(userName=user_name, picDir=pic_dir)
-
-    def keep_alive(self):
-        '保活'
-        self.send('1', self.keep_alive_name)
+    # def keep_alive(self):
+    #     '保活'
+    #     self.send('1', self.keep_alive_name)

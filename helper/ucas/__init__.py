@@ -42,6 +42,7 @@ TIMEOUT = 2
 clients = []
 
 def log_read(path=log_path, count=1, start=0):
+    '从倒数start行读取count行日志, 返回一个列表'
     with open(path, 'r') as file:
         content = file.readlines()
         if count is -1 and start is 0:
@@ -50,13 +51,8 @@ def log_read(path=log_path, count=1, start=0):
             line_list = content[-1-start:-1-start-count:-1]
     return line_list
 
-def info(msg):
-    '打印日志'
-    logger.info(msg)
-    # views.send(log_read(log_path)[0])
-    send(log_read(log_path)[0])
-
 def send(content=None, channel=None):
+    '向某个channel发送信息'
     try:
         reciever = []
         for count, client in enumerate(clients):
@@ -69,3 +65,9 @@ def send(content=None, channel=None):
         return 'send %s to %s:%s' % (content, channel if channel else 'all', reciever)
     except EXCEPTIONS as error:
         return 'send fail since %s' % error
+
+def info(msg):
+    '向文件输出日志, 并发送到log频道'
+    logger.info(msg)
+    # views.send(log_read(log_path)[0])
+    send(log_read(log_path)[0], 'log')

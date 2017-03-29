@@ -26,7 +26,7 @@
         var top_window = $(window);
 
         function resize_func(){
-            page.width(top_window.innerWidth() - $('#sidebar_main').width());
+            page.width(top_window.innerWidth() - $('#sidebar_main').width() - 5);
         }
         $(document).ready(function(){
             resize_func();
@@ -66,7 +66,7 @@
         .page{
             float: left;
             height: 100%;
-            width: 99%;
+            width: 100%;
         }
         .siderbar{
             float: left;

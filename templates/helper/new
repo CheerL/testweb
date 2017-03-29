@@ -1,0 +1,59 @@
+{% block script %}
+    <script>
+        $(function(){
+            var button = $(".button");
+            var confirm_buttom = $('div#send_buttom');
+            button.click(function(){
+                if ($(this).parent().attr('value') == 'True'){
+                    $(this).parent().attr('value', 'False');
+                    $(this).children().animate({
+                        right:'52px',
+                        top:'1px'
+                    },300);
+                    $(this).animate({
+                        backgroundColor:'rgba(0,0,0,0.1)',
+                        borderColor:'rgba(255,255,255,0.4)',
+                    },300);
+                }
+                else{
+                    $(this).parent().attr('value', 'True');
+                    $(this).children().animate({
+                        right:'0px',
+                        top:'1px'
+                    },300);
+                    $(this).animate({
+                        backgroundColor:'rgba(50,205,50,0.8)',
+                        borderColor:'rgba(0,0,0,0)',
+                    },300);
+                }
+                $(this).removeClass('True').removeClass('False');
+            });
+            confirm_buttom.click(function () {
+                var item_list = $('.input__field');
+                var result = new Array();
+                for (i = 0; i < item_list.length; i++){
+                    result.push({
+                        id:item_list.eq(i).attr('id'),
+                        val:item_list.eq(i).attr('value'),
+                    })
+                }
+                console.log(result);
+                $.post('/helper/setting/change/', {items:result});
+            });
+            confirm_buttom.hover(
+                function(){
+                    $(this).animate({
+                        backgroundColor: 'rgba(50, 205, 50, 1)',
+                        color: 'rgba(255, 255, 255, 1)'
+                    }, 300);
+                },
+                function () {
+                    $(this).animate({
+                        backgroundColor: 'rgba(255, 255, 255, 1)',
+                        color: 'rgba(50, 205, 50, 1)'
+                    }, 300);
+                }
+            );
+        });
+    </script>
+{% endblock %}

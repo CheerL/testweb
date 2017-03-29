@@ -119,20 +119,12 @@ def thread_list(style="OBJ"):
         return threading.enumerate()
 
 def search_thread(name=None, ident=None, part=False):
-    '返回是否存在名为name的线程'
-    def _res(thread, part):
-        if part:
-            return thread
-        else:
-            return True
- 
+    '寻找名为name或线程号为ident的线程, part为False返回布尔值, 为True返回线程'
     for thread in thread_list():
         if ident:
-            if thread.ident == ident:
-                _res(thread, part)
+            return thread if part else True
         elif name:
-            if thread.name == name:
-                _res(thread, part)
+            return thread if part else True
 
     if part:
         return None
@@ -142,7 +134,7 @@ def search_thread(name=None, ident=None, part=False):
 def kill_thread(thread=None, name=None, tid=0, exctype=SystemExit):
     """raises the exception, performs cleanup if needed"""
     if name:
-        thread = search_thread(name, True)
+        thread = search_thread(name=name, part=True)
     if thread and isinstance(thread, threading.Thread):
         if not thread.is_alive():
             return '线程已经关闭'

@@ -2,11 +2,12 @@
 import re
 import time
 import itchat
-from . import helper as hp, EXCEPTIONS, info
+from . import helper, EXCEPTIONS, info
 from .wheel import parallel as pl
 from .wheel.recognize import spech_recognize
 
-HELPER = hp.Helper()
+HELPER = helper.Helper()
+settings = HELPER.settings
 ADMIN_HELP = '''?data?   None
 ?robot          None
 ?log?           None
@@ -33,8 +34,8 @@ def reply(msg):
         if '?data?' in text:
             return '@fil@static/data.csv'
         elif '?robot?' in text:
-            HELPER.robot_reply = bool(1 - HELPER.robot_reply)
-            return '机器人回复已经%s' % ('打开' if HELPER.robot_reply else '关闭')
+            settings.ROBOT_REPLY = bool(1 - settings.ROBOT_REPLY)
+            return '机器人回复已经%s' % ('打开' if settings.ROBOT_REPLY else '关闭')
         elif '?log?' in text:
             return '@fil@static/run.log'
         elif '?update?' in text:
@@ -45,39 +46,29 @@ def reply(msg):
             pl.kill_thread(tid=tid)
             return '已经关闭线程%d' % tid
         elif '?remind?' in text:
-            if HELPER.remind_alive:
-                HELPER.remind_alive = False
+            if settings.REMIND_ALIVE:
+                settings.REMIND_ALIVE = False
             else:
-                HELPER.remind_alive = True
+                settings.REMIND_ALIVE = True
                 HELPER.remind()
-            return 'remind_alive已经%s' % ('打开' if HELPER.remind_alive else '关闭')
+            return 'remind_alive已经%s' % ('打开' if settings.REMIND_ALIVE else '关闭')
         elif '?status?' in text:
             return 'remind_alive:%s\nrobot_reply:%s\nlast_update:%d mins ago\
-            \nREMIND_WAIT:%s mins\nREMIND_BEFORE:%s mins\nAUTO_UPDATE:%s mins' % \
+            \nREMIND_WAIT:%s mins\nREMIND_BEFORE:%s mins\nUPDATE_WAIT:%s mins' % \
                 (
-                    '打开' if HELPER.remind_alive else '关闭',
-                    '打开' if HELPER.robot_reply else '关闭',
-                    (time.time()-HELPER.last_update)/60,
-                    hp.REMIND_WAIT, hp.REMIND_BEFORE, hp.AUTO_UPDATE
+                    '打开' if settings.REMIND_ALIVE else '关闭',
+                    '打开' if settings.ROBOT_REPLY else '关闭',
+                    (time.time()-settings.LAST_UPDATE)/60,
+                    settings.REMIND_WAIT, settings.REMIND_BEFORE, settings.UPDATE_WAIT
                     )
         elif '?remind wait?' in text:
-            hp.REMIND_WAIT = float(re.findall(r'(\d+\.?\d*)', text)[0])
-            return 'REMIND_WAIT改为%f分钟' % hp.REMIND_WAIT
+            settings.REMIND_WAIT = float(re.findall(r'(\d+\.?\d*)', text)[0])
+            return 'REMIND_WAIT改为%f分钟' % settings.REMIND_WAIT
         elif '?remind before?' in text:
-            hp.REMIND_BEFORE = float(re.findall(r'(\d+\.?\d*)', text)[0])
-            return 'REMIND_BEFORE改为%f分钟' % hp.REMIND_BEFORE
-        elif '?course dict?' in text:
-            result = re.findall(r'(\d+):(\d+):(\d+)', text)[0]
-            hp.COURSE_DICT[result[0]] = [int(result[1]), int(result[2])]
-            return "COURSE_DICT['%d']改为(%d, %d)" % result
-        elif '?send?' in text:
-            pass
-        elif '?user?' in text:
-            pass
+            settings.REMIND_BEFORE = float(re.findall(r'(\d+\.?\d*)', text)[0])
+            return 'REMIND_BEFORE改为%f分钟' % settings.REMIND_BEFORE
         elif '?admin?' in text:
             return ADMIN_HELP
-        elif '?thread?' in text:
-            return len(pl.threading.enumerate())
         elif '重新绑定' in text:
             HELPER.change_user(now_user, nick_name, text)
         elif '取消绑定' in text:
@@ -107,7 +98,7 @@ def reply(msg):
         elif '绑定' in text:
             HELPER.add_user(now_user, nick_name, text)
         else:
-            if HELPER.robot_reply:
+            if settings.ROBOT_REPLY:
                 return HELPER.get_response(text)
     except EXCEPTIONS as error:
         HELPER.my_error(error, now_user, False)
@@ -126,13 +117,22 @@ def add_friend(msg):
 @itchat.msg_register(['Recording', 'Attachment', 'Video'])
 def download_files(msg):
     '接收语音'
-    voice_path = 'static/' + msg['FileName']
-    msg['Text'](voice_path)
-    now_user = msg['FromUserName']
-    user = itchat.search_friends(userName=now_user)
-    nick_name = user['NickName']
-    info('收到来自%s的语音' % (nick_name))
-    return spech_recognize(voice_path)
+    if settings.VOICE_REPLY:
+        voice_path = 'static/' + msg['FileName']
+        msg['Text'](voice_path)
+        now_user = msg['FromUserName']
+        user = itchat.search_friends(userName=now_user)
+        nick_name = user['NickName']
+        info('收到来自%s的语音' % (nick_name))
+        translate = spech_recognize(voice_path)
+        if translate:
+            itchat.send('你说的是:' + translate, now_user)
+            msg['Text'] = translate
+            return reply(msg)
+        else:
+            return '我没有听懂'
+    else:
+        return '收到语音'
     # itchat.send(
     #     '@%s@%s'%('img' if msg['Type'] == 'Picture' else 'fil', voice_name),
     #     msg['FromUserName']

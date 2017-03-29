@@ -8,9 +8,8 @@ urlpatterns = [
 
     url(r'^login/uuid=(?P<uuid>.*)$', views.login),
     url(r'^logout/$', views.logout),
-    url(r'^remind/$', views.remind),
 
-    url(r'^log/$', views.log),
+    url(r'^log/$', views.log_page),
     url(r'^log/all/', views.get_log_all),
     url(r'^log/get/start=(?P<start>\d*)&count=(?P<count>\d*)$', views.get_log),
 
@@ -20,9 +19,10 @@ urlpatterns = [
     url(r'^send/$', views.send_page),
     url(r'^send/content=(?P<content>.*)&channel=(?P<channel>.*)$', views.send_to_channel),
 
-    url(r'^chat/$', views.chat),
+    url(r'^chat/$', views.chat_page),
     url(r'^chat/user/', views.get_chat_user),
     url(r'^chat/send/', views.chat_send),
 
-    url(r'^setting/$', views.setting),
+    url(r'^setting/$', views.setting_page),
+    url(r'^setting/change/$', views.setting_change),
 ]
