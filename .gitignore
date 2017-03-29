@@ -1,10 +1,10 @@
 collected_static/
-itchat.pkl
-*.ipynb
-pic/*.png
-*.csv
-test.*
+migrations/
 test/
+pic/*.png
+test.*
+*.ipynb
+*.csv
 *.mp3
 *.pyc
-migrations/
+*.pkl
