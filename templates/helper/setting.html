@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="content">
+    <div class="content" style="width: 50%">
     {% for item in bool_list %}
         <div class="input">
             <div class="input__field" id='{{item.name}}' value='{{item.val}}' lab='bool'>
@@ -20,6 +20,8 @@
         </div>
         <br>
     {% endfor %}
+    </div>
+    <div class="content" style="width: 50%">
     {% for item in num_list %}
         <div class="input">
             <input class="input__field" type="text" id="{{item.name}}" value="{{item.val}}" lab='num'>
@@ -29,7 +31,9 @@
         </div>
         <br>
     {% endfor %}
-        <div id="send_buttom">确认</div>
+    </div>
+    <div class="content" style="width: 100%; padding-top: 0">
+    <div id="send_buttom">确认</div>
     </div>
     
 {% endblock %}
@@ -109,13 +113,15 @@
 
         .container {
             margin: 0 auto;
-            text-align: center;
+            
             overflow: hidden;
         }
 
         .content {
             font-size: 150%;
-            padding: 3em 0;
+            padding: 7em 5em 5em 1em;
+            text-align: center;
+            float: left;
         }
 
         .bgcolor-1 { background: #f0efee; }
