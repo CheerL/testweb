@@ -21,17 +21,16 @@
 {% block script %}
     <script>
         var list = $("li");
-        var ul = $('ul');
+        // var ul = $('ul');
         var page = $('.page');
+        var top_window = $(window);
 
         function resize_func(){
-            page.width($(window).innerWidth() - $('#sidebar_main').width());
+            page.width(top_window.innerWidth() - $('#sidebar_main').width());
         }
         $(document).ready(function(){
             resize_func();
-            $(window).resize(function(){
-                resize_func();
-            });
+            top_window.resize(resize_func);
             $('a#{{page}}').parent().attr('class', 'on');
             list.click(function(){
                 if($(this).attr('class') == "off"){

@@ -73,7 +73,6 @@ def logout(request):
 def remind(request):
     '提醒'
     HELPER.remind()
-    HELPER.keep_alive()
     return info_and_response(MSG_remind)
 
 def run_page(request):
