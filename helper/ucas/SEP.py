@@ -207,16 +207,19 @@ class UCASSEP(object):
             if not courese:
                 info('不存在编号%d对应的课程' % num)
                 return
+
         except EXCEPTIONS as error:
             info(error)
+            return
+
         try:
             new_course = models.Course.objects.create(ident=num)
         except IntegrityError:
             new_course = models.Course.objects.get(ident=num)
             if new_course.place:
                 info('编号为%d的课程已经存在' % num)
-                return None
-        end_1 = time.time()
+                return
+
         for times in courese['times']:
             try:
                 coursetime = models.Coursetime.objects.get(
@@ -251,17 +254,89 @@ class UCASSEP(object):
 def main():
     '主函数'
     try:
-        LCR = UCASSEP('1017801883@qq.com', 'lcr0717')
-        # for num in range(2151, 133500):
-        #     try:
-        #         LCR.save_course(num)
-        #     except EXCEPTIONS:
-        #         pass
-        pl.run_thread_pool(
-            [(LCR.save_course, (num,)) for num in range(3246, 50000)],
-            is_lock=True,
-            limit_num=8
-            )
+        #some
+            # LCR = UCASSEP('1017801883@qq.com', 'lcr0717')
+            # for num in range(131382, 132000):
+            #     try:
+            #         LCR.save_course(num)
+            #     except EXCEPTIONS:
+            #         pass
+            # pl.run_thread_pool(
+            #     [(LCR.save_course, (num,)) for num in range(3246, 50000)],
+            #     is_lock=True,
+            #     limit_num=8
+            #     )
+            # num = 666
+            # filname = 'file%d' % num
+            # with open(filname, 'w+') as file:
+            #     for course in models.Course.objects.all():
+            #         try:
+            #             coursetimes = [
+            #                 (times.weekday.index, times.start, times.end)
+            #                 for times in course.coursetimes.all()
+            #             ]
+            #             inf = "ident:%d, name:%s, place:%s, start_week:%d, end_week:%d, coursetimes:%s\n"%(
+            #                 course.ident,
+            #                 course.name,
+            #                 course.place,
+            #                 course.start_week,
+            #                 course.end_week,
+            #                 coursetimes
+            #                 )
+            #             file.write(inf)
+            #         except:
+            #             pass
+            # print('end %d' % num)
+            # with open('file666', 'r') as file:
+            #     id_set = set(re.findall(r'ident:(\d*),', file.read()))
+            # with open("file_w", 'w+') as file_write:
+            #     with open('file0', 'r') as file_read:
+            #         for line in file_read.readlines():
+            #             try:
+            #                 line_id = re.findall(r'ident:(\d*),', line)[0]
+            #                 if line_id not in id_set:
+            #                     file_write.write(line)
+            #                     print('write %s' % line_id)
+            #             except:
+            #                 pass
+        from ast import literal_eval
+        filename = 'file_w'
+        with open(filename, 'r') as file_r:
+            res = re.findall(
+                r"ident:(\d*), name:(.*?), place:(.*?), start_week:(\d*), end_week:(\d*), coursetimes:(.*?)\n",
+                file_r.read()
+                )
+            for result in res:
+                ident, name, place, start_week, end_week, coursetimes_temp = result
+                try:
+                    course = models.Course.objects.create(
+                        ident=int(ident),
+                        name=name,
+                        place=place,
+                        start_week=int(start_week),
+                        end_week=int(end_week)
+                    )
+                    coursetimes = literal_eval(coursetimes_temp)
+                    for times in coursetimes:
+                        try:
+                            coursetime = models.Coursetime.objects.get(
+                                weekday=models.Weekday.objects.get(index=int(times[0])),
+                                start=int(times[1]),
+                                end=int(times[2])
+                                )
+                        except models.Coursetime.DoesNotExist:
+                            coursetime = models.Coursetime.objects.create(
+                                weekday=models.Weekday.objects.get(index=int(times[0])),
+                                start=int(times[1]),
+                                end=int(times[2])
+                            )
+                        finally:
+                            course.coursetimes.add(coursetime)
+                    course.save()
+                    print('添加课程%s' % ident)
+                except IntegrityError:
+                    print('error')
+
     except EXCEPTIONS as error:
         _error(error, False)
 

@@ -35,7 +35,7 @@ class Helper(object):
         '获取该课对应的时间'
         if day in WEEK:
             wday = WEEK_DICT[day]
-        wday = couser
+        # wday = couser
         else:
             raise NotImplementedError('输入的课程日期有误')
         if num in COURSE_NUM:

@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.sites',
+    # 'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'helper',
@@ -91,6 +91,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        # 'NAME': os.path.join(BASE_DIR, 'db1/db.sqlite3'),
+        # 'NAME': os.path.join(BASE_DIR, 'db2/db.sqlite3'),
+        # 'NAME': os.path.join(BASE_DIR, 'db3/db.sqlite3'),
+        # 'NAME': os.path.join(BASE_DIR, 'db4/db.sqlite3'),
     }
 }
 

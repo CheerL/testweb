@@ -71,7 +71,7 @@ def reply(msg):
             #     return 'REMIND_BEFORE改为%f分钟' % settings.REMIND_BEFORE
             # elif '?admin?' in text:
             #     return ADMIN_HELP
-        elif '重新绑定' in text:
+        if '重新绑定' in text:
             HELPER.change_user(now_user, nick_name, text)
         elif '取消绑定' in text:
             HELPER.del_user(now_user, nick_name)
