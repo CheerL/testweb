@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup as Bs
 from .wheel import parallel as pl
 from . import info, EXCEPTIONS, TIMEOUT
 from .. import models
+from django.db.utils import IntegrityError
 
 def _info(msg):
     return '%s\n%s' % (time.ctime(), str(msg))
@@ -185,25 +186,10 @@ class UCASSEP(object):
             return False
 
     def save_course(self, num):
-        '获取课程列表'
+        '储存指定课程'
         def get_course_detail(num):
+            '获取指定课程的具体信息'
             link = 'http://jwxk.ucas.ac.cn/course/coursetime/' + str(num)
-            # soup = self._get_page(link)
-            # if soup.find_all('title')[0].contents[0] != '课程时间地点信息-选课系统'\
-            # or not soup.find_all('th'):
-            #     return None
-            # name = soup.find_all('p')[0].contents[0]
-            # weeks = soup.find_all('th', text='上课周次')[0]\
-            #     .next_sibling.next_sibling.contents[0].split('、')
-            # weeks = (int(weeks[0]) - 1, int(weeks[-1]) - 1)
-            # place = soup.find_all('th', text='上课地点')[0].next_sibling.next_sibling.contents[0]
-            # times = [td.next_sibling.next_sibling.contents[0].replace('。', '').split('： ')\
-            #     for td in soup.find_all('th', text='上课时间')]
-            # times = [(
-            #     re.findall(re.compile(r'(星期.?)'), each[0])[0],
-            #     tuple(re.findall(re.compile(r'(\d*)[、节]'), each[1]))
-            #     ) for each in times]
-            # return dict(name=name, weeks=weeks, place=place, times=times)
             tree = lxml.etree.HTML(self.session.get(url=link).content)
             if tree.xpath('//title/text()')[0] != '课程时间地点信息-选课系统'\
             or not tree.xpath('//th'):
@@ -217,41 +203,39 @@ class UCASSEP(object):
             return dict(name=name, weeks=weeks, place=place, times=times)
 
         try:
-            new_course = models.Course.objects.get(ident=num)
-            if new_course.place:
-                # info('编号为为%d的课程已经存在' % num)
-                return
-        except models.Course.DoesNotExist:
-            new_course = models.Course.objects.create(ident=num)
-
-        try:
             courese = get_course_detail(num)
             if not courese:
-                # info('不存在编号%d对应的课程' % num)
-                new_course.delete()
+                info('不存在编号%d对应的课程' % num)
                 return
-            #info(str(courese))
-            for times in courese['times']:
-                try:
-                    coursetime = models.Coursetime.objects.get(
-                        weekday=models.Weekday.objects.get(day=times[0]),
-                        start=int(times[1][0]),
-                        end=int(times[1][-1])
-                        )
-                except models.Coursetime.DoesNotExist:
-                    coursetime = models.Coursetime.objects.create(
-                        weekday=models.Weekday.objects.get(day=times[0]),
-                        start=int(times[1][0]),
-                        end=int(times[1][-1])
-                    )
-                new_course.coursetimes.add(coursetime)
-            new_course.start_week, new_course.end_week = courese['weeks'][0], courese['weeks'][1]
-            new_course.name = courese['name']
-            new_course.place = courese['place']
-            new_course.save()
-            # info('成功保存编号为%d的课程' % num)
         except EXCEPTIONS as error:
             info(error)
+        try:
+            new_course = models.Course.objects.create(ident=num)
+        except IntegrityError:
+            new_course = models.Course.objects.get(ident=num)
+            if new_course.place:
+                info('编号为%d的课程已经存在' % num)
+                return None
+        end_1 = time.time()
+        for times in courese['times']:
+            try:
+                coursetime = models.Coursetime.objects.get(
+                    weekday=models.Weekday.objects.get(day=times[0]),
+                    start=int(times[1][0]),
+                    end=int(times[1][-1])
+                    )
+            except models.Coursetime.DoesNotExist:
+                coursetime = models.Coursetime.objects.create(
+                    weekday=models.Weekday.objects.get(day=times[0]),
+                    start=int(times[1][0]),
+                    end=int(times[1][-1])
+                )
+            new_course.coursetimes.add(coursetime)
+        new_course.start_week, new_course.end_week = courese['weeks'][0], courese['weeks'][1]
+        new_course.name = courese['name']
+        new_course.place = courese['place']
+        new_course.save()
+        info('成功保存编号为%d的课程' % num)
 
     def get_course_list(self):
         '获取已选择课程, 并储存'
@@ -268,11 +252,16 @@ def main():
     '主函数'
     try:
         LCR = UCASSEP('1017801883@qq.com', 'lcr0717')
-        for num in range(1780, 133500):
-            try:
-                LCR.save_course(num)
-            except EXCEPTIONS:
-                pass
+        # for num in range(2151, 133500):
+        #     try:
+        #         LCR.save_course(num)
+        #     except EXCEPTIONS:
+        #         pass
+        pl.run_thread_pool(
+            [(LCR.save_course, (num,)) for num in range(3246, 50000)],
+            is_lock=True,
+            limit_num=8
+            )
     except EXCEPTIONS as error:
         _error(error, False)
 

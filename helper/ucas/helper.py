@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw, ImageFont
 from .wheel import parallel as pl
 from .SEP import UCASSEP
 from . import EXCEPTIONS, info, WEEK, END_WEEK, WEEK_DICT, COURSE_NUM, COURSE_DICT, setting
-from ..models import Helper_User
+from ..models import Helper_User, Course
 
 TL_KEY = '71f28bf79c820df10d39b4074345ef8c' #图灵机器人密钥
 
@@ -31,10 +31,11 @@ class Helper(object):
         return (NOW - BEG) // 7
 
     @staticmethod
-    def __get_course_time(day, num):
+    def __get_course_time(couser):
         '获取该课对应的时间'
         if day in WEEK:
             wday = WEEK_DICT[day]
+        wday = couser
         else:
             raise NotImplementedError('输入的课程日期有误')
         if num in COURSE_NUM:
@@ -273,6 +274,12 @@ class Helper(object):
                     sep.get_course_list()
                     user.user_name = sep.user_name
                     user.course_list = str(sep.course_list)
+                    # for course_num in sep.course_list:
+                    #     try:
+                    #         course = Course.objects.get(ident=course_num)
+                            
+
+
                     user.wx_UserName = itchat.search_friends(nickName=user.nick_name)[0]['UserName']
                     user.save()
                     info('更新成功, 尝试%d次' % (count + 1))
@@ -427,6 +434,7 @@ class Helper(object):
             '更新提醒列表'
             def remind_list_update_main(week, course_list, count=0):
                 '对特定列表进行更新'
+                #修改方向: 先确定今天时间, 再筛选该用户今天的, 当前周开课的, 然后以开始上课时间排序
                 if week + count > END_WEEK:
                     user.is_open = False
                     user.save()
@@ -519,40 +527,40 @@ class Helper(object):
             self.send(result[0], now_user)
         except EXCEPTIONS as error:
             self.my_error(error)
+    #选退课功能暂时关闭
+        # def add_course(self, now_user, nick_name, text):
+        #     '按课程编号选课'
+        #     try:
+        #         user = self.search_list(nick_name)
+        #         if '编号' in text:
+        #             num = re.findall(r'编号[:：\s]*(.*?)\s*$', text)[0]
+        #         else:
+        #             raise IOError('输入格式错误, 应为"选课 编号:***", 你可以输入"编号"查看已选课程编号')
+        #         sep = UCASSEP(user.user_id, user.password)
+        #         sep.get_course_list()
+        #         if sep.add_course(num):
+        #             self.send('选课成功', now_user)
+        #         else:
+        #             self.send('选课失败', now_user)
+        #     except EXCEPTIONS as error:
+        #         self.my_error(error)
 
-    def add_course(self, now_user, nick_name, text):
-        '按课程编号选课'
-        try:
-            user = self.search_list(nick_name)
-            if '编号' in text:
-                num = re.findall(r'编号[:：\s]*(.*?)\s*$', text)[0]
-            else:
-                raise IOError('输入格式错误, 应为"选课 编号:***", 你可以输入"编号"查看已选课程编号')
-            sep = UCASSEP(user.user_id, user.password)
-            sep.get_course_list()
-            if sep.add_course(num):
-                self.send('选课成功', now_user)
-            else:
-                self.send('选课失败', now_user)
-        except EXCEPTIONS as error:
-            self.my_error(error)
-
-    def drop_course(self, now_user, nick_name, text):
-        '按课程编号退课'
-        try:
-            user = self.search_list(nick_name)
-            if '编号' in text:
-                num = re.findall(r'编号[:：\s]*(.*?)\s*$', text)[0]
-            else:
-                raise IOError('输入格式错误, 应为"退课 编号:***", 你可以输入"编号"查看已选课程编号')
-            sep = UCASSEP(user.user_id, user.password)
-            sep.get_course_list()
-            if sep.drop_course(num):
-                self.send('退课成功', now_user)
-            else:
-                self.send('退课失败', now_user)
-        except EXCEPTIONS as error:
-            self.my_error(error)
+        # def drop_course(self, now_user, nick_name, text):
+        #     '按课程编号退课'
+        #     try:
+        #         user = self.search_list(nick_name)
+        #         if '编号' in text:
+        #             num = re.findall(r'编号[:：\s]*(.*?)\s*$', text)[0]
+        #         else:
+        #             raise IOError('输入格式错误, 应为"退课 编号:***", 你可以输入"编号"查看已选课程编号')
+        #         sep = UCASSEP(user.user_id, user.password)
+        #         sep.get_course_list()
+        #         if sep.drop_course(num):
+        #             self.send('退课成功', now_user)
+        #         else:
+        #             self.send('退课失败', now_user)
+        #     except EXCEPTIONS as error:
+        #         self.my_error(error)
 
     def logout(self):
         '退出登陆'
