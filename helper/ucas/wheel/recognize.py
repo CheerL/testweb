@@ -25,7 +25,7 @@ def spech_recognize(path, mode=0):
     try:
         if mode is 0:
             return recognizer.recognize_bing(audio, key, language='zh-cn')
-        elif mode is '1':
+        elif mode is 1:
             return recognizer.recognize_google(audio, language='zh-cn')
         else:
             return

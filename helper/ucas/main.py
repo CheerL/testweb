@@ -120,13 +120,13 @@ def add_friend(msg):
 def download_files(msg):
     '接收语音'
     if settings.VOICE_REPLY:
-        voice_path = 'static/' + msg['FileName']
+        voice_path = 'static/voice/' + msg['FileName']
         msg['Text'](voice_path)
         now_user = msg['FromUserName']
         user = itchat.search_friends(userName=now_user)
         nick_name = user['NickName']
         info('收到来自%s的语音' % (nick_name))
-        translate = spech_recognize(voice_path)
+        translate = spech_recognize(voice_path, 1)
         if translate:
             itchat.send('你说的是:' + translate, now_user)
             msg['Text'] = translate

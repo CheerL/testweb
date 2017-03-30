@@ -299,6 +299,19 @@ def main():
             #                     print('write %s' % line_id)
             #             except:
             #                 pass
+
+            # with open('file666', 'r') as f:
+            #     id_set = set(re.findall(r'ident:(\d*),', f.read()))
+            # with open('file_w', 'w+') as f_w:
+            #     with open('file0', 'r') as f_r:
+            #         for line in f_r.readlines():
+            #             try:
+            #                 line_id = re.findall(r'ident:(\d*),', line)[0]
+            #                 if line_id not in id_set:
+            #                     f_w.write(line)
+            #                     info('write %d' % line_id)
+            #             except EXCEPTIONS:
+            #                 pass
         from ast import literal_eval
         filename = 'file_w'
         with open(filename, 'r') as file_r:
