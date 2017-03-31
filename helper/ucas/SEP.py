@@ -312,43 +312,44 @@ def main():
             #                     info('write %d' % line_id)
             #             except EXCEPTIONS:
             #                 pass
-        from ast import literal_eval
-        filename = 'file_w'
-        with open(filename, 'r') as file_r:
-            res = re.findall(
-                r"ident:(\d*), name:(.*?), place:(.*?), start_week:(\d*), end_week:(\d*), coursetimes:(.*?)\n",
-                file_r.read()
-                )
-            for result in res:
-                ident, name, place, start_week, end_week, coursetimes_temp = result
-                try:
-                    course = models.Course.objects.create(
-                        ident=int(ident),
-                        name=name,
-                        place=place,
-                        start_week=int(start_week),
-                        end_week=int(end_week)
-                    )
-                    coursetimes = literal_eval(coursetimes_temp)
-                    for times in coursetimes:
-                        try:
-                            coursetime = models.Coursetime.objects.get(
-                                weekday=models.Weekday.objects.get(index=int(times[0])),
-                                start=int(times[1]),
-                                end=int(times[2])
-                                )
-                        except models.Coursetime.DoesNotExist:
-                            coursetime = models.Coursetime.objects.create(
-                                weekday=models.Weekday.objects.get(index=int(times[0])),
-                                start=int(times[1]),
-                                end=int(times[2])
-                            )
-                        finally:
-                            course.coursetimes.add(coursetime)
-                    course.save()
-                    print('添加课程%s' % ident)
-                except IntegrityError:
-                    print('error')
+            # from ast import literal_eval
+            # filename = 'file_w'
+            # with open(filename, 'r') as file_r:
+            #     res = re.findall(
+            #         r"ident:(\d*), name:(.*?), place:(.*?), start_week:(\d*), end_week:(\d*), coursetimes:(.*?)\n",
+            #         file_r.read()
+            #         )
+            #     for result in res:
+            #         ident, name, place, start_week, end_week, coursetimes_temp = result
+            #         try:
+            #             course = models.Course.objects.create(
+            #                 ident=int(ident),
+            #                 name=name,
+            #                 place=place,
+            #                 start_week=int(start_week),
+            #                 end_week=int(end_week)
+            #             )
+            #             coursetimes = literal_eval(coursetimes_temp)
+            #             for times in coursetimes:
+            #                 try:
+            #                     coursetime = models.Coursetime.objects.get(
+            #                         weekday=models.Weekday.objects.get(index=int(times[0])),
+            #                         start=int(times[1]),
+            #                         end=int(times[2])
+            #                         )
+            #                 except models.Coursetime.DoesNotExist:
+            #                     coursetime = models.Coursetime.objects.create(
+            #                         weekday=models.Weekday.objects.get(index=int(times[0])),
+            #                         start=int(times[1]),
+            #                         end=int(times[2])
+            #                     )
+            #                 finally:
+            #                     course.coursetimes.add(coursetime)
+            #             course.save()
+            #             print('添加课程%s' % ident)
+            #         except IntegrityError:
+            #             print('error')
+        pass
 
     except EXCEPTIONS as error:
         _error(error, False)

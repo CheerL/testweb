@@ -126,7 +126,7 @@ def download_files(msg):
         user = itchat.search_friends(userName=now_user)
         nick_name = user['NickName']
         info('收到来自%s的语音' % (nick_name))
-        translate = spech_recognize(voice_path, 1)
+        translate = spech_recognize(voice_path)
         if translate:
             itchat.send('你说的是:' + translate, now_user)
             msg['Text'] = translate
