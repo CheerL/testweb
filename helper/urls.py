@@ -25,4 +25,6 @@ urlpatterns = [
 
     url(r'^setting/$', views.setting_page),
     url(r'^setting/change/$', views.setting_change),
+
+    url(r'^test/$', views.test_page),
 ]

@@ -26,16 +26,14 @@ SECRET_KEY = '3p1bk!e25y7qx_n^$c%yn6d5civtq86$f4i6mhce$i9qze&t97'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '5000.gr34d63a.none.xunda-bj.goodrain.net',
-    '5000.gra75b53.none.ali-sh.goodrain.net',
-    'ucas-helper.herokuapp.com',
+    'inner.cheerl.online',
     'cheerl.oicp.io',
     'cheerl.imwork.net',
     'cheerl.online',
     '127.0.0.1',
-    '192.168.0.150',
     '192.168.0.102',
     '0.0.0.0',
+    'localhost',
 ]
 
 # Application definition

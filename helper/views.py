@@ -6,9 +6,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from dwebsocket.decorators import accept_websocket
-from .ucas.login import login as LG
-from .ucas.main import HELPER
-from .ucas import info, EXCEPTIONS, QR_pic, WX_pic, log_read, send, clients, SEP
+from .login import login as LG
+from .main import HELPER
+from .base import info, EXCEPTIONS, QR_pic, WX_pic, log_read, send, clients
+from . import tests
 
 MSG_init = '请点击登录按钮'
 MSG_error = '错误,请重新登录'
@@ -82,6 +83,9 @@ def setting_page(request):
         'helper/setting.html',
         {'bool_list':bool_list, 'num_list':num_list, 'show_list':show_list}
         )
+def test_page(request):
+    tests.test()
+    return HttpResponse()
 
 #登陆 api
 def login(request, uuid=None):
@@ -155,9 +159,7 @@ def chat_send(request):
 @csrf_exempt
 def setting_change(request):
     if request.method == 'POST':
-        print(request.POST['res'])
         items = literal_eval(request.POST['res'])
-        print(items)
         HELPER.settings.VOICE_REPLY = items['VOICE_REPLY']
         HELPER.settings.UPDATE_WAIT = items['UPDATE_WAIT']
         HELPER.settings.REMIND_ALIVE = items['REMIND_ALIVE']
@@ -230,7 +232,6 @@ def open_socket(request, client_id, channel):
     return HttpResponse('socket close')
 
 def send_page(request):
-    SEP.main()
     return render(request, 'helper/send.html')
 
 def send_to_channel(request, content=None, channel=None):

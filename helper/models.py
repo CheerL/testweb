@@ -1,3 +1,6 @@
+'小助手的数据库设计'
+import time
+import datetime
 from django.db import models
 
 class Weekday(models.Model):
@@ -17,6 +20,22 @@ class Coursetime(models.Model):
     def __str__(self):
         return '%s %d-%d' % (self.weekday, self.start, self.end)
 
+    def get_start_time(self):
+        '获取该课开始的时间'
+        coursetime = COURSE_DICT[self.start - 1]
+        weekday = self.weekday.index
+        now = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        delta = datetime.timedelta(
+            days=weekday - time.localtime().tm_wday,
+            hours=coursetime[0], minutes=coursetime[1]
+            )
+        return time.mktime(datetime.datetime.timetuple(now + delta))
+
+    def show_start_time(self):
+        '以 "HOUR:MIN" 的格式显示上课时间'
+        coursetime = COURSE_DICT[self.start - 1]
+        return '%d:%d' % (coursetime[0], coursetime[1])
+
 class Course(models.Model):
     '课程'
     ident = models.IntegerField(primary_key=True)
@@ -29,14 +48,14 @@ class Course(models.Model):
     def __str__(self):
         return str(self.ident)
 
-class Helper_User(models.Model):
+class Helper_user(models.Model):
     '小助手用户'
-    user_name = models.CharField(max_length=20)
-    user_id = models.EmailField()
-    password = models.CharField(max_length=20)
-    nick_name = models.CharField(max_length=20)
-    course_list = models.TextField(default='[]')
-    remind_list = models.TextField(default='[]')
+    user_name = models.CharField(max_length=20, default='')
+    user_id = models.EmailField(default='')
+    password = models.CharField(max_length=20, default='')
+    nick_name = models.CharField(max_length=20, default='')
+    remind = models.IntegerField(default=0)
+    remind_time = models.IntegerField(default=0)
     courses = models.ManyToManyField(Course, default=None)
     is_open = models.BooleanField(default=True)
     have_remind = models.BooleanField(default=False)
@@ -44,3 +63,35 @@ class Helper_User(models.Model):
 
     def __str__(self):
         return str(self.nick_name)
+
+    def remind_update(self, week, count=0):
+        if week + count > END_WEEK:
+            self.is_open = False
+            self.save()
+            raise NotImplementedError('%s本学期已经没有课了' % self.user_name)
+        else:
+            min_time_diff = None
+            filter_condition = {"start_week__lt":week, 'end_week__gt':week}
+            for course in self.courses.all().filter(**filter_condition):
+                if '课程名称' in course.name:
+                    course.name = course.name[5:]
+                    course.save()
+                for coursetime in course.coursetimes.all():
+                    time_diff = coursetime.get_start_time() - time.time() + 60*60*24*7*count
+                    if time_diff > 0 and (min_time_diff is None or min_time_diff > time_diff):
+                        self.remind = course.ident
+                        self.remind_time = min_time_diff = int(time_diff)
+            if min_time_diff is not None:
+                self.save()
+            else:
+                return self.remind_update(week, count+1)
+
+    def courses_update(self, course_list):
+        for ident in course_list:
+            try:
+                self.courses.add(Course.objects.get(ident=ident))
+            except EXCEPTIONS:
+                pass
+        self.save()
+
+from .base import END_WEEK, COURSE_DICT, EXCEPTIONS
