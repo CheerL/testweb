@@ -543,7 +543,7 @@ class Setting(object):
         self.UPDATE_WAIT = 60#分钟
         self.LAST_UPDATE = 0
         self.FLEXIBLE = False
-        self.FLEXIBLE_DAY = None
+        self.FLEXIBLE_DAY = 0
 
     def __str__(self):
         return '\n'.join(
@@ -553,3 +553,9 @@ class Setting(object):
     def trans_to_chinese(self, name):
         '转化为中文显示'
         return self.trans_dict[name]
+
+    def trans_flexible_day(self, weekday=None):
+        if not weekday:
+            return Weekday.objects.get(index=self.FLEXIBLE_DAY).day
+        else:
+            self.FLEXIBLE_DAY = Weekday.objects.get(day=weekday).index

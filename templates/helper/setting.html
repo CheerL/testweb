@@ -17,8 +17,8 @@
             <label class="input__label" for="{{item.name}}">
                 <span class="input__label-content">{{item.show}}</span>
             </label>
+            <br>
         </div>
-        <br>
     {% endfor %}
     </div>
     <div class="content" style="width: 50%">
@@ -26,10 +26,16 @@
         <div class="input">
             <input class="input__field" type="text" id="{{item.name}}" value="{{item.val}}" lab='num'>
             <label class="input__label" for="{{item.name}}">
-                <span class="input__label-content">{{item.show}}(分钟)</span>
+                <span class="input__label-content">
+                    {{item.show}}
+                    {% if item.name == 'FLEXIBLE_DAY' %}
+                    {% else %}
+                        (分钟)
+                    {% endif %}
+                </span>
             </label>
+            <br>
         </div>
-        <br>
     {% endfor %}
     </div>
     <div class="content" style="width: 100%; padding-top: 0">
@@ -43,6 +49,16 @@
         $(function(){
             var button = $(".button");
             var confirm_buttom = $('div#send_buttom');
+            
+            function flexible(){
+                if($('#FLEXIBLE').attr('value') == 'False'){
+                    $('#FLEXIBLE_DAY').parent().hide();
+                }
+                else{
+                    $('#FLEXIBLE_DAY').parent().show();
+                }
+            }
+            flexible()
             button.click(function(){
                 if ($(this).parent().attr('value') == 'True'){
                     $(this).parent().attr('value', 'False');
@@ -54,6 +70,7 @@
                         backgroundColor:'rgba(0,0,0,0.1)',
                         borderColor:'rgba(255,255,255,0.4)',
                     },300);
+                    flexible()
                 }
                 else{
                     $(this).parent().attr('value', 'True');
@@ -65,6 +82,7 @@
                         backgroundColor:'rgba(50,205,50,0.8)',
                         borderColor:'rgba(0,0,0,0)',
                     },300);
+                    flexible()
                 }
                 $(this).removeClass('True').removeClass('False');
             });
@@ -113,7 +131,6 @@
 
         .container {
             margin: 0 auto;
-            
             overflow: hidden;
         }
 

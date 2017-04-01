@@ -73,7 +73,7 @@ def setting_page(request):
         {
             'name':name,
             'show':HELPER.settings.trans_to_chinese(name),
-            'val':val
+            'val':val if name != 'FLEXIBLE_DAY' else HELPER.settings.trans_flexible_day()
         }
         for name, val in item_list if not isinstance(val, bool) and name != 'LAST_UPDATE'
     ]
@@ -160,12 +160,25 @@ def chat_send(request):
 def setting_change(request):
     if request.method == 'POST':
         items = literal_eval(request.POST['res'])
+
+        for day in ['一', '二', '三', '四', '五', '六', '日', '天']:
+            if day in items['FLEXIBLE_DAY']:
+                if day == '天':
+                    items['FLEXIBLE_DAY'] = '星期日'
+                else:
+                    items['FLEXIBLE_DAY'] = '星期' + day
+                break
+        else:
+            return JsonResponse({'res':True, 'msg':'灵活调整日期有误'})
+
         HELPER.settings.VOICE_REPLY = items['VOICE_REPLY']
         HELPER.settings.UPDATE_WAIT = items['UPDATE_WAIT']
         HELPER.settings.REMIND_ALIVE = items['REMIND_ALIVE']
         HELPER.settings.REMIND_BEFORE = items['REMIND_BEFORE']
         HELPER.settings.REMIND_WAIT = items['REMIND_WAIT']
         HELPER.settings.ROBOT_REPLY = items['ROBOT_REPLY']
+        HELPER.settings.FLEXIBLE = items['FLEXIBILE']
+        HELPER.settings.trans_flexible_day(items['FLEXIBLE_DAY'])
         return JsonResponse({'res':True, 'msg':'修改成功\n' + str(HELPER.settings)})
     else:
         return JsonResponse({'res':False, 'msg':'访问错误'})
