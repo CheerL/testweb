@@ -6,7 +6,7 @@ import time
 import requests
 import itchat
 from PIL import Image, ImageDraw, ImageFont
-from .base import EXCEPTIONS, info, get_now_week, error_report, IntegrityError
+from .base import EXCEPTIONS, info, get_now_week, error_report
 from .wheel import parallel as pl
 from .SEP import UCASSEP
 from .models import Helper_user, Course, Weekday
@@ -28,8 +28,6 @@ class Helper(object):
         pic_dir = 'static/head/%s.png' % nick_name
         if not os.path.isfile(pic_dir) or (time.time() - os.path.getctime(pic_dir) > 24 * 60 * 60):
             itchat.get_head_img(userName=user_name, picDir=pic_dir)
-
-    
 
     @staticmethod
     def send(msg, user=None):
@@ -467,8 +465,8 @@ class Helper(object):
                 abs(user.remind_time) % 60,
                 course.place
             )
-            print(msg)
-            # self.send(msg, now_user)
+            # print(msg)
+            self.send(msg, now_user)
         except EXCEPTIONS as error:
             error_report(error)
     #选退课功能暂时关闭
@@ -555,6 +553,7 @@ class Setting(object):
         return self.trans_dict[name]
 
     def trans_flexible_day(self, weekday=None):
+        '将灵活调整日期换为数字 或 将数字化为日期'
         if not weekday:
             return Weekday.objects.get(index=self.FLEXIBLE_DAY).day
         else:

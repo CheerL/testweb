@@ -65,6 +65,7 @@ class Helper_user(models.Model):
         return str(self.nick_name)
 
     def remind_update(self, week, is_flex=False, flex_day=0, count=0):
+        '提醒列表更新'
         if week + count > END_WEEK:
             self.is_open = False
             self.save()
@@ -89,6 +90,7 @@ class Helper_user(models.Model):
                 return self.remind_update(week, is_flex, flex_day, count+1)
 
     def courses_update(self, course_list):
+        '课程列表更新'
         for ident in course_list:
             try:
                 self.courses.add(Course.objects.get(ident=ident))

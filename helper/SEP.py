@@ -200,7 +200,7 @@ class UCASSEP(object):
 
         try:
             new_course = models.Course.objects.create(ident=num)
-        except EXCEPTIONS:
+        except IntegrityError:
             new_course = models.Course.objects.get(ident=num)
             if new_course.place:
                 info('编号为%d的课程已经存在' % num)
@@ -263,7 +263,8 @@ def main():
             #                 (times.weekday.index, times.start, times.end)
             #                 for times in course.coursetimes.all()
             #             ]
-            #             inf = "ident:%d, name:%s, place:%s, start_week:%d, end_week:%d, coursetimes:%s\n"%(
+                        # inf = "ident:%d, name:%s, place:%s, start_week:%d,"
+                        #     + "end_week:%d, coursetimes:%s\n"%(
             #                 course.ident,
             #                 course.name,
             #                 course.place,
@@ -304,7 +305,8 @@ def main():
             # filename = 'file_w'
             # with open(filename, 'r') as file_r:
             #     res = re.findall(
-            #         r"ident:(\d*), name:(.*?), place:(.*?), start_week:(\d*), end_week:(\d*), coursetimes:(.*?)\n",
+                    # r"ident:(\d*), name:(.*?), place:(.*?), start_week:(\d*),"
+                    # + "end_week:(\d*), coursetimes:(.*?)\n",
             #         file_r.read()
             #         )
             #     for result in res:
