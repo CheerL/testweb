@@ -270,14 +270,14 @@ class Helper(object):
                     self.settings.FLEXIBLE_DAY
                     )
             elif nick_name and isinstance(nick_name, str):
-                self.search_list(nick_name).user.remind_update(
+                self.search_list(nick_name).remind_update(
                     get_now_week(),
                     self.settings.FLEXIBLE,
                     self.settings.FLEXIBLE_DAY
                     )
             #被外部调用
             else:
-                for _user in Helper.search_list():
+                for _user in self.search_list():
                     self.remind_list_update(user=_user)
 
         except EXCEPTIONS as error:

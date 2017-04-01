@@ -26,7 +26,7 @@ def reply(msg):
         user = itchat.search_friends(userName=now_user)
         nick_name = user['NickName']
         keys_1 = ['重新绑定', '取消绑定', '取消提醒', '打开提醒', '文字课表']
-        keys_2 = ['绑定', '刷新', '保存', '提醒', '课表']
+        keys_2 = ['绑定', '刷新', '提醒', '课表']
         keys_3 = ['???', '？？？']
         info('收到来自%s的消息: %s' % (nick_name, text))
 
@@ -91,7 +91,7 @@ def reply(msg):
             # elif '选课' in text:
             #     HELPER.add_course(now_user, nick_name, text)
         elif '刷新' in text:
-            HELPER.remind_list_update(nick_name)
+            HELPER.remind_list_update(nick_name=nick_name)
             return '个人信息刷新成功'
         elif '提醒' in text:
             HELPER.show_remind_list(now_user, nick_name)
