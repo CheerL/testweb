@@ -112,7 +112,11 @@ class Helper(object):
                     sep = UCASSEP(user.user_id, user.password)
                     user.user_name = sep.user_name
                     user.courses_update(sep.get_course_list())
-                    user.remind_update(get_now_week())
+                    user.remind_update(
+                        get_now_week(),
+                        self.settings.FLEXIBLE,
+                        self.settings.FLEXIBLE_DAY
+                        )
                     user.wx_UserName = itchat.search_friends(nickName=user.nick_name)[0]['UserName']
                     user.save()
                     info('更新成功, 尝试%d次' % (count + 1))
@@ -197,7 +201,11 @@ class Helper(object):
         def remind_main(user):
             '对某个个用户进行提醒的操作'
             try:
-                user.remind_update(get_now_week())
+                user.remind_update(
+                    get_now_week(),
+                    self.settings.FLEXIBLE,
+                    self.settings.FLEXIBLE_DAY
+                    )
                 if user.remind_time - self.settings.REMIND_BEFORE * 60 <= 0:       #当提醒时间到, 主动提醒一次
                     if not user.have_remind:                    #当没有提醒过
                         today = time.localtime().tm_wday
@@ -258,9 +266,17 @@ class Helper(object):
         '手动更新信息, 允许外部调用'
         try:
             if user and isinstance(user, Helper_user):
-                user.remind_update(get_now_week())
+                user.remind_update(
+                    get_now_week(),
+                    self.settings.FLEXIBLE,
+                    self.settings.FLEXIBLE_DAY
+                    )
             elif nick_name and isinstance(nick_name, str):
-                self.search_list(nick_name).remind_update(get_now_week())
+                self.search_list(nick_name).user.remind_update(
+                    get_now_week(),
+                    self.settings.FLEXIBLE,
+                    self.settings.FLEXIBLE_DAY
+                    )
             #被外部调用
             else:
                 for _user in Helper.search_list():
@@ -393,6 +409,7 @@ class Helper(object):
         try:
             user = self.search_list(nick_name)
             if is_pic:
+                self.send('正在获取课表, 请稍候', now_user)
                 pic_name = 'static/%s.course.png' % nick_name
                 get_course_list_pic(pic_name, user)
                 self.send('@img@' + pic_name, now_user)
@@ -435,7 +452,11 @@ class Helper(object):
         '显示提醒时间'
         try:
             user = self.search_list(nick_name)
-            user.remind_update(get_now_week())
+            user.remind_update(
+                get_now_week(),
+                self.settings.FLEXIBLE,
+                self.settings.FLEXIBLE_DAY
+                )
             course = Course.objects.get(ident=user.remind)
             msg = '%s离下节课%s上课还有%d天%d小时%d分%d秒, 上课地点在%s' % (
                 user.nick_name,
@@ -502,28 +523,27 @@ class Helper(object):
 class Setting(object):
     '小助手设置'
     trans_dict = dict(
-        REMIND_ALIVE    =   '提醒开关',
-        ROBOT_REPLY     =   '智能回复开关',
-        VOICE_REPLY     =   '语音回复开关',
-        REMIND_WAIT     =   '提醒间隔',
-        REMIND_BEFORE   =   '提醒提前时间',
-        UPDATE_WAIT     =   '信息更新间隔',
-        LAST_UPDATE     =   '上次更新时间',
-        FLEXIBLE        =   '灵活调整开关',
-        FLEXIBLE_DAY    =   '灵活调整日期'
+        REMIND_ALIVE='提醒开关',
+        ROBOT_REPLY='智能回复开关',
+        VOICE_REPLY='语音回复开关',
+        REMIND_WAIT='提醒间隔',
+        REMIND_BEFORE='提醒提前时间',
+        UPDATE_WAIT='信息更新间隔',
+        LAST_UPDATE='上次更新时间',
+        FLEXIBLE='灵活调整开关',
+        FLEXIBLE_DAY='灵活调整日期'
     )
     def __init__(self):
         '设置参数初始化'
-        self.REMIND_ALIVE       =   True
-        self.ROBOT_REPLY        =   True
-        self.VOICE_REPLY        =   True
-        self.REMIND_WAIT        =   2#分钟
-        self.REMIND_BEFORE      =   30#分钟
-        self.UPDATE_WAIT        =   60#分钟
-        self.LAST_UPDATE        =   0
-        self.FLEXIBLE           =   False
-        self.FLEXIBLE_DAY       =   None
-
+        self.REMIND_ALIVE = True
+        self.ROBOT_REPLY = True
+        self.VOICE_REPLY = True
+        self.REMIND_WAIT = 2#分钟
+        self.REMIND_BEFORE = 30#分钟
+        self.UPDATE_WAIT = 60#分钟
+        self.LAST_UPDATE = 0
+        self.FLEXIBLE = False
+        self.FLEXIBLE_DAY = None
 
     def __str__(self):
         return '\n'.join(

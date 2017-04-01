@@ -97,7 +97,6 @@ def reply(msg):
             HELPER.show_remind_list(now_user, nick_name)
         elif '课表' in text:
             HELPER.show_course_list(now_user, nick_name)
-            return '若课表不正确, 可以试着回复"刷新"来刷新课程信息'
         elif '绑定' in text:
             HELPER.add_user(now_user, nick_name, text)
         else:

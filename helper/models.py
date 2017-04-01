@@ -64,7 +64,7 @@ class Helper_user(models.Model):
     def __str__(self):
         return str(self.nick_name)
 
-    def remind_update(self, week, count=0):
+    def remind_update(self, week, is_flex=False, flex_day=0, count=0):
         if week + count > END_WEEK:
             self.is_open = False
             self.save()
@@ -73,18 +73,20 @@ class Helper_user(models.Model):
             min_time_diff = None
             filter_condition = {"start_week__lt":week, 'end_week__gt':week}
             for course in self.courses.all().filter(**filter_condition):
-                if '课程名称' in course.name:
-                    course.name = course.name[5:]
-                    course.save()
+                # if '课程名称' in course.name:
+                #     course.name = course.name[5:]
+                #     course.save()
                 for coursetime in course.coursetimes.all():
-                    time_diff = coursetime.get_start_time() - time.time() + 60*60*24*7*count
+                    time_diff = coursetime.get_start_time() - time.time() + 60*60*24*7 * count
+                    if is_flex:
+                        time_diff += (flex_day - time.localtime().tm_wday) * 60*60*24
                     if time_diff > 0 and (min_time_diff is None or min_time_diff > time_diff):
                         self.remind = course.ident
                         self.remind_time = min_time_diff = int(time_diff)
             if min_time_diff is not None:
                 self.save()
             else:
-                return self.remind_update(week, count+1)
+                return self.remind_update(week, is_flex, flex_day, count+1)
 
     def courses_update(self, course_list):
         for ident in course_list:
