@@ -160,7 +160,7 @@ def chat_send(request):
 def setting_change(request):
     if request.method == 'POST':
         items = literal_eval(request.POST['res'])
-
+        print(items)
         for day in ['一', '二', '三', '四', '五', '六', '日', '天']:
             if day in items['FLEXIBLE_DAY']:
                 if day == '天':
@@ -177,7 +177,8 @@ def setting_change(request):
         HELPER.settings.REMIND_BEFORE = items['REMIND_BEFORE']
         HELPER.settings.REMIND_WAIT = items['REMIND_WAIT']
         HELPER.settings.ROBOT_REPLY = items['ROBOT_REPLY']
-        HELPER.settings.FLEXIBLE = items['FLEXIBILE']
+        HELPER.settings.FLEXIBLE = items['FLEXIBLE']
+        print(1)
         HELPER.settings.trans_flexible_day(items['FLEXIBLE_DAY'])
         return JsonResponse({'res':True, 'msg':'修改成功\n' + str(HELPER.settings)})
     else:

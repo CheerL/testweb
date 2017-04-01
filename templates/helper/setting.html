@@ -92,7 +92,12 @@
                 for (i = 0; i < item_list.length; i++){
                     var item = item_list.eq(i);
                     result.push(
-                        '"' + item.attr('id') + '":' + ((item.attr('lab') != 'bool')?item.val():item.attr('value'))
+                        '"' + item.attr('id') + '":' +
+                        ((item.attr('lab') != 'bool')?(
+                            (item.attr('id')=='FLEXIBLE_DAY')?
+                            '"' + item.val() + '"'
+                            :item.val())
+                            :item.attr('value'))
                     );
                 }
                 var res = '{' + result.join(',') + '}';
