@@ -80,7 +80,7 @@ class Helper_user(models.Model):
                 for coursetime in course.coursetimes.all():
                     time_diff = coursetime.get_start_time() - time.time() + 60*60*24*7 * count
                     if is_flex:
-                        time_diff += (flex_day - time.localtime().tm_wday) * 60*60*24
+                        time_diff += (- flex_day + time.localtime().tm_wday) * 60*60*24
                     if time_diff > 0 and (min_time_diff is None or min_time_diff > time_diff):
                         self.remind = course.ident
                         self.remind_time = min_time_diff = int(time_diff)
