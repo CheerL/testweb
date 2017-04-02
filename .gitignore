@@ -8,3 +8,5 @@ test.*
 *.mp3
 *.pyc
 *.pkl
+*.log
+*.out
