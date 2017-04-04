@@ -2,7 +2,6 @@
 import time
 # import sys
 import logging
-from django.db.utils import IntegrityError
 
 #需要交叉引用的函数的提前声明
 def error_report(error, user=None, up_rep=True):

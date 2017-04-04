@@ -25,16 +25,7 @@ SECRET_KEY = '3p1bk!e25y7qx_n^$c%yn6d5civtq86$f4i6mhce$i9qze&t97'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    'inner.cheerl.online',
-    'cheerl.oicp.io',
-    'cheerl.imwork.net',
-    'cheerl.online',
-    '127.0.0.1',
-    '192.168.0.102',
-    '0.0.0.0',
-    'localhost',
-]
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -48,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'helper',
     'blog',
-    'chatroom'
+    'chatroom',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -81,6 +73,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'web.wsgi.application'
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'asgiref.inmemory.ChannelLayer',
+        'ROUTING': 'web.routing.channel_routing'
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
