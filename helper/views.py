@@ -8,7 +8,7 @@ from django.http import HttpResponse, JsonResponse
 from dwebsocket.decorators import accept_websocket
 from .login import login as LG
 from .main import HELPER
-from .base import info, EXCEPTIONS, QR_pic, WX_pic, log_read, send, clients
+from .base import info, EXCEPTIONS, QR_pic, WX_pic, log_read, clients
 from . import tests
 
 MSG_init = '请点击登录按钮'
@@ -184,70 +184,71 @@ def setting_change(request):
     else:
         return JsonResponse({'res':False, 'msg':'访问错误'})
 
-#socket api
-def test_socket(request, client_id, channel):
-    if not channel:
-        return JsonResponse({'res':False, 'msg':'channel is empty'})
-    if not client_id or client_id == 'null':
-        client_id = str(uuid1())
-    else:
-        for count, client in enumerate(clients):
-            if client[0] == client_id:
-                if client[1] == channel:
-                    #id 和 channel 都和已经连接的socket相同, 返回True
-                    return JsonResponse({'res':True})
-                else:
-                    #id 相同, channel 不同, 删除该用户
-                    del clients[count]
-                    break
+#socket api 暂时关闭
+    # def test_socket(request, client_id, channel):
+    #     if not channel:
+    #         return JsonResponse({'res':False, 'msg':'channel is empty'})
+    #     if not client_id or client_id == 'null':
+    #         client_id = str(uuid1())
+    #     else:
+    #         for count, client in enumerate(clients):
+    #             if client[0] == client_id:
+    #                 if client[1] == channel:
+    #                     #id 和 channel 都和已经连接的socket相同, 返回True
+    #                     return JsonResponse({'res':True})
+    #                 else:
+    #                     #id 相同, channel 不同, 删除该用户
+    #                     del clients[count]
+    #                     break
 
-    #当指定socket未连接
-    clients.append([client_id, channel, None])
-    return JsonResponse({'res':False, 'client_id':client_id, 'msg':'no such connection'})
+    #     #当指定socket未连接
+    #     clients.append([client_id, channel, None])
+    #     return JsonResponse({'res':False, 'client_id':client_id, 'msg':'no such connection'})
 
-def close_socket(request, client_id):
-    for count, client in enumerate(clients):
-        if client[0] == client_id:
-            del clients[count]
-            return JsonResponse({'res':True})
-    return JsonResponse({'res':False, 'msg':'no such id'})
+    # def close_socket(request, client_id):
+    #     for count, client in enumerate(clients):
+    #         if client[0] == client_id:
+    #             del clients[count]
+    #             return JsonResponse({'res':True})
+    #     return JsonResponse({'res':False, 'msg':'no such id'})
 
-@accept_websocket
-def open_socket(request, client_id, channel):
-    if request.is_websocket:
-        lock = threading.RLock()
-        try:
-            lock.acquire()
-            #修改列表中对应的对象为socket
-            for count, client in enumerate(clients):
-                if client[0] == client_id and client[1] == channel:
-                    num = count
-                    client[2] = request.websocket
-                    break
+    # @accept_websocket
+    # def open_socket(request, client_id, channel):
+    #     if request.is_websocket:
+    #         lock = threading.RLock()
+    #         try:
+    #             lock.acquire()
+    #             #修改列表中对应的对象为socket
+    #             for count, client in enumerate(clients):
+    #                 if client[0] == client_id and client[1] == channel:
+    #                     num = count
+    #                     client[2] = request.websocket
+    #                     break
 
-            #收到信息时的处理
-            for message in request.websocket:
-                if not message:
-                    break
-                print(message)
-                #生成指定channel中的所有socket
-                channel_socket_list = list(
-                    map(lambda x: x[2],
-                        list(filter(lambda x: True if x[1] == channel else False, clients)))
-                )
-                #发送消息
-                for socket in channel_socket_list:
-                    socket.send(message)
-        finally:
-            #当出错, 关掉这个socket
-            clients[num][2].close()
-            clients[num][2] = None
-            lock.release()
-    return HttpResponse('socket close')
+    #             #收到信息时的处理
+    #             for message in request.websocket:
+    #                 if not message:
+    #                     break
+    #                 print(message)
+    #                 #生成指定channel中的所有socket
+    #                 channel_socket_list = list(
+    #                     map(lambda x: x[2],
+    #                         list(filter(lambda x: True if x[1] == channel else False, clients)))
+    #                 )
+    #                 #发送消息
+    #                 for socket in channel_socket_list:
+    #                     socket.send(message)
+    #         finally:
+    #             #当出错, 关掉这个socket
+    #             clients[num][2].close()
+    #             clients[num][2] = None
+    #             lock.release()
+    #     return HttpResponse('socket close')
 
-def send_page(request):
-    return render(request, 'helper/send.html')
+    # def send_page(request):
+    #     return render(request, 'helper/send.html')
 
-def send_to_channel(request, content=None, channel=None):
-    msg = send(content, channel)
-    return HttpResponse(msg)
+    # def send_to_channel(request, content=None, channel=None):
+    #     # msg = send(content, channel)
+    #     return HttpResponse()
+#end

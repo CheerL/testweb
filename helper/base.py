@@ -1,7 +1,9 @@
 '小助手, 线上版'
 import time
+import json
 # import sys
 import logging
+from channels import Group
 
 #需要交叉引用的函数的提前声明
 def error_report(error, user=None, up_rep=True):
@@ -15,8 +17,7 @@ def error_report(error, user=None, up_rep=True):
 def info(msg, is_report=False):
     '向文件输出日志, 并发送到log频道'
     logger.info(msg)
-    # views.send(log_read(log_path)[0])
-    send(log_read(log_path)[0], 'log')
+    Group('log').send({'text': json.dumps({"log":log_read(log_path)[0]})})
     if is_report:
         raise NotImplementedError(msg)
 
@@ -71,21 +72,6 @@ def log_read(path=log_path, count=1, start=0):
         else:
             line_list = content[-1-start:-1-start-count:-1]
     return line_list
-
-def send(content=None, channel=None):
-    '向某个channel发送信息'
-    try:
-        reciever = []
-        for count, client in enumerate(clients):
-            if not channel or (channel and client[1] == channel):
-                if client[2]:
-                    client[2].send(str(content).encode())
-                    reciever.append(client[0])
-                else:
-                    del clients[count]
-        return 'send %s to %s:%s' % (content, channel if channel else 'all', reciever)
-    except EXCEPTIONS as error:
-        return 'send fail since %s' % error
 
 def get_now_week():
     '返回当前周次'

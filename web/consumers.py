@@ -10,7 +10,27 @@ from channels.sessions import channel_session
 @channel_session
 def ws_connect(message):
     # message.reply_channel.send({"connect"})
-    pass
+    try:
+        prefix, _ = message['path'].decode('ascii').strip('/').split('/')
+        if prefix == 'log':
+            Group('log', channel_layer=message.channel_layer).add(message.reply_channel)
+            print('connect %s:%s' % (message['client'][0], message['client'][1]))
+            return
+    except:
+        pass
+    # except ValueError:
+    #     log.debug('invalid ws path=%s', message['path'])
+    #     return
+    # except Room.DoesNotExist:
+    #     log.debug('ws room does not exist label=%s', label)
+    #     return
+
+    # log.debug('chat connect room=%s client=%s:%s', 
+    #     room.label, message['client'][0], message['client'][1])
+    
+    # Need to be explicit about the channel layer so that testability works
+    # This may be a FIXME?
+    # message.channel_session['log'] = room.label
 
 #将发来的信息原样返回
 @channel_session
@@ -23,7 +43,10 @@ def ws_message(message):
 @channel_session
 def ws_disconnect(message):
     # message.reply_channel.send({"disconnect"})
-    pass
+    try:
+        Group('log', channel_layer=message.channel_layer).discard(message.reply_channel)
+    except KeyError:
+        pass
 
 @channel_session
 def ws_receive(message):

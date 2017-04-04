@@ -31,14 +31,17 @@
             });
         }
         function show_message(message){
-            log_box.prepend('<p>' + message.data + '</p>');
+            var data = JSON.parse(message.data)
+            log_box.prepend('<p>' + data.log + '</p>');
         }
         $(function(){
             get_log(0,20);
-            open_connection(test_url, open_url, client_id, channel, show_message);
-            window.onbeforeunload = function(){
-                close_connection(close_url, client_id);
-                console.log('close connection')
+            var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+            var logsock = new ReconnectingWebSocket(ws_scheme + '://' + window.location.host + "/log/connect/"); //+ window.location.pathname);
+
+            logsock.onmessage = function(message) {
+                console.log(message);
+                show_message(message);
             };
         });
     </script>
