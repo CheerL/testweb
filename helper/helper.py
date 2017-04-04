@@ -101,7 +101,7 @@ class Helper(object):
         for user in Helper.search_list():
             user.wx_UserName = itchat.search_friends(nickName=user.nick_name)[0]['UserName']
             user.save()
-        self.keep_alive_name = itchat.search_mps(name='微信支付')[0]['UserName']
+        Helper.keep_alive_name = itchat.search_mps(name='微信支付')[0]['UserName']
 
     def update_info(self, user=None):
         '更新用户信息'
