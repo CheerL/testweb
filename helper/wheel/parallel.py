@@ -121,9 +121,9 @@ def thread_list(style="OBJ"):
 def search_thread(name=None, ident=None, part=False):
     '寻找名为name或线程号为ident的线程, part为False返回布尔值, 为True返回线程'
     for thread in thread_list():
-        if ident:
+        if ident is thread.ident:
             return thread if part else True
-        elif name:
+        elif name == thread.name:
             return thread if part else True
 
     if part:

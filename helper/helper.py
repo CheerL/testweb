@@ -562,6 +562,20 @@ class Setting(object):
         else:
             self.FLEXIBLE_DAY = Weekday.objects.get(day=weekday).index
 
+    def remind_change(self):
+        '根据REMIND_ALIVE打开或者关闭提醒'
+        thread_remind = pl.search_thread(name='remind', part=True)
+        print('当前线程%s' % str(pl.thread_list('BOTH')))
+        if self.REMIND_ALIVE:
+            if not thread_remind:
+                from .base import HELPER
+                HELPER.remind()
+                info('打开remind线程')
+        else:
+            if thread_remind:
+                pl.kill_thread(thread=thread_remind)
+                info('关闭remind线程')
+
 class UCASSEP(object):
     'UCAS SEP系统'
     user_id = ''

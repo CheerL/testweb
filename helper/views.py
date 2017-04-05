@@ -178,6 +178,7 @@ def setting_change(request):
         HELPER.settings.ROBOT_REPLY = items['ROBOT_REPLY']
         HELPER.settings.FLEXIBLE = items['FLEXIBLE']
         HELPER.settings.trans_flexible_day(items['FLEXIBLE_DAY'])
+        HELPER.settings.remind_change()
         info("修改设置 %s" % items)
         return JsonResponse({'res':True, 'msg':'修改成功\n' + str(HELPER.settings)})
     else:
