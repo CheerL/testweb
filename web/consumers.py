@@ -1,3 +1,4 @@
+import json
 from channels import Group
 from channels.sessions import channel_session
 
@@ -10,14 +11,14 @@ from channels.sessions import channel_session
 @channel_session
 def ws_connect(message):
     # message.reply_channel.send({"connect"})
-    try:
-        prefix, _ = message['path'].decode('ascii').strip('/').split('/')
-        if prefix == 'log':
-            Group('log', channel_layer=message.channel_layer).add(message.reply_channel)
-            print('connect %s:%s' % (message['client'][0], message['client'][1]))
-            return
-    except:
-        pass
+    prefix, label = message['path'].strip('/').split('/')
+    if prefix == 'log':
+        Group('log', channel_layer=message.channel_layer).add(message.reply_channel)
+        msg_connect = 'log channel is successfully connected, client %s:%s'%(
+            message.content['client'][0], message.content['client'][1]
+            )
+        message.reply_channel.send({'text':json.dumps({"log":msg_connect})})
+    message.reply_channel.send({"accept": True})
     # except ValueError:
     #     log.debug('invalid ws path=%s', message['path'])
     #     return
@@ -34,20 +35,15 @@ def ws_connect(message):
 
 #将发来的信息原样返回
 @channel_session
-def ws_message(message):
-    # message.reply_channel.send({
-    #     "text": message.content['text'],
-    # })
-    pass
-#断开连接时发送一个disconnect字符串，当然，他已经收不到了
-@channel_session
 def ws_disconnect(message):
     # message.reply_channel.send({"disconnect"})
-    try:
+    prefix, label = message['path'].strip('/').split('/')
+    if prefix == 'log':
         Group('log', channel_layer=message.channel_layer).discard(message.reply_channel)
-    except KeyError:
-        pass
 
 @channel_session
 def ws_receive(message):
-    pass
+    prefix, label = message['path'].strip('/').split('/')
+    text = message.content['text']
+    if prefix == 'log':
+        Group('log').send({'text':json.dumps({"log":text})})

@@ -6,14 +6,13 @@ import time
 import requests
 import itchat
 import lxml
+import threading
 from django.db.utils import IntegrityError
 from PIL import Image, ImageDraw, ImageFont
 from bs4 import BeautifulSoup as Bs
-from .base import EXCEPTIONS, info, get_now_week, error_report, TIMEOUT
+from .base import EXCEPTIONS, info, get_now_week, error_report, TIMEOUT, TL_KEY
 from .wheel import parallel as pl
 from .models import Helper_user, Course, Weekday, Coursetime
-
-TL_KEY = '71f28bf79c820df10d39b4074345ef8c' #图灵机器人密钥
 
 class Helper(object):
     '助手类'
@@ -95,13 +94,12 @@ class Helper(object):
         else:
             return Helper_user.objects.all()
 
-    @staticmethod
-    def user_name_update():
+    def user_name_update(self):
         '更新用户名, 在登陆时调用'
         for user in Helper.search_list():
             user.wx_UserName = itchat.search_friends(nickName=user.nick_name)[0]['UserName']
             user.save()
-        Helper.keep_alive_name = itchat.search_mps(name='微信支付')[0]['UserName']
+        self.keep_alive_name = itchat.search_mps(name='微信支付')[0]['UserName']
 
     def update_info(self, user=None):
         '更新用户信息'
@@ -234,7 +232,7 @@ class Helper(object):
             info('打开新线程:%d, 提醒间隔%d分%d秒' %
                  (pl.get_tid(), self.settings.REMIND_WAIT//1, self.settings.REMIND_WAIT%1*60))
             self.keep_alive()
-            #info('当前线程%s' % str(pl.thread_list('BOTH')))
+            info('当前线程%s' % str(pl.thread_list('BOTH')))
             if time.time() - self.settings.LAST_UPDATE > self.settings.UPDATE_WAIT * 60:
                 self.update_info()
             for user in Helper.search_list():
@@ -257,11 +255,13 @@ class Helper(object):
             self.send('打开提醒成功', now_user)
 
         else:
-            try:
-                if self.settings.REMIND_ALIVE:
-                    pl.run_thread([(remind_thread, ())], 'remind', False)
-            except EXCEPTIONS as error:
-                info(error)
+            # try:
+            if self.settings.REMIND_ALIVE:
+                threading.Thread(target=remind_thread, args=(), name='remind', daemon=True).start()
+                # new_thread.start()
+                # pl.run_thread_pool([(remind_thread, ())], False)
+            # except EXCEPTIONS as error:
+            #     info(error)
 
     def remind_list_update(self, nick_name=None, user=None):
         '手动更新信息, 允许外部调用'
@@ -519,7 +519,7 @@ class Helper(object):
 
     def keep_alive(self):
         '保活'
-        self.send('1', self.keep_alive_name)
+        Helper.send('1', self.keep_alive_name)
 
 class Setting(object):
     '小助手设置'
@@ -539,7 +539,7 @@ class Setting(object):
         self.REMIND_ALIVE = True
         self.ROBOT_REPLY = True
         self.VOICE_REPLY = True
-        self.REMIND_WAIT = 2#分钟
+        self.REMIND_WAIT = 0.1#分钟
         self.REMIND_BEFORE = 30#分钟
         self.UPDATE_WAIT = 60#分钟
         self.LAST_UPDATE = 0

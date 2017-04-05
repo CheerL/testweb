@@ -14,7 +14,7 @@ from . import tests
 MSG_init = '请点击登录按钮'
 MSG_error = '错误,请重新登录'
 MSG_login = '小助手运行中'
-MSG_scan = '请扫码二维码'
+MSG_scan = '请扫描二维码'
 MSG_logout = '小助手成功退出'
 MSG_reload = '重新启动'
 MSG_remind = '小助手提醒中'
@@ -160,7 +160,6 @@ def chat_send(request):
 def setting_change(request):
     if request.method == 'POST':
         items = literal_eval(request.POST['res'])
-        print(items)
         for day in ['一', '二', '三', '四', '五', '六', '日', '天']:
             if day in items['FLEXIBLE_DAY']:
                 if day == '天':
@@ -178,8 +177,8 @@ def setting_change(request):
         HELPER.settings.REMIND_WAIT = items['REMIND_WAIT']
         HELPER.settings.ROBOT_REPLY = items['ROBOT_REPLY']
         HELPER.settings.FLEXIBLE = items['FLEXIBLE']
-        print(1)
         HELPER.settings.trans_flexible_day(items['FLEXIBLE_DAY'])
+        info("修改设置 %s" % items)
         return JsonResponse({'res':True, 'msg':'修改成功\n' + str(HELPER.settings)})
     else:
         return JsonResponse({'res':False, 'msg':'访问错误'})

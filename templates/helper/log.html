@@ -40,9 +40,15 @@
             var logsock = new ReconnectingWebSocket(ws_scheme + '://' + window.location.host + "/log/connect/"); //+ window.location.pathname);
 
             logsock.onmessage = function(message) {
-                console.log(message);
+                // console.log(message);
                 show_message(message);
+                // alert(message.data);
             };
+            // logsock.onopen = function () {
+            //     // console.log("connect");
+            //     // logsock.send("open new connect");
+            // }
+            // if (logsock.readyState == WebSocket.OPEN) logsock.onopen();
         });
     </script>
 {% endblock %}

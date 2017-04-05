@@ -35,6 +35,8 @@ WX_pic = 'static/begin.png'
 END_WEEK = 20
 TIMEOUT = 2
 
+TL_KEY = '71f28bf79c820df10d39b4074345ef8c' #图灵机器人密钥
+
 EXCEPTIONS = (
     AttributeError, IOError, NotImplementedError,
     TimeoutError, IndexError, ConnectionError,
