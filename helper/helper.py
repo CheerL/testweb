@@ -539,7 +539,7 @@ class Setting(object):
         self.REMIND_ALIVE = True
         self.ROBOT_REPLY = True
         self.VOICE_REPLY = True
-        self.REMIND_WAIT = 0.1#分钟
+        self.REMIND_WAIT = 2#分钟
         self.REMIND_BEFORE = 30#分钟
         self.UPDATE_WAIT = 60#分钟
         self.LAST_UPDATE = 0
