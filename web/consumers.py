@@ -11,14 +11,15 @@ from channels.sessions import channel_session
 @channel_session
 def ws_connect(message):
     # message.reply_channel.send({"connect"})
+    message.reply_channel.send({"accept": True})
     prefix, label = message['path'].strip('/').split('/')
     if prefix == 'log':
         Group('log', channel_layer=message.channel_layer).add(message.reply_channel)
         msg_connect = 'log channel is successfully connected, client %s:%s'%(
             message.content['client'][0], message.content['client'][1]
             )
+        message.channel_session['room'] = 'log'
         message.reply_channel.send({'text':json.dumps({"log":msg_connect})})
-    message.reply_channel.send({"accept": True})
     # except ValueError:
     #     log.debug('invalid ws path=%s', message['path'])
     #     return
@@ -28,7 +29,6 @@ def ws_connect(message):
 
     # log.debug('chat connect room=%s client=%s:%s', 
     #     room.label, message['client'][0], message['client'][1])
-    
     # Need to be explicit about the channel layer so that testability works
     # This may be a FIXME?
     # message.channel_session['log'] = room.label

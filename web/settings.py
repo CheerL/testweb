@@ -14,7 +14,7 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -49,6 +49,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -67,18 +68,40 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'debug': DEBUG,
         },
     },
 ]
 
 WSGI_APPLICATION = 'web.wsgi.application'
 
+#内存后端
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'asgiref.inmemory.ChannelLayer',
+#         'ROUTING': 'web.routing.channel_routing'
+#     },
+# }
+#redis后端
 CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'asgiref.inmemory.ChannelLayer',
-        'ROUTING': 'web.routing.channel_routing'
+    "default": {
+        "BACKEND": "asgi_redis.RedisChannelLayer",
+        # "CONFIG": {
+        #     "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
+        # },
+        "ROUTING": "web.routing.channel_routing",
     },
 }
+#ipc后端
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "asgi_ipc.IPCChannelLayer",
+#         "ROUTING": "my_project.routing.channel_routing",
+#         "CONFIG": {
+#             "prefix": "mysite",
+#         },
+#     },
+# }
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
