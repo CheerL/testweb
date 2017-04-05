@@ -231,10 +231,10 @@ class Helper(object):
             time.sleep(int(self.settings.REMIND_WAIT * 60))
             info('打开新线程:%d, 提醒间隔%d分%d秒' %
                  (pl.get_tid(), self.settings.REMIND_WAIT//1, self.settings.REMIND_WAIT%1*60))
-            self.keep_alive()
             info('当前线程%s' % str(pl.thread_list('BOTH')))
             if time.time() - self.settings.LAST_UPDATE > self.settings.UPDATE_WAIT * 60:
                 self.update_info()
+                self.keep_alive()
             for user in Helper.search_list():
                 if user.is_open:
                     remind_main(user)
