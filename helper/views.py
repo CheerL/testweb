@@ -1,6 +1,7 @@
 import os
 from uuid import uuid1
 import threading
+import json
 from ast import literal_eval
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
@@ -10,6 +11,7 @@ from .login import login as LG
 from .main import HELPER
 from .base import info, EXCEPTIONS, QR_pic, WX_pic, log_read, clients
 from . import tests
+from channels import Channel, Group
 
 MSG_init = '请点击登录按钮'
 MSG_error = '错误,请重新登录'
@@ -184,7 +186,7 @@ def setting_change(request):
     else:
         return JsonResponse({'res':False, 'msg':'访问错误'})
 
-#socket api 暂时关闭
+# socket api 暂时关闭, 用channel替代
     # def test_socket(request, client_id, channel):
     #     if not channel:
     #         return JsonResponse({'res':False, 'msg':'channel is empty'})
@@ -244,11 +246,12 @@ def setting_change(request):
     #             clients[num][2] = None
     #             lock.release()
     #     return HttpResponse('socket close')
-
-    # def send_page(request):
-    #     return render(request, 'helper/send.html')
-
-    # def send_to_channel(request, content=None, channel=None):
-    #     # msg = send(content, channel)
-    #     return HttpResponse()
 #end
+
+def send_page(request):
+    return render(request, 'helper/send.html')
+
+def send_to_channel(request, content=None, channel=None):
+    Channel(channel).send({'text': json.dumps({"log":content})})
+    Group(channel).send({'text': json.dumps({"log":content})})
+    return HttpResponse('send %s to %s' % (content, channel))

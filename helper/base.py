@@ -3,7 +3,7 @@ import time
 import json
 # import sys
 import logging
-from channels import Group
+from channels import Group, Channel
 
 #需要交叉引用的函数的提前声明
 def error_report(error, user=None, up_rep=True):
@@ -18,6 +18,7 @@ def info(msg, is_report=False):
     '向文件输出日志, 并发送到log频道'
     logger.info(msg)
     Group('log').send({'text': json.dumps({"log":log_read(log_path)[0]})})
+    Channel('log').send({'text': json.dumps({"log":log_read(log_path)[0]})})
     if is_report:
         raise NotImplementedError(msg)
 
