@@ -1,9 +1,9 @@
 '小助手, 线上版'
 import time
-# import sys
+import json
 import logging
 import requests
-import socket
+from channels import Group
 
 #需要交叉引用的函数的提前声明
 def error_report(error, user=None, up_rep=True):
@@ -16,8 +16,9 @@ def error_report(error, user=None, up_rep=True):
 
 def info(msg, is_report=False):
     '向文件输出日志, 并发送到log频道'
-    url = 'http://%s/helper/log/send/' % HOST
+    url = 'http://0.0.0.0:8000/helper/log/send/'
     logger.info(msg)
+    Group('log').send({'text': json.dumps({"log":msg})})
     requests.post(url=url, data={'msg':log_read(log_path)[0]})
     if is_report:
         raise NotImplementedError(msg)
@@ -33,7 +34,6 @@ pkl_path = 'static/helper.pkl'
 QR_pic = 'static/QR.png'
 WX_pic = 'static/begin.png'
 
-HOST = socket.gethostbyname(socket.gethostname())
 END_WEEK = 20
 TIMEOUT = 2
 
