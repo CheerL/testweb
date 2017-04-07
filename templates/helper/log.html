@@ -37,18 +37,11 @@
         $(function(){
             get_log(0,20);
             var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-            var logsock = new ReconnectingWebSocket(ws_scheme + '://' + window.location.host + "/log/"); //+ window.location.pathname);
+            var sock = new ReconnectingWebSocket(ws_scheme + '://' + window.location.host + "/log/"); //+ window.location.pathname);
 
-            logsock.onmessage = function(message) {
-                // console.log(message);
+            sock.onmessage = function(message) {
                 show_message(message);
-                // alert(message.data);
             };
-            // logsock.onopen = function () {
-            //     // console.log("connect");
-            //     // logsock.send("open new connect");
-            // }
-            // if (logsock.readyState == WebSocket.OPEN) logsock.onopen();
         });
     </script>
 {% endblock %}

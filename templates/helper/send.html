@@ -1,22 +1,26 @@
+{% load static staticfiles %}
+
 <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
 <input type="text" id="content" value="Hello, World!" />
-<input type="text" id="channel" value="log" />
+<input type="text" id="channel" value="login" />
 <button type="button" id="send">Send message</button>
-<div id='text'></div>
+<div id='msg'></div>
 
+<script src="{% static "js/web-socket.js" %}"></script>
 <script>
     $(function(){
         var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-        var logsock = new ReconnectingWebSocket(ws_scheme + '://' + window.location.host + "/login/");
+        var sock = new ReconnectingWebSocket(ws_scheme + '://' + window.location.host + "/login/");
 
-        
+        sock.onmessage = function(message) {
+            var data = JSON.parse(message.data)
+            $('div#msg').prepend('<p>' + data.msg + '</p>');
+        };
         $('#send').click(function(){
             var content = $('#content').val();
             var channel = $('#channel').val();
             var url = '/helper/send/content=' + content + '&channel=' + channel;
-            $.get(url, function (data) {
-                $('div#text').append('<p>' + data + '<p>')
-            });
+            $.get(url);
         });
     });
 </script>

@@ -256,7 +256,6 @@ def send_page(request):
     return render(request, 'helper/send.html')
 
 def send_to_channel(request, content=None, channel=None):
-    if channel == 'log':
-        Group(channel).send({'text': json.dumps({"log":content})})
+    Group(channel).send({'text': json.dumps({"msg":content})})
     return HttpResponse('send %s to %s' % (content, channel))
 #end

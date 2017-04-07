@@ -42,6 +42,8 @@ def ws_disconnect(message):
     path = message['path'].strip('/')
     if path == 'log':
         Group('log', channel_layer=message.channel_layer).discard(message.reply_channel)
+    if path == 'login':
+        Group('login', channel_layer=message.channel_layer).discard(message.reply_channel)
 
 @channel_session
 def ws_receive(message):
@@ -49,3 +51,7 @@ def ws_receive(message):
     if path == 'log':
         text = message.content['text']
         Group('log').send({'text':json.dumps({"msg":text})})
+
+def log_send(message):
+    # print(type(message.content['text']))
+    Group('log').send({'text': json.dumps({"msg":message.content['text']})})
