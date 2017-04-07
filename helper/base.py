@@ -16,7 +16,7 @@ def error_report(error, user=None, up_rep=True):
 
 def info(msg, is_report=False):
     '向文件输出日志, 并发送到log频道'
-    url = 'http://%s/helper/log/send/' % '0.0.0.0'
+    url = 'http://%s/helper/log/send/' % HOST
     logger.info(msg)
     requests.post(url=url, data={'msg':log_read(log_path)[0]})
     if is_report:
