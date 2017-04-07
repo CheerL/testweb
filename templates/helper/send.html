@@ -6,6 +6,10 @@
 
 <script>
     $(function(){
+        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+        var logsock = new ReconnectingWebSocket(ws_scheme + '://' + window.location.host + "/login/");
+
+        
         $('#send').click(function(){
             var content = $('#content').val();
             var channel = $('#channel').val();

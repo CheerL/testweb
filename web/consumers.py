@@ -16,10 +16,12 @@ def ws_connect(message):
     path = message['path'].strip('/')
     if path == 'log':
         Group('log').add(message.reply_channel)
-        msg_connect = 'log channel is successfully connected, client %s:%s'%(
+        log_connect_report = 'log channel is successfully connected, client %s:%s'%(
             message.content['client'][0], message.content['client'][1]
             )
-        message.reply_channel.send({'text':json.dumps({"msg":msg_connect})})
+        message.reply_channel.send({'text':json.dumps({"msg":log_connect_report})})
+    elif path == 'login':
+        Group('login').add(message.reply_channel)
     # except ValueError:
     #     log.debug('invalid ws path=%s', message['path'])
     #     return

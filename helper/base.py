@@ -77,8 +77,9 @@ def info(msg, is_report=False):
     url = 'http://%s/helper/log/send/' % HOST[0]
     logger.info(msg)
     # Channel('log').send({'text': json.dumps({"log":log_read(log_path)[0]})})
-    Group('log').send({'text': json.dumps({"log":log_read(log_path)[0]})})
-    requests.post(url=url, data={'msg':log_read(log_path)[0]})
+    log = log_read(log_path)[0]
+    Group('log').send({'text': json.dumps({"msg":log})})
+    requests.post(url=url, data={'msg':log})
     if is_report:
         raise NotImplementedError(msg)
 
