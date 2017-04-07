@@ -1,4 +1,5 @@
 import json
+import time
 from channels import Group
 from channels.sessions import channel_session
 
@@ -12,7 +13,7 @@ from channels.sessions import channel_session
 def ws_connect(message):
     # message.reply_channel.send({"connect"})
     message.reply_channel.send({"accept": True})
-
+    # message.reply_channel.send({'text':json.dumps({"msg":'1'})})
     path = message['path'].strip('/')
     if path == 'log':
         Group('log').add(message.reply_channel)
@@ -20,8 +21,9 @@ def ws_connect(message):
             message.content['client'][0], message.content['client'][1]
             )
         message.reply_channel.send({'text':json.dumps({"msg":log_connect_report})})
-    elif path == 'login':
-        Group('login').add(message.reply_channel)
+
+    # message.reply_channel.send({'text':json.dumps({"msg":'2'})})
+    # message.reply_channel.send({'text':json.dumps({"msg":'3'})})
     # except ValueError:
     #     log.debug('invalid ws path=%s', message['path'])
     #     return
@@ -42,16 +44,11 @@ def ws_disconnect(message):
     path = message['path'].strip('/')
     if path == 'log':
         Group('log', channel_layer=message.channel_layer).discard(message.reply_channel)
-    if path == 'login':
-        Group('login', channel_layer=message.channel_layer).discard(message.reply_channel)
 
 @channel_session
 def ws_receive(message):
     path = message['path'].strip('/')
+    text = message.content['text']
     if path == 'log':
-        text = message.content['text']
         Group('log').send({'text':json.dumps({"msg":text})})
 
-def log_send(message):
-    # print(type(message.content['text']))
-    Group('log').send({'text': json.dumps({"msg":message.content['text']})})

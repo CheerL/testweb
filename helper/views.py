@@ -252,10 +252,10 @@ def setting_change(request):
     #     return HttpResponse('socket close')
 #end
 #send测试关闭
-def send_page(request):
-    return render(request, 'helper/send.html')
+    # def send_page(request):
+    #     return render(request, 'helper/send.html')
 
-def send_to_channel(request, content=None, channel=None):
-    Group(channel).send({'text': json.dumps({"msg":content})})
-    return HttpResponse('send %s to %s' % (content, channel))
+    # def send_to_channel(request, content=None, channel=None):
+    #     Group(channel).send({'text': json.dumps({"msg":content})})
+    #     return HttpResponse('send %s to %s' % (content, channel))
 #end

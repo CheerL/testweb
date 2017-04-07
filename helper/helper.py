@@ -307,7 +307,7 @@ class Helper(object):
                                 'coursetimes__end__gte': num,
                                 'end_week__gte': week,
                                 'start_week__lte': week,
-                            })
+                            }).values('name')
                         for num in range(12)
                     ]
                     for weekday in range(7)
@@ -335,12 +335,12 @@ class Helper(object):
                             )
 
             #颜色
-            white = (255, 255, 255)
-            grey_0 = (245, 245, 245)
-            grey_1 = (204, 204, 204)
-            blue_0 = (225, 234, 240)
+            # line_color = (221, 221, 221)
+            # white = (255, 255, 255)
+            # grey_0 = (245, 245, 245)
+            # grey_1 = (204, 204, 204)
+            # blue_0 = (225, 234, 240)
             blue_1 = (0, 136, 205)
-            line_color = (221, 221, 221)
 
             #图像和字体大小
             space = 5
@@ -348,7 +348,8 @@ class Helper(object):
             width = 900
             height = 800
 
-            img = Image.new('RGB', (width, height), white)
+            # img = Image.new('RGB', (width, height), white)
+            img = Image.open('static/course.png')
             draw = ImageDraw.Draw(img)
             font = ImageFont.truetype('static/Deng.ttf', font_size, encoding='utf-8')
             table = get_time_table(user)
@@ -361,48 +362,51 @@ class Helper(object):
             height_list = [num for num in range(0, height, int(height/part_h))]
             width_list[-1] = width
             height_list[-1] = height
+            #初始块, 取消这一部分
+                #划块填色
+                # for index_w, num_w in enumerate(width_list):
+                #     for index_h, num_h in enumerate(height_list):
+                #         if not index_h or not index_w:
+                #             continue
+                #         #第一行第一列
+                #         elif index_h is 1 and index_w is 1:
+                #             draw.rectangle([0, 0, num_w, num_h], grey_1, line_color)
+                #         #第一行
+                #         elif index_h is 1 and index_w is not 1:
+                #             width_last = width_list[index_w - 1]
+                #             draw.rectangle([width_last, 0, num_w, num_h], grey_1, line_color)
+                #         #第一列
+                #         elif index_w is 1 and index_h is not 1:
+                #             height_last = height_list[index_h - 1]
+                #             draw.rectangle([0, height_last, num_w, num_h], blue_0, line_color)
+                #         #主体
+                #         else:
+                #             height_last = height_list[index_h - 1]
+                #             width_last = width_list[index_w - 1]
+                #             #偶数行
+                #             if not index_h % 2:
+                #                 draw.rectangle(
+                #                     [width_last, height_last, num_w, num_h], grey_0, line_color
+                #                     )
+                #             #奇数行
+                #             else:
+                #                 draw.rectangle(
+                #                     [width_last, height_last, num_w, num_h], white, line_color
+                #                     )
 
-            #划块填色
-            for index_w, num_w in enumerate(width_list):
-                for index_h, num_h in enumerate(height_list):
-                    if not index_h or not index_w:
-                        continue
-                    #第一行第一列
-                    elif index_h is 1 and index_w is 1:
-                        draw.rectangle([0, 0, num_w, num_h], grey_1, line_color)
-                    #第一行
-                    elif index_h is 1 and index_w is not 1:
-                        width_last = width_list[index_w - 1]
-                        draw.rectangle([width_last, 0, num_w, num_h], grey_1, line_color)
-                    #第一列
-                    elif index_w is 1 and index_h is not 1:
-                        height_last = height_list[index_h - 1]
-                        draw.rectangle([0, height_last, num_w, num_h], blue_0, line_color)
-                    #主体
-                    else:
-                        height_last = height_list[index_h - 1]
-                        width_last = width_list[index_w - 1]
-                        #偶数行
-                        if not index_h % 2:
-                            draw.rectangle(
-                                [width_last, height_last, num_w, num_h], grey_0, line_color
-                                )
-                        #奇数行
-                        else:
-                            draw.rectangle(
-                                [width_last, height_last, num_w, num_h], white, line_color
-                                )
+                # #画字
+                # draw_font(0, 0, "节次/星期")
+                # for num in range(7):
+                #     draw_font(num + 1, 0, Weekday.objects.get(index=num).day)
+                # for num in range(1, 12):
+                #     draw_font(0, num, '第%d节'%num)
 
-            #画字
-            draw_font(0, 0, "节次/星期")
-            for num in range(7):
-                draw_font(num + 1, 0, Weekday.objects.get(index=num).day)
-            for num in range(1, 12):
-                draw_font(0, num, '第%d节'%num)
             for i in range(7):
                 for j in range(11):
-                    if table[i][j]:
-                        draw_font(i + 1, j, table[i][j][0].name, blue_1)
+                    try:
+                        draw_font(i + 1, j, table[i][j][0]['name'], blue_1)
+                    except EXCEPTIONS:
+                        pass
             #保存
             img.save(pic_name, 'png')
         #show_course_list函数主体
@@ -413,7 +417,7 @@ class Helper(object):
                 pic_name = 'static/%s.course.png' % nick_name
                 get_course_list_pic(pic_name, user)
                 self.send('@img@' + pic_name, now_user)
-                os.remove(pic_name)
+                # os.remove(pic_name)
             else:
                 course_everyday = [
                     user.courses.all().filter(coursetimes__weekday__index=weekday)

@@ -10,9 +10,13 @@
 <script>
     $(function(){
         var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-        var sock = new ReconnectingWebSocket(ws_scheme + '://' + window.location.host + "/login/");
+        var sock = new WebSocket(ws_scheme + '://' + window.location.host + "/login/");
 
+        sock.onopen = function () {
+            sock.send('login');
+        }
         sock.onmessage = function(message) {
+            alert(1);
             var data = JSON.parse(message.data)
             $('div#msg').prepend('<p>' + data.msg + '</p>');
         };

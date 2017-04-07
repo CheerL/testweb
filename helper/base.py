@@ -1,9 +1,9 @@
 '小助手, 线上版'
 import time
-import json
+# import json
 import logging
 import requests
-from channels import Group, Channel
+# from channels import Group, Channel
 
 #需要交叉引用的变量的提前声明
 HELPER = None
@@ -76,9 +76,7 @@ def info(msg, is_report=False):
     '向文件输出日志, 并发送到log频道'
     url = 'http://%s/helper/log/send/' % HOST[0]
     logger.info(msg)
-    Channel('log').send({'text': log_read(log_path)[0]})
-    # Group('log').send({'text': json.dumps({"msg":log})})
-    # requests.post(url=url, data={'msg':log_read(log_path)[0]})
+    requests.post(url=url, data={'msg':log_read(log_path)[0]})
     if is_report:
         raise NotImplementedError(msg)
 
