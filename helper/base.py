@@ -18,7 +18,7 @@ def info(msg, is_report=False):
     '向文件输出日志, 并发送到log频道'
     url = 'http://0.0.0.0:8000/helper/log/send/'
     logger.info(msg)
-    Group('log').send({'text': json.dumps({"log":msg})})
+    Group('log').send({'text': json.dumps({"log":log_read(log_path)[0]})})
     requests.post(url=url, data={'msg':log_read(log_path)[0]})
     if is_report:
         raise NotImplementedError(msg)
