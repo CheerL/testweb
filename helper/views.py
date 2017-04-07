@@ -135,8 +135,7 @@ def get_log_all(request):
 @csrf_exempt
 def send_log(request):
     if request.method == 'POST':
-        msg = request.POST['msg']
-        Group('log').send({'text': json.dumps({"log":msg})})
+        Group('log').send({'text': json.dumps({"msg":request.POST['msg']})})
     return HttpResponse()
 
 
@@ -253,11 +252,11 @@ def setting_change(request):
     #     return HttpResponse('socket close')
 #end
 #send测试关闭
-    # def send_page(request):
-    #     return render(request, 'helper/send.html')
+def send_page(request):
+    return render(request, 'helper/send.html')
 
-    # def send_to_channel(request, content=None, channel=None):
-    #     if channel == 'log':
-    #         Group(channel).send({'text': json.dumps({"log":content})})
-    #     return HttpResponse('send %s to %s' % (content, channel))
+def send_to_channel(request, content=None, channel=None):
+    if channel == 'log':
+        Group(channel).send({'text': json.dumps({"log":content})})
+    return HttpResponse('send %s to %s' % (content, channel))
 #end

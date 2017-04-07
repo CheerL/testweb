@@ -32,12 +32,12 @@
         }
         function show_message(message){
             var data = JSON.parse(message.data)
-            log_box.prepend('<p>' + data.log + '</p>');
+            log_box.prepend('<p>' + data.msg + '</p>');
         }
         $(function(){
             get_log(0,20);
             var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-            var logsock = new ReconnectingWebSocket(ws_scheme + '://' + window.location.host + "/log/connect/"); //+ window.location.pathname);
+            var logsock = new ReconnectingWebSocket(ws_scheme + '://' + window.location.host + "/log/"); //+ window.location.pathname);
 
             logsock.onmessage = function(message) {
                 // console.log(message);

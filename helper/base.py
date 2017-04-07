@@ -16,7 +16,7 @@ pkl_path = 'static/helper.pkl'
 QR_pic = 'static/QR.png'
 WX_pic = 'static/begin.png'
 
-HOST = None
+HOST = []
 END_WEEK = 20
 TIMEOUT = 2
 
@@ -74,9 +74,9 @@ def error_report(error, user=None, up_rep=True):
 
 def info(msg, is_report=False):
     '向文件输出日志, 并发送到log频道'
-    url = 'http://%s/helper/log/send/' % HOST
+    url = 'http://%s/helper/log/send/' % HOST[0]
     logger.info(msg)
-    Channel('log').send({'text': json.dumps({"log":log_read(log_path)[0]})})
+    # Channel('log').send({'text': json.dumps({"log":log_read(log_path)[0]})})
     Group('log').send({'text': json.dumps({"log":log_read(log_path)[0]})})
     requests.post(url=url, data={'msg':log_read(log_path)[0]})
     if is_report:
@@ -84,9 +84,8 @@ def info(msg, is_report=False):
 
 def change_host(host):
     '修改全局变量HOST'
-    global HOST
     if not HOST:
-        HOST = host
+        HOST.append(host)
 
 #内部函数定义量
 logger = __get_logger()

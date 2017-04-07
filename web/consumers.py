@@ -12,14 +12,14 @@ from channels.sessions import channel_session
 def ws_connect(message):
     # message.reply_channel.send({"connect"})
     message.reply_channel.send({"accept": True})
-    prefix, label = message['path'].strip('/').split('/')
-    if prefix == 'log':
-        Group('log', channel_layer=message.channel_layer).add(message.reply_channel)
+
+    path = message['path'].strip('/')
+    if path == 'log':
+        Group('log').add(message.reply_channel)
         msg_connect = 'log channel is successfully connected, client %s:%s'%(
             message.content['client'][0], message.content['client'][1]
             )
-        message.channel_session['room'] = 'log'
-        message.reply_channel.send({'text':json.dumps({"log":msg_connect})})
+        message.reply_channel.send({'text':json.dumps({"msg":msg_connect})})
     # except ValueError:
     #     log.debug('invalid ws path=%s', message['path'])
     #     return
@@ -37,13 +37,13 @@ def ws_connect(message):
 @channel_session
 def ws_disconnect(message):
     # message.reply_channel.send({"disconnect"})
-    prefix, label = message['path'].strip('/').split('/')
-    if prefix == 'log':
+    path = message['path'].strip('/')
+    if path == 'log':
         Group('log', channel_layer=message.channel_layer).discard(message.reply_channel)
 
 @channel_session
 def ws_receive(message):
-    prefix, label = message['path'].strip('/').split('/')
-    text = message.content['text']
-    if prefix == 'log':
-        Group('log').send({'text':json.dumps({"log":text})})
+    path = message['path'].strip('/')
+    if path == 'log':
+        text = message.content['text']
+        Group('log').send({'text':json.dumps({"msg":text})})

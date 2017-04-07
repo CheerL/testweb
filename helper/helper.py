@@ -3,10 +3,10 @@
 import os
 import re
 import time
+import threading
 import requests
 import itchat
 import lxml
-import threading
 from django.db.utils import IntegrityError
 from PIL import Image, ImageDraw, ImageFont
 from bs4 import BeautifulSoup as Bs

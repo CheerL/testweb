@@ -2,7 +2,7 @@
 <input type="text" id="content" value="Hello, World!" />
 <input type="text" id="channel" value="log" />
 <button type="button" id="send">Send message</button>
-<p id='text'></p>
+<div id='text'></div>
 
 <script>
     $(function(){
@@ -11,7 +11,7 @@
             var channel = $('#channel').val();
             var url = '/helper/send/content=' + content + '&channel=' + channel;
             $.get(url, function (data) {
-                $('p#text').text(data);
+                $('div#text').append('<p>' + data + '<p>')
             });
         });
     });
