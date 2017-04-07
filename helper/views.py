@@ -1,17 +1,14 @@
 import os
-from uuid import uuid1
-import threading
 import json
 from ast import literal_eval
+from channels import Group
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from dwebsocket.decorators import accept_websocket
 from .login import login as LG
 from .main import HELPER
-from .base import info, EXCEPTIONS, QR_pic, WX_pic, log_read, clients
+from .base import info, EXCEPTIONS, QR_pic, WX_pic, log_read, change_host
 from . import tests
-from channels import Channel, Group
 
 MSG_init = '请点击登录按钮'
 MSG_error = '错误,请重新登录'
@@ -47,6 +44,7 @@ def run_page(request):
 
 def login_page(request):
     status = HELPER.IS_LOGIN
+    change_host(request.get_host())
     msg = MSG_login if status else MSG_init
     res = dict(
         status=status,

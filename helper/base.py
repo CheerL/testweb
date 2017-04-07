@@ -3,25 +3,7 @@ import time
 import json
 import logging
 import requests
-from channels import Group
-
-#需要交叉引用的函数的提前声明
-def error_report(error, user=None, up_rep=True):
-    '错误处理, 向用户发送错误信息或继续上报错误'
-    info(error)
-    if up_rep:
-        raise NotImplementedError(error)
-    else:
-        Helper.send(str(error), user)
-
-def info(msg, is_report=False):
-    '向文件输出日志, 并发送到log频道'
-    url = 'http://0.0.0.0:8000/helper/log/send/'
-    logger.info(msg)
-    Group('log').send({'text': json.dumps({"log":log_read(log_path)[0]})})
-    requests.post(url=url, data={'msg':log_read(log_path)[0]})
-    if is_report:
-        raise NotImplementedError(msg)
+from channels import Group, Channel
 
 #需要交叉引用的变量的提前声明
 HELPER = None
@@ -34,6 +16,7 @@ pkl_path = 'static/helper.pkl'
 QR_pic = 'static/QR.png'
 WX_pic = 'static/begin.png'
 
+HOST = None
 END_WEEK = 20
 TIMEOUT = 2
 
@@ -50,8 +33,6 @@ COURSE_DICT = [
     [13, 30], [14, 20], [15, 30], [16, 20],
     [19, 00], [19, 50], [20, 50], [21, 30]
     ]
-
-clients = []
 
 #内部调用函数
 def __get_logger():
@@ -82,6 +63,30 @@ def get_now_week():
     BEG = 51
     NOW = time.localtime().tm_yday
     return (NOW - BEG) // 7
+
+def error_report(error, user=None, up_rep=True):
+    '错误处理, 向用户发送错误信息或继续上报错误'
+    info(error)
+    if up_rep:
+        raise NotImplementedError(error)
+    else:
+        Helper.send(str(error), user)
+
+def info(msg, is_report=False):
+    '向文件输出日志, 并发送到log频道'
+    url = 'http://%s/helper/log/send/' % HOST
+    logger.info(msg)
+    Channel('log').send({'text': json.dumps({"log":log_read(log_path)[0]})})
+    Group('log').send({'text': json.dumps({"log":log_read(log_path)[0]})})
+    requests.post(url=url, data={'msg':log_read(log_path)[0]})
+    if is_report:
+        raise NotImplementedError(msg)
+
+def change_host(host):
+    '修改全局变量HOST'
+    global HOST
+    if not HOST:
+        HOST = host
 
 #内部函数定义量
 logger = __get_logger()
