@@ -12,12 +12,13 @@ urlpatterns = [
     url(r'^log/$', views.log_page),
     url(r'^log/all/', views.get_log_all),
     url(r'^log/get/start=(?P<start>\d*)&count=(?P<count>\d*)$', views.get_log),
+    url(r'^log/send/$', views.send_log),
 
     # url(r'^socket/test/client_id=(?P<client_id>.*)&channel=(?P<channel>.*)$', views.test_socket),
     # url(r'^socket/open/client_id=(?P<client_id>.*)&channel=(?P<channel>.*)$', views.open_socket),
     # url(r'^socket/close/client_id=(?P<client_id>.*)$', views.close_socket),
-    url(r'^send/$', views.send_page),
-    url(r'^send/content=(?P<content>.*)&channel=(?P<channel>.*)$', views.send_to_channel),
+    # url(r'^send/$', views.send_page),
+    # url(r'^send/content=(?P<content>.*)&channel=(?P<channel>.*)$', views.send_to_channel),
 
     url(r'^chat/$', views.chat_page),
     url(r'^chat/user/', views.get_chat_user),

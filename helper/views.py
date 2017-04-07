@@ -134,6 +134,13 @@ def get_log(request, start=0, count=1):
 def get_log_all(request):
     log_list = log_read(count=-1, start=0)
     return HttpResponse('<br>'.join(log_list))
+@csrf_exempt
+def send_log(request):
+    if request.method == 'POST':
+        msg = request.POST['msg']
+        Group('log').send({'text': json.dumps({"log":msg})})
+    return HttpResponse()
+
 
 #聊天 api
 def get_chat_user(request):
@@ -247,11 +254,12 @@ def setting_change(request):
     #             lock.release()
     #     return HttpResponse('socket close')
 #end
+#send测试关闭
+    # def send_page(request):
+    #     return render(request, 'helper/send.html')
 
-def send_page(request):
-    return render(request, 'helper/send.html')
-
-def send_to_channel(request, content=None, channel=None):
-    Channel(channel).send({'text': json.dumps({"log":content})})
-    Group(channel).send({'text': json.dumps({"log":content})})
-    return HttpResponse('send %s to %s' % (content, channel))
+    # def send_to_channel(request, content=None, channel=None):
+    #     if channel == 'log':
+    #         Group(channel).send({'text': json.dumps({"log":content})})
+    #     return HttpResponse('send %s to %s' % (content, channel))
+#end

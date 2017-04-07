@@ -59,7 +59,7 @@ class Helper_user(models.Model):
     courses = models.ManyToManyField(Course, default=None)
     is_open = models.BooleanField(default=True)
     have_remind = models.BooleanField(default=False)
-    wx_UserName = models.CharField(max_length=50, default='')
+    wx_UserName = models.CharField(max_length=100, default='')
 
     def __str__(self):
         return str(self.nick_name)
