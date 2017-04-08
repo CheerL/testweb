@@ -417,7 +417,7 @@ class Helper(object):
                 pic_name = 'static/%s.course.png' % nick_name
                 get_course_list_pic(pic_name, user)
                 self.send('@img@' + pic_name, now_user)
-                # os.remove(pic_name)
+                os.remove(pic_name)
             else:
                 course_everyday = [
                     user.courses.all().filter(coursetimes__weekday__index=weekday)
