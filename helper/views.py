@@ -19,13 +19,14 @@ MSG_reload = '重新启动'
 MSG_remind = '小助手提醒中'
 
 ITEM_LIST = [
-    {'text':'登录', 'id':'login'},
-    {'text':'聊天', 'id':'chat'},
-    {'text':'日志', 'id':'log'},
-    {'text':'设置', 'id':'setting'},
+    {'text': '登录', 'id': 'login'},
+    {'text': '聊天', 'id': 'chat'},
+    {'text': '日志', 'id': 'log'},
+    {'text': '设置', 'id': 'setting'},
 ]
 
 # Create your views here.
+
 
 def index(request):
     'app初始界面, 有可能是唯一的界面'
@@ -33,7 +34,9 @@ def index(request):
         return run_page(request)
     else:
         return login_page(request)
-#跳转页面部分
+# 跳转页面部分
+
+
 def run_page(request):
     res = dict(
         status=HELPER.IS_LOGIN,
@@ -41,6 +44,7 @@ def run_page(request):
         page='login'
     )
     return render(request, 'helper/run.html', res)
+
 
 def login_page(request):
     status = HELPER.IS_LOGIN
@@ -53,27 +57,30 @@ def login_page(request):
     )
     return render(request, 'helper/login.html', res)
 
+
 def log_page(request):
     return render(request, 'helper/log.html')
 
+
 def chat_page(request):
     return render(request, 'helper/chat.html')
+
 
 def setting_page(request):
     item_list = vars(HELPER.settings).items()
     bool_list = [
         {
-            'name':name,
-            'show':HELPER.settings.trans_to_chinese(name),
-            'val':val
+            'name': name,
+            'show': HELPER.settings.trans_to_chinese(name),
+            'val': val
         }
         for name, val in item_list if isinstance(val, bool)
     ]
     num_list = [
         {
-            'name':name,
-            'show':HELPER.settings.trans_to_chinese(name),
-            'val':val if name != 'FLEXIBLE_DAY' else HELPER.settings.trans_flexible_day()
+            'name': name,
+            'show': HELPER.settings.trans_to_chinese(name),
+            'val': val if name != 'FLEXIBLE_DAY' else HELPER.settings.trans_flexible_day()
         }
         for name, val in item_list if not isinstance(val, bool) and name != 'LAST_UPDATE'
     ]
@@ -81,13 +88,17 @@ def setting_page(request):
     return render(
         request,
         'helper/setting.html',
-        {'bool_list':bool_list, 'num_list':num_list, 'show_list':show_list}
-        )
+        {'bool_list': bool_list, 'num_list': num_list, 'show_list': show_list}
+    )
+
+
 def test_page(request):
     tests.test()
     return HttpResponse()
 
-#登陆 api
+# 登陆 api
+
+
 def login(request, uuid=None):
     '终于登录了'
     try:
@@ -102,7 +113,8 @@ def login(request, uuid=None):
                 pic=pic
             ))
         else:
-            (status, msg) = (True, MSG_login) if LG(QR_pic, 1, uuid) else (False, MSG_error)
+            (status, msg) = (True, MSG_login) if LG(
+                QR_pic, 1, uuid) else (False, MSG_error)
             return JsonResponse(dict(
                 status=status,
                 msg=msg,
@@ -118,34 +130,41 @@ def login(request, uuid=None):
             pic=WX_pic
         ))
 
+
 def logout(request):
     '退出登录'
     HELPER.logout()
     info(MSG_logout)
     return HttpResponse(MSG_logout)
 
-#日志 api
+# 日志 api
+
+
 def get_log(request, start=0, count=1):
     log_list = log_read(count=int(count), start=int(start))
     return JsonResponse(dict(log_list=log_list))
 
+
 def get_log_all(request):
     log_list = log_read(count=-1, start=0)
     return HttpResponse('<br>'.join(log_list))
+
+
 @csrf_exempt
 def send_log(request):
     if request.method == 'POST':
-        Group('log').send({'text': json.dumps({"msg":request.POST['msg']})})
+        Group('log').send({'text': json.dumps({"msg": request.POST['msg']})})
     return HttpResponse()
 
 
-#聊天 api
+# 聊天 api
 def get_chat_user(request):
     user_list = []
     for user in HELPER.search_list():
         HELPER.get_head_img(user)
         user_list.append(user.nick_name)
     return JsonResponse(dict(user_list=user_list, count=len(user_list)))
+
 
 @csrf_exempt
 def chat_send(request):
@@ -161,7 +180,9 @@ def chat_send(request):
     except EXCEPTIONS as error:
         return JsonResponse(dict(res=False, msg=error))
 
-#设置api
+# 设置api
+
+
 @csrf_exempt
 def setting_change(request):
     if request.method == 'POST':
@@ -174,7 +195,7 @@ def setting_change(request):
                     items['FLEXIBLE_DAY'] = '星期' + day
                 break
         else:
-            return JsonResponse({'res':True, 'msg':'灵活调整日期有误'})
+            return JsonResponse({'res': True, 'msg': '灵活调整日期有误'})
 
         HELPER.settings.VOICE_REPLY = items['VOICE_REPLY']
         HELPER.settings.UPDATE_WAIT = items['UPDATE_WAIT']
@@ -186,9 +207,9 @@ def setting_change(request):
         HELPER.settings.trans_flexible_day(items['FLEXIBLE_DAY'])
         HELPER.settings.remind_change()
         info("修改设置 %s" % items)
-        return JsonResponse({'res':True, 'msg':'修改成功\n' + str(HELPER.settings)})
+        return JsonResponse({'res': True, 'msg': '修改成功\n' + str(HELPER.settings)})
     else:
-        return JsonResponse({'res':False, 'msg':'访问错误'})
+        return JsonResponse({'res': False, 'msg': '访问错误'})
 
 # socket api 暂时关闭, 用channel替代
     # def test_socket(request, client_id, channel):
@@ -209,7 +230,8 @@ def setting_change(request):
 
     #     #当指定socket未连接
     #     clients.append([client_id, channel, None])
-    #     return JsonResponse({'res':False, 'client_id':client_id, 'msg':'no such connection'})
+    # return JsonResponse({'res':False, 'client_id':client_id, 'msg':'no such
+    # connection'})
 
     # def close_socket(request, client_id):
     #     for count, client in enumerate(clients):
@@ -250,12 +272,15 @@ def setting_change(request):
     #             clients[num][2] = None
     #             lock.release()
     #     return HttpResponse('socket close')
-#end
-#send测试关闭
-    # def send_page(request):
-    #     return render(request, 'helper/send.html')
+# end
+# send测试关闭
 
-    # def send_to_channel(request, content=None, channel=None):
-    #     Group(channel).send({'text': json.dumps({"msg":content})})
-    #     return HttpResponse('send %s to %s' % (content, channel))
-#end
+
+def send_page(request):
+    return render(request, 'helper/send.html')
+
+
+def send_to_channel(request, content=None, channel=None):
+    Group(channel).send({'text': json.dumps({"msg": content})})
+    return HttpResponse('send %s to %s' % (content, channel))
+# end

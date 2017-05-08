@@ -75,14 +75,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'web.wsgi.application'
 
-#内存后端
+# 内存后端
 # CHANNEL_LAYERS = {
 #     'default': {
 #         'BACKEND': 'asgiref.inmemory.ChannelLayer',
 #         'ROUTING': 'web.routing.channel_routing'
 #     },
 # }
-#redis后端
+# redis后端
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "asgi_redis.RedisChannelLayer",
@@ -92,7 +92,7 @@ CHANNEL_LAYERS = {
         "ROUTING": "web.routing.channel_routing",
     },
 }
-#ipc后端
+# ipc后端
 # CHANNEL_LAYERS = {
 #     "default": {
 #         "BACKEND": "asgi_ipc.IPCChannelLayer",
