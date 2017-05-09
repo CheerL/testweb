@@ -57,7 +57,6 @@ class Helper_user(models.Model):
     user_name = models.CharField(max_length=50, default='')
     user_id = models.EmailField(default='')
     password = models.CharField(max_length=50, default='')
-    nick_name = models.CharField(max_length=50, default='')
     remind = models.IntegerField(default=0)
     remind_time = models.IntegerField(default=0)
     courses = models.ManyToManyField(Course, default=None)
@@ -66,7 +65,7 @@ class Helper_user(models.Model):
     wx_UserName = models.CharField(max_length=100, default='')
 
     def __str__(self):
-        return str(self.nick_name)
+        return str(self.user_name)
 
     def remind_update(self, week, is_flex=False, flex_day=0, count=0):
         '提醒列表更新'
@@ -102,6 +101,10 @@ class Helper_user(models.Model):
             except EXCEPTIONS:
                 pass
         self.save()
+
+    def set_alias(self, alias=None):
+        import itchat
+        itchat.set_alias(self.wx_UserName, alias if alias else self.user_name)
 
 
 from .base import END_WEEK, COURSE_DICT, EXCEPTIONS

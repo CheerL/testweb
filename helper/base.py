@@ -1,4 +1,5 @@
 '小助手, 线上版'
+import os
 import time
 import json
 import logging
@@ -16,7 +17,7 @@ pkl_path = 'static/helper.pkl'
 QR_pic = 'static/QR.png'
 WX_pic = 'static/begin.png'
 
-HOST = []
+# HOST = []
 END_WEEK = 20
 TIMEOUT = 2
 
@@ -54,6 +55,9 @@ def __get_logger():
 
 def log_read(path=log_path, count=1, start=0):
     '从倒数start行读取count行日志, 返回一个列表'
+    if not os.path.exists(path):
+        with open(path, 'w+'):
+            pass
     with open(path, 'r') as file:
         content = file.readlines()
         if count is -1 and start is 0:
@@ -81,21 +85,19 @@ def error_report(error, user=None, up_rep=True):
 
 def info(msg, is_report=False):
     '向文件输出日志, 并发送到log频道'
-    url = 'http://%s/helper/log/send/' % HOST[0]
     logger.info(msg)
     try:
         Group('log').send({'text': json.dumps({'msg': log_read(log_path)[0]})})
-        # requests.post(url=url, data={'msg': log_read(log_path)[0]})
     except EXCEPTIONS:
         pass
     if is_report:
         raise NotImplementedError(msg)
 
 
-def change_host(host):
-    '修改全局变量HOST'
-    if not HOST:
-        HOST.append(host)
+# def change_host(host):
+#     '修改全局变量HOST'
+#     if not HOST:
+#         HOST.append(host)
 
 
 # 内部函数定义量

@@ -24,9 +24,9 @@ class Helper(object):
     @staticmethod
     def get_head_img(user):
         '获取用户头像'
-        nick_name = user.nick_name
+        name = user.user_name
         user_name = user.wx_UserName
-        pic_dir = 'static/head/%s.png' % nick_name
+        pic_dir = 'static/head/%s.png' % name
         if not os.path.isfile(pic_dir) or (time.time() - os.path.getctime(pic_dir) > 24 * 60 * 60):
             itchat.get_head_img(userName=user_name, picDir=pic_dir)
 
@@ -82,11 +82,11 @@ class Helper(object):
             return
 
     @staticmethod
-    def search_list(nick_name=None):
+    def search_list(user_name=None):
         '在用户列表中查找当前用户是否已经绑定'
-        if nick_name:
+        if user_name:
             # try:
-            user = Helper_user.objects.filter(nick_name=nick_name)
+            user = Helper_user.objects.filter(user_name=user_name)
             if user:
                 return user[0]
             else:
@@ -94,10 +94,10 @@ class Helper(object):
         else:
             return Helper_user.objects.all()
 
-    def user_name_update(self):
+    def wxname_update(self):
         '更新用户名, 在登陆时调用'
         for user in Helper.search_list():
-            user.wx_UserName = itchat.search_friends(nickName=user.nick_name)[0]['UserName']
+            user.wx_UserName = itchat.search_friends(remarkName=user.user_name)[0]['UserName']
             user.save()
         self.keep_alive_name = itchat.search_mps(name='微信支付')[0]['UserName']
 
@@ -109,13 +109,14 @@ class Helper(object):
                 try:
                     sep = UCASSEP(user.user_id, user.password)
                     user.user_name = sep.user_name
+                    user.wx_UserName = itchat.search_friends(name=user.user_name)[0]['UserName']
+                    user.set_alias()
                     user.courses_update(sep.get_course_list())
                     user.remind_update(
                         get_now_week(),
                         self.settings.FLEXIBLE,
                         self.settings.FLEXIBLE_DAY
                         )
-                    user.wx_UserName = itchat.search_friends(nickName=user.nick_name)[0]['UserName']
                     user.save()
                     info('更新成功, 尝试%d次' % (count + 1))
                     break
@@ -129,10 +130,10 @@ class Helper(object):
                 self.update_info(user)
             self.settings.LAST_UPDATE = time.time()
 
-    def add_user(self, now_user, nick_name, text):
+    def add_user(self, now_user, user_name, text):
         '新增提醒用户'
         try:    #如果用户已经存在, 回报告并返回, 不存在会报错, 但被pass, 进入下一个try
-            user = self.search_list(nick_name)
+            user = self.search_list(user_name)
             self.send('你已经绑定过啦', now_user)
             return
         except EXCEPTIONS:
@@ -145,7 +146,7 @@ class Helper(object):
             else:
                 raise IOError('输入格式错误, 请输入"绑定 用户名:***  密码:***"')
             user = Helper_user(
-                nick_name=nick_name,
+                user_name='temp',
                 user_id=user_id,
                 password=password,
                 )
@@ -157,10 +158,10 @@ class Helper(object):
                 user.delete()
             error_report(error, now_user)
 
-    def change_user(self, now_user, nick_name, text):
+    def change_user(self, now_user, user_name, text):
         '修改用户信息'
         try:
-            user = self.search_list(nick_name)
+            user = self.search_list(user_name)
             if '用户名' in text:
                 user_ids = re.findall(r'用户名[:：\s]*(.*?)(\s*|\s+\S*\s*?)$', text)
                 if user_ids:
@@ -178,23 +179,23 @@ class Helper(object):
         except EXCEPTIONS as error:
             error_report(error, now_user)
 
-    def del_user(self, now_user, nick_name):
+    def del_user(self, now_user, user_name):
         '删除用户'
         try:
-            user = self.search_list(nick_name=nick_name)
+            user = self.search_list(user_name=user_name)
             user.delete()
             self.send('取消绑定成功', now_user)
         except EXCEPTIONS as error:
             error_report(error, now_user)
 
-    def cancel_remind(self, now_user, nick_name):
+    def cancel_remind(self, now_user, user_name):
         '取消提醒'
-        user = self.search_list(nick_name)
+        user = self.search_list(user_name)
         user.is_open = False
         user.save()
         self.send('取消提醒成功', now_user)
 
-    def remind(self, now_user=None, nick_name=None):
+    def remind(self, now_user=None, user_name=None):
         '定时提醒'
         def remind_main(user):
             '对某个个用户进行提醒的操作'
@@ -247,8 +248,8 @@ class Helper(object):
                 self.settings.REMIND_ALIVE = False
                 return
         #remind函数主体
-        if nick_name and now_user:
-            user = self.search_list(nick_name)
+        if user_name and now_user:
+            user = self.search_list(user_name)
             user.is_open = True
             user.save()
             self.send('打开提醒成功', now_user)
@@ -262,7 +263,7 @@ class Helper(object):
             # except EXCEPTIONS as error:
             #     info(error)
 
-    def remind_list_update(self, nick_name=None, user=None):
+    def remind_list_update(self, user_name=None, user=None):
         '手动更新信息, 允许外部调用'
         try:
             if user and isinstance(user, Helper_user):
@@ -271,8 +272,8 @@ class Helper(object):
                     self.settings.FLEXIBLE,
                     self.settings.FLEXIBLE_DAY
                     )
-            elif nick_name and isinstance(nick_name, str):
-                self.search_list(nick_name).remind_update(
+            elif user_name and isinstance(user_name, str):
+                self.search_list(user_name).remind_update(
                     get_now_week(),
                     self.settings.FLEXIBLE,
                     self.settings.FLEXIBLE_DAY
@@ -291,7 +292,7 @@ class Helper(object):
         self.send(msg, now_user)
         self.send('相信你看名字就会用了', now_user)
 
-    def show_course_list(self, now_user, nick_name, is_pic=True, is_with_num=False):
+    def show_course_list(self, now_user, user_name, is_pic=True, is_with_num=False):
         '显示课表'
         def get_course_list_pic(pic_name, user):
             '生成图片'
@@ -411,10 +412,10 @@ class Helper(object):
             img.save(pic_name, 'png')
         #show_course_list函数主体
         try:
-            user = self.search_list(nick_name)
+            user = self.search_list(user_name)
             if is_pic:
                 self.send('正在获取课表, 请稍候', now_user)
-                pic_name = 'static/%s.course.png' % nick_name
+                pic_name = 'static/%s.course.png' % user_name
                 get_course_list_pic(pic_name, user)
                 self.send('@img@' + pic_name, now_user)
                 os.remove(pic_name)
@@ -452,10 +453,10 @@ class Helper(object):
         except EXCEPTIONS as error:
             error_report(error, now_user)
 
-    def show_remind_list(self, now_user, nick_name):
+    def show_remind_list(self, now_user, user_name):
         '显示提醒时间'
         try:
-            user = self.search_list(nick_name)
+            user = self.search_list(user_name)
             user.remind_update(
                 get_now_week(),
                 self.settings.FLEXIBLE,

@@ -8,6 +8,7 @@ import requests
 from pyqrcode import QRCode
 from .base import info, EXCEPTIONS, TIMEOUT, pkl_path, HELPER
 
+
 def login(pic_dir, status, uuid=None):
     '来吧登陆函数'
     #如果无法链接, 就退出
@@ -16,7 +17,7 @@ def login(pic_dir, status, uuid=None):
             info('HotReload成功')
             itchat.run(blockThread=False)
             HELPER.IS_LOGIN = True
-            HELPER.user_name_update()
+            HELPER.wxname_update()
             HELPER.remind()
             return 'hot', None
         if status == 0:
@@ -34,11 +35,12 @@ def login(pic_dir, status, uuid=None):
         info(error)
         raise
 
+
 def __get_qr(pic_dir):
     for _ in range(3):
         info('正在获取uuid')
         uuid = itchat.get_QRuuid()
-        #收到uuid为止
+        # 收到uuid为止
         while uuid is None:
             uuid = itchat.get_QRuuid()
             time.sleep(1)
@@ -47,12 +49,13 @@ def __get_qr(pic_dir):
         time.sleep(1)
         if __is_qr(uuid, pic_dir):
             break
-    #否则重试3次
+    # 否则重试3次
     else:
         info('获取二维码失败, 请重启程序')
         sys.exit()
     info('成功获取二维码')
     return uuid
+
 
 def __is_qr(uuid, pic_dir):
     qrStorage = io.BytesIO()
@@ -62,6 +65,7 @@ def __is_qr(uuid, pic_dir):
     with open(pic_dir, 'wb') as file:
         file.write(qrStorage.getvalue())
     return True
+
 
 def __login_after_qr(uuid):
     while True:
@@ -81,6 +85,6 @@ def __login_after_qr(uuid):
     itchat.start_receiving()
     itchat.run(blockThread=False)
     itchat.dump_login_status(pkl_path)
-    HELPER.user_name_update()
+    HELPER.wxname_update()
     HELPER.remind()
     HELPER.IS_LOGIN = True

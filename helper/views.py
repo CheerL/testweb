@@ -7,7 +7,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from .login import login as LG
 from .main import HELPER
-from .base import info, EXCEPTIONS, QR_pic, WX_pic, log_read, change_host
+from .base import info, EXCEPTIONS, QR_pic, WX_pic, log_read
 from . import tests
 
 MSG_init = '请点击登录按钮'
@@ -48,7 +48,6 @@ def run_page(request):
 
 def login_page(request):
     status = HELPER.IS_LOGIN
-    change_host(request.get_host())
     msg = MSG_login if status else MSG_init
     res = dict(
         status=status,
