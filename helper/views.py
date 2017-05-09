@@ -97,6 +97,7 @@ def setting_page(request):
 def login(request, uuid=None):
     '终于登录了'
     def qr_func(uuid, status, qrcode):
+        info('成功获取二维码')
         with open(QR_pic, 'wb') as pic:
             pic.write(qrcode)
         Group('login').send({'text': json.dumps(dict(
@@ -106,7 +107,7 @@ def login(request, uuid=None):
 
     def login_func():
         user = itchat.search_friends()
-        info('%s 成功登录' % user['NickName'])
+        info('%s成功登录' % user['NickName'])
         itchat.run(blockThread=False)
         HELPER.wxname_update()
         HELPER.remind()
@@ -124,12 +125,9 @@ def login(request, uuid=None):
 
     def login_main():
         try:
+            info('尝试登陆')
             itchat.auto_login(True, pkl_path, False, QR_pic,
-                              qr_func, login_func, exit_func)\
-                # Group('login').send({'text': json.dumps(dict(
-            #     msg=MSG_login,
-            #     pic=QR_pic
-            # ))})
+                              qr_func, login_func, exit_func)
         except:
             Group('login').send({'text': json.dumps(dict(
                 msg=MSG_error,
