@@ -25,7 +25,7 @@ def reply(msg):
         now_user = msg['FromUserName']
         text = msg['Text']
         user = itchat.search_friends(userName=now_user)
-        alias = user['RemerkName']
+        alias = user['RemarkName']
         keys_1 = ['重新绑定', '取消绑定', '取消提醒', '打开提醒', '文字课表']
         keys_2 = ['绑定', '刷新', '提醒', '课表']
         keys_3 = ['???', '？？？']
