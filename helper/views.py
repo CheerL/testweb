@@ -1,13 +1,14 @@
 import os
 import json
+import itchat
 from ast import literal_eval
 from channels import Group
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from .login import login as LG
+from .wheel import parallel as pl
 from .main import HELPER
-from .base import info, EXCEPTIONS, QR_pic, WX_pic, log_read
+from .base import info, EXCEPTIONS, QR_pic, WX_pic, log_read, pkl_path
 from . import tests
 
 MSG_init = '请点击登录按钮'
@@ -90,44 +91,53 @@ def setting_page(request):
         {'bool_list': bool_list, 'num_list': num_list, 'show_list': show_list}
     )
 
-
-def test_page(request):
-    tests.test()
-    return HttpResponse()
-
 # 登陆 api
 
 
 def login(request, uuid=None):
     '终于登录了'
-    try:
-        if not uuid:
-            inf, uuid = LG(QR_pic, 0)
-            (msg, pic) = (MSG_scan, QR_pic) if inf == 'uuid' else (MSG_login, WX_pic)
-            return JsonResponse(dict(
-                status=True,
-                inf=inf,
-                uuid=uuid,
-                msg=msg,
-                pic=pic
-            ))
-        else:
-            (status, msg) = (True, MSG_login) if LG(
-                QR_pic, 1, uuid) else (False, MSG_error)
-            return JsonResponse(dict(
-                status=status,
-                msg=msg,
-                pic=WX_pic
-            ))
-    except EXCEPTIONS as error:
-        info(error)
-        if os.path.isfile(QR_pic):
+    def qr_func(uuid, status, qrcode):
+        with open(QR_pic, 'wb') as pic:
+            pic.write(qrcode)
+        Group('login').send({'text': json.dumps(dict(
+            msg=MSG_scan,
+            pic=QR_pic
+        ))})
+
+    def login_func():
+        user = itchat.search_friends()
+        info('%s 成功登录' % user['NickName'])
+        itchat.run(blockThread=False)
+        HELPER.wxname_update()
+        HELPER.remind()
+        HELPER.IS_LOGIN = True
+        if os.path.exists(QR_pic):
             os.remove(QR_pic)
-        return JsonResponse(dict(
-            status=False,
-            msg=MSG_error,
+        Group('login').send({'text': json.dumps(dict(
+            msg=MSG_login,
             pic=WX_pic
-        ))
+        ))})
+
+    def exit_func():
+        HELPER.logout()
+        info(MSG_logout)
+
+    def login_main():
+        try:
+            itchat.auto_login(True, pkl_path, False, QR_pic,
+                              qr_func, login_func, exit_func)\
+                # Group('login').send({'text': json.dumps(dict(
+            #     msg=MSG_login,
+            #     pic=QR_pic
+            # ))})
+        except:
+            Group('login').send({'text': json.dumps(dict(
+                msg=MSG_error,
+                pic=WX_pic
+            ))})
+
+    pl.run_thread([(login_main, ())], is_lock=False)
+    return HttpResponse()
 
 
 def logout(request):
@@ -136,9 +146,8 @@ def logout(request):
     info(MSG_logout)
     return HttpResponse(MSG_logout)
 
+
 # 日志 api
-
-
 def get_log(request, start=0, count=1):
     log_list = log_read(count=int(count), start=int(start))
     return JsonResponse(dict(log_list=log_list))
@@ -179,9 +188,8 @@ def chat_send(request):
     except EXCEPTIONS as error:
         return JsonResponse(dict(res=False, msg=error))
 
+
 # 设置api
-
-
 @csrf_exempt
 def setting_change(request):
     if request.method == 'POST':
@@ -210,76 +218,18 @@ def setting_change(request):
     else:
         return JsonResponse({'res': False, 'msg': '访问错误'})
 
-# socket api 暂时关闭, 用channel替代
-    # def test_socket(request, client_id, channel):
-    #     if not channel:
-    #         return JsonResponse({'res':False, 'msg':'channel is empty'})
-    #     if not client_id or client_id == 'null':
-    #         client_id = str(uuid1())
-    #     else:
-    #         for count, client in enumerate(clients):
-    #             if client[0] == client_id:
-    #                 if client[1] == channel:
-    #                     #id 和 channel 都和已经连接的socket相同, 返回True
-    #                     return JsonResponse({'res':True})
-    #                 else:
-    #                     #id 相同, channel 不同, 删除该用户
-    #                     del clients[count]
-    #                     break
 
-    #     #当指定socket未连接
-    #     clients.append([client_id, channel, None])
-    # return JsonResponse({'res':False, 'client_id':client_id, 'msg':'no such
-    # connection'})
-
-    # def close_socket(request, client_id):
-    #     for count, client in enumerate(clients):
-    #         if client[0] == client_id:
-    #             del clients[count]
-    #             return JsonResponse({'res':True})
-    #     return JsonResponse({'res':False, 'msg':'no such id'})
-
-    # @accept_websocket
-    # def open_socket(request, client_id, channel):
-    #     if request.is_websocket:
-    #         lock = threading.RLock()
-    #         try:
-    #             lock.acquire()
-    #             #修改列表中对应的对象为socket
-    #             for count, client in enumerate(clients):
-    #                 if client[0] == client_id and client[1] == channel:
-    #                     num = count
-    #                     client[2] = request.websocket
-    #                     break
-
-    #             #收到信息时的处理
-    #             for message in request.websocket:
-    #                 if not message:
-    #                     break
-    #                 print(message)
-    #                 #生成指定channel中的所有socket
-    #                 channel_socket_list = list(
-    #                     map(lambda x: x[2],
-    #                         list(filter(lambda x: True if x[1] == channel else False, clients)))
-    #                 )
-    #                 #发送消息
-    #                 for socket in channel_socket_list:
-    #                     socket.send(message)
-    #         finally:
-    #             #当出错, 关掉这个socket
-    #             clients[num][2].close()
-    #             clients[num][2] = None
-    #             lock.release()
-    #     return HttpResponse('socket close')
-# end
 # send测试关闭
+# def send_page(request):
+#     return render(request, 'helper/send.html')
 
 
-def send_page(request):
-    return render(request, 'helper/send.html')
+# def send_to_channel(request, content=None, channel=None):
+#     Group(channel).send({'text': json.dumps({"msg": content})})
+#     return HttpResponse('send %s to %s' % (content, channel))
 
 
-def send_to_channel(request, content=None, channel=None):
-    Group(channel).send({'text': json.dumps({"msg": content})})
-    return HttpResponse('send %s to %s' % (content, channel))
+# def send_login(request):
+#     tests.lll()
+#     return HttpResponse()
 # end

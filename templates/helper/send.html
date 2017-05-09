@@ -4,9 +4,10 @@
 <input type="text" id="content" value="Hello, World!" />
 <input type="text" id="channel" value="login" />
 <button type="button" id="send">Send message</button>
+<button type="button" id="login">login test</button>
 <div id='msg'></div>
 
-<script src="{% static " js/web-socket.js " %}"></script>
+<script src="{% static "js/web-socket.js" %}"></script>
 <script>
     $(function () {
         var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
@@ -25,5 +26,11 @@
             var url = '/helper/send/content=' + content + '&channel=' + channel;
             $.get(url);
         });
+
+        $('#login').click(function () {
+            var url = '/helper/send/login';
+            $.get(url);
+        })
     });
+
 </script>
