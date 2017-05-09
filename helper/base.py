@@ -12,7 +12,7 @@ HELPER = None
 # 交叉引用声明结束
 
 # 常量
-log_path = 'static/run.log'     
+log_path = 'static/run.log'
 pkl_path = 'static/helper.pkl'
 QR_pic = 'static/QR.png'
 WX_pic = 'static/begin.png'
