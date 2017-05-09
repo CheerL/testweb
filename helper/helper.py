@@ -24,36 +24,35 @@ class Helper(object):
     @staticmethod
     def get_head_img(user):
         '获取用户头像'
-        name = user.user_name
-        user_name = user.wx_UserName
-        pic_dir = 'static/head/%s.png' % name
-        if not os.path.isfile(pic_dir) or (time.time() - os.path.getctime(pic_dir) > 24 * 60 * 60):
-            itchat.get_head_img(userName=user_name, picDir=pic_dir)
+        if isinstance(user, dict) and ['NickName', 'UserName'] < list(user.keys()):
+            user_name = user['UserName']
+            nick_name = user['NickName']
+            pic_dir = pic_dir = 'static/head/%s.png' % nick_name
+            if not os.path.exists(pic_dir) or (time.time() - os.path.getctime(pic_dir) > 24*60*60):
+                itchat.get_head_img(userName=user_name, picDir=pic_dir)
 
     @staticmethod
     def send(msg, user=None):
         '搜索用户并发送, 默认发给自己'
         def get_user_name(user):
             '自动处理  获取用户名'
-            if user:
-                if isinstance(user, dict):
-                    if 'UserName' in user.keys():
-                        return user['UserName']
+            if isinstance(user, dict):
+                if 'UserName' in user.keys():
+                    return user['UserName']
 
-                elif isinstance(user, Helper_user):
-                    return user.wx_UserName
+            elif isinstance(user, Helper_user):
+                return user.wx_UserName
 
-                elif isinstance(user, str):
-                    if '@' in user:
-                        return user
-                    else:
-                        # print(itchat.search_friends(nickName=user))
-                        # print(itchat.search_friends(name=user))
-                        if itchat.search_friends(nickName=user):
-                            return itchat.search_friends(nickName=user)[0]['UserName']
-                        elif itchat.search_friends(name=user):
-                            return itchat.search_friends(name=user)[0]['UserName']
-            return None
+            elif isinstance(user, str):
+                if '@' in user:
+                    return user
+                else:
+                    if itchat.search_friends(nickName=user):
+                        return itchat.search_friends(nickName=user)[0]['UserName']
+                    elif itchat.search_friends(name=user):
+                        return itchat.search_friends(name=user)[0]['UserName']
+            else:
+                return None
         #send函数主体
         try:
             user_name = get_user_name(user)
@@ -110,6 +109,7 @@ class Helper(object):
                     sep = UCASSEP(user.user_id, user.password)
                     user.user_name = sep.user_name
                     user.wx_UserName = itchat.search_friends(name=user.user_name)[0]['UserName']
+                    user.nick_name = itchat.search_friends(name=user.user_name)[0]['NickName']
                     user.set_alias()
                     user.courses_update(sep.get_course_list())
                     user.remind_update(
@@ -225,19 +225,22 @@ class Helper(object):
                         user.have_remind = False
                         user.save()
             except EXCEPTIONS as error:
-                error_report(error, user)
+                info(error)
 
         def remind_thread():
             '以执行新线程的方式循环提醒'
             time.sleep(int(self.settings.REMIND_WAIT * 60))
             info('打开新线程:%d, 提醒间隔%d分%d秒' %
                  (pl.get_tid(), self.settings.REMIND_WAIT//1, self.settings.REMIND_WAIT%1*60))
-            if time.time() - self.settings.LAST_UPDATE > self.settings.UPDATE_WAIT * 60:
-                self.update_info()
-                self.keep_alive()
-            for user in Helper.search_list():
-                if user.is_open:
-                    remind_main(user)
+            try:
+                if time.time() - self.settings.LAST_UPDATE > self.settings.UPDATE_WAIT * 60:
+                    self.update_info()
+                    self.keep_alive()
+                for user in Helper.search_list():
+                    if user.is_open:
+                        remind_main(user)
+            except EXCEPTIONS as error:
+                info(error)
 
             try:                #继续打开新线程
                 self.remind()
@@ -294,7 +297,7 @@ class Helper(object):
 
     def show_course_list(self, now_user, user_name, is_pic=True, is_with_num=False):
         '显示课表'
-        def get_course_list_pic(pic_name, user):
+        def get_course_list_pic(pic_path, user):
             '生成图片'
             def get_time_table(user):
                 '转换课表为矩阵形式'
@@ -335,12 +338,15 @@ class Helper(object):
                             line, font=font, fill=color
                             )
 
+            ori_pic_path = 'static/course_png/course.png'
+            from_begin = False if os.path.exists(ori_pic_path) else True
+
             #颜色
-            # line_color = (221, 221, 221)
-            # white = (255, 255, 255)
-            # grey_0 = (245, 245, 245)
-            # grey_1 = (204, 204, 204)
-            # blue_0 = (225, 234, 240)
+            line_color = (221, 221, 221)
+            white = (255, 255, 255)
+            grey_0 = (245, 245, 245)
+            grey_1 = (204, 204, 204)
+            blue_0 = (225, 234, 240)
             blue_1 = (0, 136, 205)
 
             #图像和字体大小
@@ -349,10 +355,12 @@ class Helper(object):
             width = 900
             height = 800
 
-            # img = Image.new('RGB', (width, height), white)
-            img = Image.open('static/course.png')
+            if from_begin:
+                img = Image.new('RGB', (width, height), white)
+            else:
+                img = Image.open(ori_pic_path)
             draw = ImageDraw.Draw(img)
-            font = ImageFont.truetype('static/Deng.ttf', font_size, encoding='utf-8')
+            font = ImageFont.truetype('static/fonts/Deng.ttf', font_size, encoding='utf-8')
             table = get_time_table(user)
 
             part_w = 7
@@ -363,44 +371,47 @@ class Helper(object):
             height_list = [num for num in range(0, height, int(height/part_h))]
             width_list[-1] = width
             height_list[-1] = height
-            #初始块, 取消这一部分
-                #划块填色
-                # for index_w, num_w in enumerate(width_list):
-                #     for index_h, num_h in enumerate(height_list):
-                #         if not index_h or not index_w:
-                #             continue
-                #         #第一行第一列
-                #         elif index_h is 1 and index_w is 1:
-                #             draw.rectangle([0, 0, num_w, num_h], grey_1, line_color)
-                #         #第一行
-                #         elif index_h is 1 and index_w is not 1:
-                #             width_last = width_list[index_w - 1]
-                #             draw.rectangle([width_last, 0, num_w, num_h], grey_1, line_color)
-                #         #第一列
-                #         elif index_w is 1 and index_h is not 1:
-                #             height_last = height_list[index_h - 1]
-                #             draw.rectangle([0, height_last, num_w, num_h], blue_0, line_color)
-                #         #主体
-                #         else:
-                #             height_last = height_list[index_h - 1]
-                #             width_last = width_list[index_w - 1]
-                #             #偶数行
-                #             if not index_h % 2:
-                #                 draw.rectangle(
-                #                     [width_last, height_last, num_w, num_h], grey_0, line_color
-                #                     )
-                #             #奇数行
-                #             else:
-                #                 draw.rectangle(
-                #                     [width_last, height_last, num_w, num_h], white, line_color
-                #                     )
+                # 初始图片
+                # 划块填色
+            if from_begin:
+                for index_w, num_w in enumerate(width_list):
+                    for index_h, num_h in enumerate(height_list):
+                        if not index_h or not index_w:
+                            continue
+                        #第一行第一列
+                        elif index_h is 1 and index_w is 1:
+                            draw.rectangle([0, 0, num_w, num_h], grey_1, line_color)
+                        #第一行
+                        elif index_h is 1 and index_w is not 1:
+                            width_last = width_list[index_w - 1]
+                            draw.rectangle([width_last, 0, num_w, num_h], grey_1, line_color)
+                        #第一列
+                        elif index_w is 1 and index_h is not 1:
+                            height_last = height_list[index_h - 1]
+                            draw.rectangle([0, height_last, num_w, num_h], blue_0, line_color)
+                        #主体
+                        else:
+                            height_last = height_list[index_h - 1]
+                            width_last = width_list[index_w - 1]
+                            #偶数行
+                            if not index_h % 2:
+                                draw.rectangle(
+                                    [width_last, height_last, num_w, num_h], grey_0, line_color
+                                    )
+                            #奇数行
+                            else:
+                                draw.rectangle(
+                                    [width_last, height_last, num_w, num_h], white, line_color
+                                    )
 
-                # #画字
-                # draw_font(0, 0, "节次/星期")
-                # for num in range(7):
-                #     draw_font(num + 1, 0, Weekday.objects.get(index=num).day)
-                # for num in range(1, 12):
-                #     draw_font(0, num, '第%d节'%num)
+                #画字
+                draw_font(0, 0, "节次/星期")
+                for num in range(7):
+                    draw_font(num + 1, 0, Weekday.objects.get(index=num).day)
+                for num in range(1, 12):
+                    draw_font(0, num, '第%d节'%num)
+
+                img.save(ori_pic_path, 'png')
 
             for i in range(7):
                 for j in range(11):
@@ -409,16 +420,16 @@ class Helper(object):
                     except EXCEPTIONS:
                         pass
             #保存
-            img.save(pic_name, 'png')
+            img.save(pic_path, 'png')
         #show_course_list函数主体
         try:
             user = self.search_list(user_name)
             if is_pic:
                 self.send('正在获取课表, 请稍候', now_user)
-                pic_name = 'static/%s.course.png' % user_name
-                get_course_list_pic(pic_name, user)
-                self.send('@img@' + pic_name, now_user)
-                os.remove(pic_name)
+                pic_path = 'static/course_png/%s.course.png' % user.wx_UserName
+                get_course_list_pic(pic_path, user)
+                self.send('@img@' + pic_path, now_user)
+                os.remove(pic_path)
             else:
                 course_everyday = [
                     user.courses.all().filter(coursetimes__weekday__index=weekday)

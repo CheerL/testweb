@@ -108,7 +108,6 @@ def login(request, uuid=None):
     def login_func():
         user = itchat.search_friends()
         info('%s成功登录' % user['NickName'])
-        itchat.run(blockThread=False)
         HELPER.wxname_update()
         HELPER.remind()
         HELPER.IS_LOGIN = True
@@ -128,6 +127,7 @@ def login(request, uuid=None):
             info('尝试登陆')
             itchat.auto_login(True, pkl_path, False, QR_pic,
                               qr_func, login_func, exit_func)
+            itchat.run(debug=True, blockThread=False)
         except:
             Group('login').send({'text': json.dumps(dict(
                 msg=MSG_error,
@@ -165,10 +165,9 @@ def send_log(request):
 
 # 聊天 api
 def get_chat_user(request):
-    user_list = []
-    for user in HELPER.search_list():
+    user_list = itchat.get_friends()
+    for user in user_list:
         HELPER.get_head_img(user)
-        user_list.append(user.nick_name)
     return JsonResponse(dict(user_list=user_list, count=len(user_list)))
 
 

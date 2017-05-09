@@ -27,7 +27,7 @@
         function get_user_list(){
             $.get('/helper/chat/user/', function (data) {
                 for (i = 0; i <　data.count; i++){
-                    var user = data.user_list[i];
+                    var user = data.user_list[i]['NickName'];
                     $('ul').append(
                         '<li class="off" id="' + user +
                         '"><div id="img"><img src="/static/head/' + user +

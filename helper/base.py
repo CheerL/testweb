@@ -3,6 +3,7 @@ import os
 import time
 import json
 import logging
+import socket
 from channels import Group
 from requests.packages.urllib3.exceptions import HTTPError, PoolError, MaxRetryError
 
@@ -24,7 +25,7 @@ TIMEOUT = 2
 TL_KEY = '71f28bf79c820df10d39b4074345ef8c'  # 图灵机器人密钥
 
 EXCEPTIONS = (
-    AttributeError, IOError, NotImplementedError, PoolError,
+    AttributeError, IOError, NotImplementedError, PoolError, socket.timeout,
     TimeoutError, IndexError, ConnectionError, OSError, HTTPError, MaxRetryError,
     ValueError, TypeError, RuntimeError, ConnectionAbortedError,
     IndentationError, InterruptedError, KeyError, StopIteration,

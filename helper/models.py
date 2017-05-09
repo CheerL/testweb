@@ -55,6 +55,7 @@ class Course(models.Model):
 class Helper_user(models.Model):
     '小助手用户'
     user_name = models.CharField(max_length=50, default='')
+    nick_name = models.CharField(max_length=50, default='')
     user_id = models.EmailField(default='')
     password = models.CharField(max_length=50, default='')
     remind = models.IntegerField(default=0)
