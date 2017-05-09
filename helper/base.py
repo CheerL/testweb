@@ -87,7 +87,7 @@ def info(msg, is_report=False):
     '向文件输出日志, 并发送到log频道'
     logger.info(msg)
     try:
-        Group('log').send({'text': json.dumps({'msg': log_read(log_path)[0]})})
+        Group('log').send({'text': json.dumps({'msg': msg})})
     except EXCEPTIONS:
         pass
     if is_report:
