@@ -27,11 +27,16 @@
         function get_user_list(){
             $.get('/helper/chat/user/', function (data) {
                 for (i = 0; i <　data.count; i++){
-                    var user = data.user_list[i]['NickName'];
+                    var user = data.user_list[i];
+                    var nick_name = user['NickName']
+                    var name = user['RemarkName'] != '' ? user['RemarkName'] : user['NickName']
+                    if (name.length > 10) {
+                        name = name.slice(0, 10);
+                    }
                     $('ul').append(
-                        '<li class="off" id="' + user +
-                        '"><div id="img"><img src="/static/head/' + user +
-                        '.png"></div>' + user + '</li>'
+                        '<li class="off" id="' + nick_name +
+                        '"><div id="img"><img src="/static/head/' + nick_name +
+                        '.png"></div>' + name + '</li>'
                     );
                 }
                 var list = $("li");
@@ -87,6 +92,15 @@
                     }, 300);
                 }
             );
+
+            var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+            var head_img_sock = new ReconnectingWebSocket(ws_scheme + '://' + window.location.host + "/head/");
+
+            head_img_sock.onmessage = function (message) {
+                var data = JSON.parse(message.data);
+                var img = $('li#' + data.nick_name + ' img');
+                img.attr('src', '/' + data.img_path);
+            };
         });
     </script>
 {% endblock %}

@@ -3,6 +3,7 @@
 import os
 import re
 import time
+import json
 import threading
 import requests
 import itchat
@@ -10,13 +11,16 @@ import lxml
 from django.db.utils import IntegrityError
 from PIL import Image, ImageDraw, ImageFont
 from bs4 import BeautifulSoup as Bs
-from .base import EXCEPTIONS, info, get_now_week, error_report, TIMEOUT, TL_KEY
+from channels import Group
+from .base import EXCEPTIONS, info, get_now_week, error_report, TIMEOUT, TL_KEY, pkl_path
 from .wheel import parallel as pl
 from .models import Helper_user, Course, Weekday, Coursetime
 
 class Helper(object):
     '助手类'
     keep_alive_name = None
+    robot = None
+
     def __init__(self):
         self.IS_LOGIN = False
         self.settings = Setting()
@@ -24,12 +28,14 @@ class Helper(object):
     @staticmethod
     def get_head_img(user):
         '获取用户头像'
-        if isinstance(user, dict) and ['NickName', 'UserName'] < list(user.keys()):
+        if isinstance(user, itchat.storage.templates.User):
             user_name = user['UserName']
             nick_name = user['NickName']
             pic_dir = pic_dir = 'static/head/%s.png' % nick_name
             if not os.path.exists(pic_dir) or (time.time() - os.path.getctime(pic_dir) > 24*60*60):
                 itchat.get_head_img(userName=user_name, picDir=pic_dir)
+                Group('head').send({'text':json.dumps(dict(img_path=pic_dir, nick_name=nick_name))})
+
 
     @staticmethod
     def send(msg, user=None):
@@ -80,22 +86,22 @@ class Helper(object):
             # 将会返回一个None
             return
 
-    @staticmethod
-    def search_list(user_name=None):
+    
+    def search_list(self, user_name=None):
         '在用户列表中查找当前用户是否已经绑定'
         if user_name:
             # try:
-            user = Helper_user.objects.filter(user_name=user_name)
+            user = Helper_user.objects.filter(robot=self.robot).filter(user_name=user_name)
             if user:
                 return user[0]
             else:
                 info('尚未绑定', True)
         else:
-            return Helper_user.objects.all()
+            return Helper_user.objects.filter(robot=self.robot)
 
     def wxname_update(self):
         '更新用户名, 在登陆时调用'
-        for user in Helper.search_list():
+        for user in self.search_list():
             user.wx_UserName = itchat.search_friends(remarkName=user.user_name)[0]['UserName']
             user.save()
         self.keep_alive_name = itchat.search_mps(name='微信支付')[0]['UserName']
@@ -110,6 +116,7 @@ class Helper(object):
                     user.user_name = sep.user_name
                     user.wx_UserName = itchat.search_friends(name=user.user_name)[0]['UserName']
                     user.nick_name = itchat.search_friends(name=user.user_name)[0]['NickName']
+                    user.robot = self.robot
                     user.set_alias()
                     user.courses_update(sep.get_course_list())
                     user.remind_update(
@@ -126,7 +133,7 @@ class Helper(object):
                     else:
                         error_report(error, user)
         else:
-            for user in Helper.search_list():
+            for user in self.search_list():
                 self.update_info(user)
             self.settings.LAST_UPDATE = time.time()
 
@@ -236,7 +243,7 @@ class Helper(object):
                 if time.time() - self.settings.LAST_UPDATE > self.settings.UPDATE_WAIT * 60:
                     self.update_info()
                     self.keep_alive()
-                for user in Helper.search_list():
+                for user in self.search_list():
                     if user.is_open:
                         remind_main(user)
             except EXCEPTIONS as error:
@@ -526,11 +533,14 @@ class Helper(object):
         '退出登陆'
         self.settings.__init__()
         self.IS_LOGIN = False
+        self.robot = None
         thread_remind = pl.search_thread(name='remind', part=True)
         if thread_remind:
             pl.kill_thread(thread=thread_remind)
             info('remind线程已关闭')
         itchat.logout()
+        if os.path.exists(pkl_path):
+            os.remove(pkl_path)
 
     def keep_alive(self):
         '保活'

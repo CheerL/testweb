@@ -4,6 +4,18 @@ import datetime
 from django.db import models
 
 
+class Message(models.Model):
+    '消息往来'
+    text = models.CharField(max_length=200, default='')
+    from_user = models.CharField(max_length=50, default='')
+    to_user = models.CharField(max_length=50, default='')
+    time = models.TimeField()
+    message_type = models.CharField(max_length=10, default='TEXT')
+
+    def __str__(self):
+        return '%s-%s-%s' % (self.from_user, self.to_user, self.time)
+
+
 class Weekday(models.Model):
     '星期几'
     index = models.IntegerField(primary_key=True)
@@ -52,6 +64,14 @@ class Course(models.Model):
         return str(self.ident)
 
 
+class Robot(models.Model):
+    uin = models.CharField(max_length=50, default='', primary_key=True)
+    nick_name = models.CharField(max_length=50, default='')
+
+    def __str__(self):
+        return '%s-%s' % (self.nick_name, self.uin)
+
+
 class Helper_user(models.Model):
     '小助手用户'
     user_name = models.CharField(max_length=50, default='')
@@ -64,6 +84,7 @@ class Helper_user(models.Model):
     is_open = models.BooleanField(default=True)
     have_remind = models.BooleanField(default=False)
     wx_UserName = models.CharField(max_length=100, default='')
+    robot = models.ForeignKey(Robot)
 
     def __str__(self):
         return str(self.user_name)

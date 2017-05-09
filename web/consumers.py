@@ -13,19 +13,15 @@ from channels.sessions import channel_session
 
 @channel_session
 def ws_connect(message):
-    # message.reply_channel.send({"connect"})
     message.reply_channel.send({"accept": True})
-    # message.reply_channel.send({'text':json.dumps({"msg":'1'})})
     path = message['path'].strip('/')
+    Group(path).add(message.reply_channel)
     if path == 'log':
-        Group(path).add(message.reply_channel)
         log_connect_report = 'log channel is successfully connected, client %s:%s' % (
             message.content['client'][0], message.content['client'][1]
         )
         message.reply_channel.send(
             {'text': json.dumps({"msg": log_connect_report})})
-    if path == 'login':
-        Group(path).add(message.reply_channel)
     # message.reply_channel.send({'text':json.dumps({"msg":'2'})})
     # message.reply_channel.send({'text':json.dumps({"msg":'3'})})
     # except ValueError:

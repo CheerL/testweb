@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from .wheel import parallel as pl
+from .models import Robot
 from .main import HELPER
 from .base import info, EXCEPTIONS, QR_pic, WX_pic, log_read, pkl_path
 from . import tests
@@ -91,9 +92,8 @@ def setting_page(request):
         {'bool_list': bool_list, 'num_list': num_list, 'show_list': show_list}
     )
 
+
 # 登陆 api
-
-
 def login(request, uuid=None):
     '终于登录了'
     def qr_func(uuid, status, qrcode):
@@ -107,7 +107,11 @@ def login(request, uuid=None):
 
     def login_func():
         user = itchat.search_friends()
-        info('%s成功登录' % user['NickName'])
+        robot = Robot.objects.get_or_create(uin=user['Uin'])[0]
+        robot.nick_name = user['NickName']
+        robot.save()
+        HELPER.robot = robot
+        info('%s成功登录' % robot.nick_name)
         HELPER.wxname_update()
         HELPER.remind()
         HELPER.IS_LOGIN = True
@@ -165,10 +169,15 @@ def send_log(request):
 
 # 聊天 api
 def get_chat_user(request):
-    user_list = itchat.get_friends()
-    for user in user_list:
+    def get_user_head_img(user):
         HELPER.get_head_img(user)
-    return JsonResponse(dict(user_list=user_list, count=len(user_list)))
+
+    user_list = itchat.get_friends()
+    req_list = [(get_user_head_img, (user,)) for user in user_list]
+    pl.run_thread_pool(req_list, is_lock=False)
+    after_user_list = [{'NickName': user.NickName,
+                        'RemarkName': user.RemarkName} for user in user_list]
+    return JsonResponse(dict(user_list=after_user_list, count=len(user_list)))
 
 
 @csrf_exempt

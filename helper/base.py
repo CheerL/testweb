@@ -15,8 +15,8 @@ HELPER = None
 # 常量
 log_path = 'static/run.log'
 pkl_path = 'static/helper.pkl'
-QR_pic = 'static/QR.png'
-WX_pic = 'static/begin.png'
+QR_pic = 'static/img/QR.png'
+WX_pic = 'static/img/begin.png'
 
 # HOST = []
 END_WEEK = 20
