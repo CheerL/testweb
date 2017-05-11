@@ -117,6 +117,7 @@ class Helper_user(models.Model):
 
     def courses_update(self, course_list):
         '课程列表更新'
+        self.courses.clear()
         for ident in course_list:
             try:
                 self.courses.add(Course.objects.get(ident=ident))
