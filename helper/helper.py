@@ -18,7 +18,6 @@ from .models import Helper_user, Course, Weekday, Coursetime
 
 class Helper(object):
     '助手类'
-    keep_alive_name = None
     robot = None
 
     def __init__(self):
@@ -104,7 +103,6 @@ class Helper(object):
         for user in self.search_list():
             user.wx_UserName = itchat.search_friends(remarkName=user.user_name)[0]['UserName']
             user.save()
-        self.keep_alive_name = itchat.search_mps(name='微信支付')[0]['UserName']
 
     def update_info(self, user=None):
         '更新用户信息'
@@ -242,7 +240,6 @@ class Helper(object):
             try:
                 if time.time() - self.settings.LAST_UPDATE > self.settings.UPDATE_WAIT * 60:
                     self.update_info()
-                    self.keep_alive()
                 for user in self.search_list():
                     if user.is_open:
                         remind_main(user)
@@ -542,9 +539,6 @@ class Helper(object):
         if os.path.exists(pkl_path):
             os.remove(pkl_path)
 
-    def keep_alive(self):
-        '保活'
-        Helper.send('1', self.keep_alive_name)
 
 class Setting(object):
     '小助手设置'

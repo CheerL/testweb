@@ -73,7 +73,10 @@ def info_save_message(text, message_type, send_user, user, name, info_text):
 
 
 def text_reply(msg, text, send_user_name, message_type, send_user, user, alias, name):
-    '回复文字'
+    '文字消息的回复'
+    info_text = '%s的消息: %s' % (name, text)
+    info_save_message(text, message_type, send_user, user, name, info_text)
+
     if '重新绑定' in text:
         HELPER.change_user(send_user_name, alias, text)
     elif '取消绑定' in text:
@@ -107,15 +110,16 @@ def text_reply(msg, text, send_user_name, message_type, send_user, user, alias, 
         if HELPER.settings.ROBOT_REPLY:
             return HELPER.get_robot_response(text)
 
-    info_text = '%s的消息: %s' % (name, text)
-    info_save_message(text, message_type, send_user, user, name, info_text)
-
 
 def voice_reply(msg, text, send_user_name, message_type, send_user, user, alias, name):
-    '接收语音'
+    '语音消息的回复'
+    voice_path = 'static/voice/%s' % (msg['FileName'])
+    text(voice_path)
+
+    info_text = '%s的语音' % (name)
+    info_save_message(str(voice_path), message_type,
+                      send_user, user, name, info_text)
     if HELPER.settings.VOICE_REPLY:
-        voice_path = 'static/voice/' + msg['FileName']
-        text(voice_path)
         translate = spech_recognize(voice_path)
         if translate:
             itchat_send('你说的是:' + translate, send_user_name)
@@ -124,7 +128,3 @@ def voice_reply(msg, text, send_user_name, message_type, send_user, user, alias,
             itchat_send(reply(msg), send_user_name)
         else:
             itchat_send('我没有听懂', send_user_name)
-
-    info_text = '%s的语音' % (name)
-    info_save_message(voice_path, message_type,
-                      send_user, user, name, info_text)
