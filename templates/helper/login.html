@@ -9,17 +9,18 @@
     <div class="login_block">
         <img id="pic" src="">
         <div id="text"></div>
-        <div class="button_block">  
-            <div id="login" class="button" style="display: none;" onclick="login_func()">登录</div>
-            <div id="exit" class="button" style="display: none;" onclick="exit_func()">退出</div>
-            <div id="reload" class="button" style="display: none" onclick="reload_func()">重启</div>
-        </div>
+        {% for button in button_list %}
+            <a href="javascript:;">
+            <div id="{{button.id}}" class="button" style="display: none;" onclick="{{button.id}}_func()">{{button.text}}</div>
+            </a>
+        {% endfor %}
     </div>
 {% endblock %}
 
 {% block script %}
     <script src="{% static "js/web-socket.js" %}"></script>
     <script>
+        var button = $(".button");
         var login = $("#login");
         var text = $("#text");
         var pic = $("#pic");
@@ -59,26 +60,42 @@
             else if('{{status}}' == 'True'){
                 exit.show();
             }
-            
-            var sock = null
+
             if (text.text() != '小助手运行中') {
                 var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
                 sock = new WebSocket(ws_scheme + '://' + window.location.host + "/login/");
+
+                sock.onmessage = function (message) {
+                    var data = JSON.parse(message.data)
+                    text.text(data.msg);
+                    pic[0].src = '/' + data.pic;
+                    if (data.msg == '小助手运行中'){
+                        run_func();
+                        sock.close();
+                    }
+
+                    else if (data.msg == '错误,请重新登录') {
+                        ;
+                    }
+                };
             }
 
-            sock.onmessage = function (message) {
-                var data = JSON.parse(message.data)
-                text.text(data.msg);
-                pic[0].src = '/' + data.pic;
-                if (data.msg == '小助手运行中'){
-                    run_func();
-                    sock.close();
+            button.hover(
+                function(){
+                    var color = $(this).css('border-color');
+                    $(this).animate({
+                        backgroundColor: color,
+                        color: 'rgb(255, 255, 255)'
+                    }, 500);
+                },
+                function () {
+                    var color = $(this).css('border-color');
+                    $(this).animate({
+                        backgroundColor: 'rgb(255, 255, 255)',
+                        color: color
+                    }, 500);
                 }
-
-                else if (data.msg == '错误,请重新登录') {
-                    ;
-                }
-            };
+            );
         });
     </script>
 {% endblock %}
@@ -117,16 +134,13 @@
             top: 300px;
             text-align: center;
         }
-        .login_block .button_block{
-            width: 300px;
-            text-align: center;
-            position: absolute;
-            top: 340px;
+        a{
+            top: 50px;
+            position: relative;
         }
-        .login_block .button{
+        .button{
             width: 80px;
             display: inline-block;
-            position: relative;
             padding: 0 20px;
             text-align: center;
             text-decoration: none;
@@ -145,8 +159,12 @@
             border: 1px solid limegreen;
             color: limegreen;
         }
-        #exit, #reload{
+        #reload{
             border: 1px solid dimgray;
+        }
+        #exit{
+            border: 1px solid crimson;
+            color: crimson;
         }
     </style>
 {% endblock %}

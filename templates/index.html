@@ -1,0 +1,117 @@
+{% load static staticfiles %}
+<html>
+    <head>
+        <title>
+           Cheer.online -- 跳转页
+        </title>
+    </head>
+    <body>
+        <div class="block">
+        <div id="text"></div>
+        {% for url in url_list %}
+            <a href="/{{url.url}}">
+            <div id="{{url.url}}" class="button">{{url.text}}</div>
+            </a>
+        {% endfor %}
+        </div>
+    </body>
+
+
+    <script src="{% static "js/jquery-3.1.1.min.js" %}"></script>
+    <script src="{% static "js/jquery-color-2.1.1.min.js" %}"></script>
+    <script>
+        var block = $('.block');
+        var button = $(".button");
+
+        function resize_func(){
+            var button_height = button.outerHeight() + 2 * button.css('margin-top').slice(0, -2);
+            var block_height = button.length * button_height;
+            block.height(block_height);
+            block.css('margin-top', '-' + block_height/2 + 'px');
+        }
+
+        $(function (){
+            resize_func();
+            block.show();
+
+            button.hover(
+                function(){
+                    var color = $(this).css('border-color');
+                    $(this).animate({
+                        backgroundColor: color,
+                        color: 'rgb(255, 255, 255)'
+                    }, 500);
+                },
+                function () {
+                    var color = $(this).css('border-color');
+                    $(this).animate({
+                        backgroundColor: 'rgb(255, 255, 255)',
+                        color: color
+                    }, 500);
+                }
+            );
+        });
+        
+    </script>
+
+    <style>
+        *{
+            border: 0;
+            margin: 0;
+            padding: 0;
+        }
+        body{
+            background-color: #f6f9f6;
+        }
+        div{
+            color: dimgray;
+            text-align: center;
+        }
+    </style>
+
+    <style>
+        .block{
+            display: none;
+            position: relative;
+            width: 200px;
+            margin-left: -100px;
+            text-align: center;
+            left: 50%;
+            top: 50%;
+        }
+        #text{
+            width: 300px;
+            position: absolute;
+            top: 300px;
+            text-align: center;
+        }
+        
+        .button{
+            width: 150px;
+            height: 60px;
+            margin: 30px 0px;
+            display: inline-block;
+            position: relative;
+            padding: 0 20px;
+            text-align: center;
+            text-decoration: none;
+            font: 30px/60px Arial, sans-serif;
+
+            -moz-border-radius: 30px;
+            border-radius: 30px;
+
+            -webkit-transition: all 0.15s ease;
+            -moz-transition: all 0.15s ease;
+            -o-transition: all 0.15s ease;
+            -ms-transition: all 0.15s ease;
+            transition: all 0.15s ease;
+            background-color: white;
+            border: 1px solid limegreen;
+            color: limegreen;
+        }
+        a{
+            text-decoration:none;
+        }
+    </style>
+
+</html>

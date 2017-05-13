@@ -14,13 +14,15 @@
         <div id="info"><span></span></div>
         <div id="msg_show"></div>
         <textarea id="msg_input" ></textarea>
-        <div id="send_buttom">发送</div>
+        <a href='javascript:;'>
+        <div id="send_button">发送</div>
+        </a>
     </div>
 {% endblock %}
 
 {% block script %}
     <script>
-        var buttom = $('div#send_buttom');
+        var button = $('div#send_button');
         function send_to_user(msg, user){
             $.post('/helper/chat/send/', {msg:msg, user:user});
         }
@@ -70,7 +72,7 @@
         }
         $(function(){
             get_user_list();
-            buttom.click(function () {
+            button.click(function () {
                 var msg = $('#msg_input').val();
                 var user = $('li.on').attr('id');
                 if (msg != null && msg != '' && user != null && user != ''){
@@ -78,18 +80,21 @@
                     $('#msg_input').val('');
                 }
             })
-            buttom.hover(
+
+            button.hover(
                 function(){
+                    var color = $(this).css('border-color');
                     $(this).animate({
-                        backgroundColor: 'rgba(50, 205, 50, 1)',
-                        color: 'rgba(255, 255, 255, 1)'
-                    }, 300);
+                        backgroundColor: color,
+                        color: 'rgb(255, 255, 255)'
+                    }, 500);
                 },
                 function () {
+                    var color = $(this).css('border-color');
                     $(this).animate({
-                        backgroundColor: 'rgba(255, 255, 255, 1)',
-                        color: 'rgba(50, 205, 50, 1)'
-                    }, 300);
+                        backgroundColor: 'rgb(255, 255, 255)',
+                        color: color
+                    }, 500);
                 }
             );
 
@@ -156,7 +161,7 @@
             width: 50%;
             left: 25%;
         }
-        div#send_buttom{
+        div#send_button{
             z-index: 100;
             position: absolute;
             left: 97%;
