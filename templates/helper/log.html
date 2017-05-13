@@ -1,18 +1,22 @@
-{% extends 'helper/base.html' %} {% load static staticfiles %} {% block title %} 微信小助手-日志 {% endblock %} {% block content%}
-<div id='main_body'>
-    <div id="log_box"></div>
-    <div id="link_box">
-        <a href="/helper/log/all/">查看全部日志</a>
+{% extends 'helper/base.html' %}
+{% load static staticfiles %}
+{% block title %}
+    微信小助手-日志
+{% endblock %}
+
+{% block content%}
+    <div id='main_body'>
+        <div id="log_box"></div>
+        <a href="/helper/log/all/">
+        <div id="button">
+            查看全部日志
+        </div>
+        </a>
     </div>
-</div>
 {% endblock %} {% block script %}
 <script>
     var log_box = $('div#log_box');
-    var client_id = null;
-    var channel = 'log';
-    var test_url = '/helper/socket/test';
-    var close_url = '/helper/socket/close';
-    var open_url = '/helper/socket/open';
+    var button = $('#button');
 
     function get_log(start, count) {
         $.get('/helper/log/get/start=' + start + '&count=' + count, function (data) {
@@ -34,9 +38,23 @@
         sock.onmessage = function (message) {
             show_message(message);
         };
+
+        button.hover(
+                function(){
+                    var color = $(this).css('border-color');
+                    $(this).css('color', 'rgb(255, 255, 255)');
+                    $(this).css('background-color', color);
+                },
+                function () {
+                    var color = $(this).css('border-color');
+                    $(this).css('background-color', 'rgb(255, 255, 255)');
+                    $(this).css('color', color);
+                }
+            );
     });
 </script>
-{% endblock %} {% block style %}
+{% endblock %}
+{% block style %}
 <style>
     div {
         float: left;
@@ -75,7 +93,7 @@
         padding-bottom: 0px;
     }
 
-    div#link_box {
+    div#button {
         position: relative;
         text-decoration: none;
         left: 42%;
@@ -96,11 +114,6 @@
         -ms-transition: all 0.15s ease;
         transition: all 0.15s ease;
         border: 1px solid rgba(0, 0, 0, 0.8);
-    }
-
-    a {
-        color: rgba(0, 0, 0, 0.8);
-        text-decoration: none;
     }
 </style>
 {% endblock %}
