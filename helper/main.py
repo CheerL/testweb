@@ -108,7 +108,7 @@ def text_reply(msg, text, send_user_name, message_type, send_user, user, alias, 
         HELPER.add_user(send_user_name, alias, text)
     else:
         if HELPER.settings.ROBOT_REPLY:
-            return HELPER.get_robot_response(text)
+            itchat_send(HELPER.get_robot_response(text), send_user_name)
 
 
 def voice_reply(msg, text, send_user_name, message_type, send_user, user, alias, name):
@@ -119,12 +119,14 @@ def voice_reply(msg, text, send_user_name, message_type, send_user, user, alias,
     info_text = '%s的语音' % (name)
     info_save_message(str(voice_path), message_type,
                       send_user, user, name, info_text)
+
     if HELPER.settings.VOICE_REPLY:
         translate = spech_recognize(voice_path)
         if translate:
-            itchat_send('你说的是:' + translate, send_user_name)
+            itchat.send('你说的是:' + translate, send_user_name)
+            info('收到来自%s的语音的内容: %s' % (name, translate))
             msg['Text'] = translate
             msg['Type'] = itchat.content.TEXT
-            itchat_send(reply(msg), send_user_name)
+            reply(msg)
         else:
             itchat_send('我没有听懂', send_user_name)
