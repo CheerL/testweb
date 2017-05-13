@@ -4,6 +4,7 @@ import time
 import json
 import logging
 import socket
+import itchat
 from channels import Group
 from requests.packages.urllib3.exceptions import HTTPError, PoolError, MaxRetryError
 
@@ -95,6 +96,17 @@ def info(msg, is_report=False):
         raise NotImplementedError(msg)
 
 
+def itchat_send(text, user_name):
+    '发送消息并自带保存记录'
+    itchat.send(text, user_name)
+    user = itchat.search_friends(userName=user_name)
+    name = user['RemarkName'] if user['RemarkName'] else user['NickName']
+    info('发出给%s的消息: %s' % (name, text))
+    Message.objects.create(
+        text=text, user=name, robot=HELPER.robot,
+        message_type='Text', direction='OUT'
+    )
+
 # def change_host(host):
 #     '修改全局变量HOST'
 #     if not HOST:
@@ -106,7 +118,7 @@ logger = __get_logger()
 
 # 交叉引用
 from .helper import Helper
-from .models import Course, Coursetime, Helper_user
+from .models import Course, Coursetime, Helper_user, Message
 
 # 交叉引用的变量的重定义
 HELPER = Helper()

@@ -2,7 +2,7 @@
 import re
 import time
 import itchat
-from .base import EXCEPTIONS, info, HELPER, error_report
+from .base import EXCEPTIONS, info, HELPER, error_report, itchat_send
 from .wheel import parallel as pl
 from .wheel.recognize import spech_recognize
 from .models import Message
@@ -29,7 +29,7 @@ def add_friend(msg):
     '自动接受好友申请'
     itchat.add_friend(**msg['Text'])
     user = msg['Text']['autoUpdate']
-    itchat.send('Nice to see you! 你可以试着输入"???"来查看帮助信息', user['UserName'])
+    itchat_send('Nice to see you! 你可以试着输入"???"来查看帮助信息', user['UserName'])
     info('添加新好友%s' % (user['NickName']))
 
 
@@ -118,12 +118,12 @@ def voice_reply(msg, text, send_user_name, message_type, send_user, user, alias,
         text(voice_path)
         translate = spech_recognize(voice_path)
         if translate:
-            itchat.send('你说的是:' + translate, send_user_name)
+            itchat_send('你说的是:' + translate, send_user_name)
             msg['Text'] = translate
             msg['Type'] = itchat.content.TEXT
-            itchat.send(reply(msg), send_user_name)
+            itchat_send(reply(msg), send_user_name)
         else:
-            itchat.send('我没有听懂', send_user_name)
+            itchat_send('我没有听懂', send_user_name)
 
     info_text = '%s的语音' % (name)
     info_save_message(voice_path, message_type,

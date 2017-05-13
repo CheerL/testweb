@@ -12,7 +12,7 @@ from django.db.utils import IntegrityError
 from PIL import Image, ImageDraw, ImageFont
 from bs4 import BeautifulSoup as Bs
 from channels import Group
-from .base import EXCEPTIONS, info, get_now_week, error_report, TIMEOUT, TL_KEY, pkl_path
+from .base import EXCEPTIONS, info, get_now_week, error_report, TIMEOUT, TL_KEY, pkl_path, itchat_send
 from .wheel import parallel as pl
 from .models import Helper_user, Course, Weekday, Coursetime
 
@@ -62,7 +62,7 @@ class Helper(object):
         #send函数主体
         try:
             user_name = get_user_name(user)
-            itchat.send(msg, user_name)
+            itchat_send(msg, user_name)
         except EXCEPTIONS as error:
             info(error)
 
