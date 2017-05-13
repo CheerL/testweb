@@ -19,6 +19,7 @@ MSG_scan = '请扫描二维码'
 MSG_logout = '小助手成功退出'
 MSG_reload = '重新启动'
 MSG_remind = '小助手提醒中'
+MSG_confirm = '请在手机上确认登录'
 
 ITEM_LIST = [
     {'text': '登录', 'id': 'login'},
@@ -40,6 +41,8 @@ def index(request):
 
 
 def run_page(request):
+    if not HELPER.IS_LOGIN:
+        return render(request, 'helper/return_to_login.html')
     res = dict(
         status=HELPER.IS_LOGIN,
         item_list=ITEM_LIST,
@@ -66,14 +69,20 @@ def login_page(request):
 
 
 def log_page(request):
+    if not HELPER.IS_LOGIN:
+        return render(request, 'helper/return_to_login.html')
     return render(request, 'helper/log.html')
 
 
 def chat_page(request):
+    if not HELPER.IS_LOGIN:
+        return render(request, 'helper/return_to_login.html')
     return render(request, 'helper/chat.html')
 
 
 def setting_page(request):
+    if not HELPER.IS_LOGIN:
+        return render(request, 'helper/return_to_login.html')
     item_list = vars(HELPER.settings).items()
     bool_list = [
         {
@@ -100,59 +109,79 @@ def setting_page(request):
 
 
 # 登陆 api
-def login(request, uuid=None):
+@csrf_exempt
+def login(request):
     '终于登录了'
-    def qr_func(uuid, status, qrcode):
-        info('成功获取二维码')
-        with open(QR_pic, 'wb') as pic:
-            pic.write(qrcode)
-        Group('login').send({'text': json.dumps(dict(
-            msg=MSG_scan,
-            pic=QR_pic
-        ))})
+    if request.method == 'GET':
+        if not HELPER.IS_LOGIN:
+            return render(request, 'helper/return_to_login.html')
+        else:
+            return login_page(request)
+    else:
+        def qr_func(uuid, status, qrcode):
+            if qrcode:
+                info('成功获取二维码')
+                with open(QR_pic, 'wb') as pic:
+                    pic.write(qrcode)
+                Group('login').send({'text': json.dumps(dict(
+                    msg=MSG_scan,
+                    pic=QR_pic
+                ))})
+            else:
+                info('等待确认登录')
+                Group('login').send({'text': json.dumps(dict(
+                    msg=MSG_confirm,
+                    pic=WX_pic
+                ))})
 
-    def login_func():
-        user = itchat.search_friends()
-        robot = Robot.objects.get_or_create(uin=user['Uin'])[0]
-        robot.nick_name = user['NickName']
-        robot.save()
-        HELPER.robot = robot
-        info('%s成功登录' % robot.nick_name)
-        HELPER.wxname_update()
-        HELPER.remind()
-        HELPER.IS_LOGIN = True
-        if os.path.exists(QR_pic):
-            os.remove(QR_pic)
-        Group('login').send({'text': json.dumps(dict(
-            msg=MSG_login,
-            pic=WX_pic
-        ))})
-
-    def exit_func():
-        HELPER.logout()
-        info(MSG_logout)
-
-    def login_main():
-        try:
-            info('尝试登陆')
-            itchat.auto_login(True, pkl_path, False, QR_pic,
-                              qr_func, login_func, exit_func)
-            itchat.run(debug=True, blockThread=False)
-        except:
+        def login_func():
+            user = itchat.search_friends()
+            robot = Robot.objects.get_or_create(uin=user['Uin'])[0]
+            robot.nick_name = user['NickName']
+            robot.save()
+            HELPER.robot = robot
+            HELPER.robot.apply_settings(HELPER.settings)
+            info('%s成功登录' % robot.nick_name)
+            HELPER.wxname_update()
+            HELPER.remind()
+            HELPER.IS_LOGIN = True
+            if os.path.exists(QR_pic):
+                os.remove(QR_pic)
             Group('login').send({'text': json.dumps(dict(
-                msg=MSG_error,
+                msg=MSG_login,
                 pic=WX_pic
             ))})
 
-    pl.run_thread([(login_main, ())], is_lock=False)
-    return HttpResponse()
+        def exit_func():
+            HELPER.logout()
+            info(MSG_logout)
+
+        def login_main():
+            try:
+                info('尝试登陆')
+                itchat.auto_login(True, pkl_path, False, QR_pic,
+                                  qr_func, login_func, exit_func)
+                itchat.run(debug=True, blockThread=False)
+            except:
+                Group('login').send({'text': json.dumps(dict(
+                    msg=MSG_error,
+                    pic=WX_pic
+                ))})
+
+        pl.run_thread([(login_main, ())], name='login', is_lock=False)
+        return HttpResponse()
 
 
+@csrf_exempt
 def logout(request):
     '退出登录'
-    HELPER.logout()
-    info(MSG_logout)
-    return HttpResponse(MSG_logout)
+    if request.method == 'GET':
+        return render(request, 'helper/return_to_login.html')
+    else:
+        if HELPER.IS_LOGIN:
+            HELPER.logout()
+            info(MSG_logout)
+        return HttpResponse(MSG_logout)
 
 
 # 日志 api
@@ -215,17 +244,8 @@ def setting_change(request):
                 break
         else:
             return JsonResponse({'res': True, 'msg': '灵活调整日期有误'})
-
-        HELPER.settings.VOICE_REPLY = items['VOICE_REPLY']
-        HELPER.settings.UPDATE_WAIT = items['UPDATE_WAIT']
-        HELPER.settings.REMIND_ALIVE = items['REMIND_ALIVE']
-        HELPER.settings.REMIND_BEFORE = items['REMIND_BEFORE']
-        HELPER.settings.REMIND_WAIT = items['REMIND_WAIT']
-        HELPER.settings.ROBOT_REPLY = items['ROBOT_REPLY']
-        HELPER.settings.FLEXIBLE = items['FLEXIBLE']
-        HELPER.settings.trans_flexible_day(items['FLEXIBLE_DAY'])
-        HELPER.settings.remind_change()
-        info("修改设置 %s" % items)
+        HELPER.settings.change_settings(items)
+        HELPER.robot.save_settings(HELPER.settings)
         return JsonResponse({'res': True, 'msg': '修改成功\n' + str(HELPER.settings)})
     else:
         return JsonResponse({'res': False, 'msg': '访问错误'})

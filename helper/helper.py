@@ -573,8 +573,12 @@ class Setting(object):
 
     def __str__(self):
         return '\n'.join(
-            ['%s:%s' % (self.trans_to_chinese(name), value) for name, value in vars(self).items()]
+            ['%s:%s' % (self.trans_to_chinese(name), value)
+             for name, value in self.trans_to_dict().items()]
         )
+
+    def trans_to_dict(self):
+        return vars(self)
 
     def trans_to_chinese(self, name):
         '转化为中文显示'
@@ -587,10 +591,21 @@ class Setting(object):
         else:
             self.FLEXIBLE_DAY = Weekday.objects.get(day=weekday).index
 
+    def change_settings(self, items):
+        self.VOICE_REPLY = items['VOICE_REPLY']
+        self.UPDATE_WAIT = items['UPDATE_WAIT']
+        self.REMIND_ALIVE = items['REMIND_ALIVE']
+        self.REMIND_BEFORE = items['REMIND_BEFORE']
+        self.REMIND_WAIT = items['REMIND_WAIT']
+        self.ROBOT_REPLY = items['ROBOT_REPLY']
+        self.FLEXIBLE = items['FLEXIBLE']
+        self.trans_flexible_day(items['FLEXIBLE_DAY'])
+        self.remind_change()
+        info("修改设置 %s" % items)
+
     def remind_change(self):
         '根据REMIND_ALIVE打开或者关闭提醒'
         thread_remind = pl.search_thread(name='remind', part=True)
-        print('当前线程%s' % str(pl.thread_list('BOTH')))
         if self.REMIND_ALIVE:
             if not thread_remind:
                 from .base import HELPER

@@ -3,10 +3,10 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.index),
-    url(r'^login/$', views.login_page),
-    url(r'^run/$', views.run_page),
+    # url(r'^login/$', views.login_page),
+    # url(r'^run/$', views.run_page),
 
-    url(r'^login_func/$', views.login),
+    url(r'^login/$', views.login),
     url(r'^logout/$', views.logout),
 
     url(r'^log/$', views.log_page),

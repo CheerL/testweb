@@ -44,16 +44,14 @@
             list.hover(
                 function(){
                     if($(this).attr('class') == "off"){
-                        $(this).css('background-color', 'rgba(0,0,0, .15)');
-                        $(this).css('border-color', 'rgba(0,0,0, 0)');
+                        $(this).css('background-color', 'rgba(0,0,0,0.15)');
+                        $(this).css('border-color', 'rgba(0,0,0,0)');
                     }
                 },
                 function(){
                     if($(this).attr('class') == "off"){
-                        $(this).animate({
-                            backgroundColor: 'rgba(0,0,0,0)',
-                            borderColor: 'rgba(0,0,0, .15)'
-                        }, 300);
+                        $(this).css('background-color', 'rgba(0,0,0,0)');
+                        $(this).css('border-color', 'rgba(0,0,0,0.15)');
                     }
                 }
             );

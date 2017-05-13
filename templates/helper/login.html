@@ -34,7 +34,7 @@
         }
         function exit_func(){
             if (confirm("你确定要退出么?")) {
-                $.get("/helper/logout/", function(data){
+                $.post("/helper/logout/", function(data){
                     alert(data);
                     reload_func();
                 });
@@ -44,7 +44,7 @@
             text.text("正在获取二维码");
             login.hide();
             reload.show();
-            $.get("/helper/login_func/");
+            $.post("/helper/login/");
         }
 
         function reload_func(){
@@ -83,17 +83,13 @@
             button.hover(
                 function(){
                     var color = $(this).css('border-color');
-                    $(this).animate({
-                        backgroundColor: color,
-                        color: 'rgb(255, 255, 255)'
-                    }, 500);
+                    $(this).css('color', 'rgb(255, 255, 255)');
+                    $(this).css('background-color', color);
                 },
                 function () {
                     var color = $(this).css('border-color');
-                    $(this).animate({
-                        backgroundColor: 'rgb(255, 255, 255)',
-                        color: color
-                    }, 500);
+                    $(this).css('background-color', 'rgb(255, 255, 255)');
+                    $(this).css('color', color);
                 }
             );
         });

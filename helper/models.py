@@ -2,15 +2,37 @@
 import time
 import datetime
 from django.db import models
+from ast import literal_eval
+
+
+class Robot(models.Model):
+    '机器人用户'
+    uin = models.CharField(max_length=50, default='', primary_key=True)
+    nick_name = models.CharField(max_length=50, default='')
+    settings = models.CharField(max_length=200, default='')
+
+    def __str__(self):
+        return '%s-%s' % (self.nick_name, self.uin)
+
+    def save_settings(self, settings):
+        self.settings = str(settings.trans_to_dict())
+        self.save()
+
+    def apply_settings(self, settings):
+        if self.settings:
+            settings.change_settings(literal_eval(self.settings))
+        else:
+            self.save_settings(settings)
 
 
 class Message(models.Model):
     '消息往来'
     text = models.CharField(max_length=200, default='')
-    from_user = models.CharField(max_length=50, default='')
-    to_user = models.CharField(max_length=50, default='')
+    user = models.CharField(max_length=50, default='')
+    robot = models.ForeignKey(Robot)
     time = models.TimeField()
     message_type = models.CharField(max_length=10, default='TEXT')
+    direction = models.CharField(max_length=10, default='FROM')
 
     def __str__(self):
         return '%s-%s-%s' % (self.from_user, self.to_user, self.time)
@@ -62,14 +84,6 @@ class Course(models.Model):
 
     def __str__(self):
         return str(self.ident)
-
-
-class Robot(models.Model):
-    uin = models.CharField(max_length=50, default='', primary_key=True)
-    nick_name = models.CharField(max_length=50, default='')
-
-    def __str__(self):
-        return '%s-%s' % (self.nick_name, self.uin)
 
 
 class Helper_user(models.Model):

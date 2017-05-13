@@ -2,12 +2,11 @@
 <html>
     <head>
         <title>
-           Cheer.online -- 跳转页
+           Welcome -- 跳转页
         </title>
     </head>
     <body>
         <div class="block">
-        <div id="text"></div>
         {% for url in url_list %}
             <a href="/{{url.url}}">
             <div id="{{url.url}}" class="button">{{url.text}}</div>
@@ -37,17 +36,13 @@
             button.hover(
                 function(){
                     var color = $(this).css('border-color');
-                    $(this).animate({
-                        backgroundColor: color,
-                        color: 'rgb(255, 255, 255)'
-                    }, 500);
+                    $(this).css('color', 'rgb(255, 255, 255)');
+                    $(this).css('background-color', color);
                 },
                 function () {
                     var color = $(this).css('border-color');
-                    $(this).animate({
-                        backgroundColor: 'rgb(255, 255, 255)',
-                        color: color
-                    }, 500);
+                    $(this).css('background-color', 'rgb(255, 255, 255)');
+                    $(this).css('color', color);
                 }
             );
         });
@@ -79,12 +74,6 @@
             left: 50%;
             top: 50%;
         }
-        #text{
-            width: 300px;
-            position: absolute;
-            top: 300px;
-            text-align: center;
-        }
         
         .button{
             width: 150px;
@@ -106,9 +95,10 @@
             -ms-transition: all 0.15s ease;
             transition: all 0.15s ease;
             background-color: white;
-            border: 1px solid limegreen;
-            color: limegreen;
+            border: 1px solid dimgray;
+            color: dimgray;
         }
+
         a{
             text-decoration:none;
         }

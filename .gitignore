@@ -1,7 +1,6 @@
 collected_static/
 migrations/
 test/
-helper.pkl
 static/head/
 test.*
 *.ipynb
