@@ -8,6 +8,7 @@ def hello(request):
         {'text': '博客', 'url': 'blog'},
         {'text': '小助手', 'url': 'helper'},
         {'text': '文件管理', 'url': 'file'},
-        {'text': 'VNC', 'url': 'vnc'}
+        {'text': 'VNC', 'url': 'vnc'},
+        {'text': 'Admin', 'url': 'admin'}
     ]
     return render(request, 'index.html', dict(url_list=url_list))

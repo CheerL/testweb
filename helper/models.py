@@ -30,12 +30,12 @@ class Message(models.Model):
     text = models.CharField(max_length=200, default='')
     user = models.CharField(max_length=50, default='')
     robot = models.ForeignKey(Robot)
-    time = models.TimeField()
+    time = models.DateTimeField(auto_now_add=True)
     message_type = models.CharField(max_length=10, default='TEXT')
-    direction = models.CharField(max_length=10, default='FROM')
+    direction = models.CharField(max_length=10, default='IN')
 
     def __str__(self):
-        return '%s-%s-%s' % (self.from_user, self.to_user, self.time)
+        return '%s-%s-%s' % (self.user, self.robot.nick_name, self.time)
 
 
 class Weekday(models.Model):

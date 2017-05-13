@@ -39,7 +39,9 @@
     {% endfor %}
     </div>
     <div class="content" style="width: 100%; padding-top: 0">
-    <div id="send_buttom">确认</div>
+    <a href='javascript:;'>
+    <div id="send_buttom">确认修改</div>
+    </a>
     </div>
     
 {% endblock %}
@@ -113,16 +115,14 @@
             });
             confirm_buttom.hover(
                 function(){
-                    $(this).animate({
-                        backgroundColor: 'rgba(50, 205, 50, 1)',
-                        color: 'rgba(255, 255, 255, 1)'
-                    }, 300);
+                    var color = $(this).css('border-color');
+                    $(this).css('color', 'rgb(255, 255, 255)');
+                    $(this).css('background-color', color);
                 },
                 function () {
-                    $(this).animate({
-                        backgroundColor: 'rgba(255, 255, 255, 1)',
-                        color: 'rgba(50, 205, 50, 1)'
-                    }, 300);
+                    var color = $(this).css('border-color');
+                    $(this).css('background-color', 'rgb(255, 255, 255)');
+                    $(this).css('color', color);
                 }
             );
         });
@@ -141,7 +141,7 @@
 
         .content {
             font-size: 150%;
-            padding: 7em 5em 5em 1em;
+            padding: 5em 3em 2em 3em;
             text-align: center;
             float: left;
         }
@@ -157,7 +157,6 @@
             position: relative;
             z-index: 1;
             display: inline-block;
-            margin: 1em;
             max-width: 300px;
             width: calc(100% - 2em);
             vertical-align: top;
@@ -165,7 +164,7 @@
         }
 
         .input__field {
-            position: relative;
+            position: absolute;
             display: block;
             float: right;
             padding: 0.8em;
@@ -180,10 +179,9 @@
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             -webkit-appearance: none; 
             padding: 0.4em 0.25em;
-            width: 100%;
             background: transparent;
             color: #AFB5BB;
-            font-size: 1.55em;
+            font-size: 1.4em;
             /*left: 30%;*/
         }
 
@@ -200,7 +198,6 @@
         .input__label {
             display: inline-block;
             padding: 0 1em;
-            width: 40%;
             color: #6a7989;
             font-weight: bold;
             font-size: 70.25%;
@@ -210,7 +207,7 @@
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
-            position: absolute;
+            position: relative;
             width: 100%;
             text-align: left;
             pointer-events: none;
