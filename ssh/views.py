@@ -1,32 +1,57 @@
-import time
-import hmac
-import hashlib
-from django.shortcuts import render
-from django.http import JsonResponse
+from django.shortcuts import render, render_to_response
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.template import RequestContext
+from django import forms
+from .models import User
 # Create your views here.
 
 
-def index(request):
-    return render(request, 'ssh/ssh.html')
+# 表单
+class UserForm(forms.Form):
+    username = forms.CharField(label='用户', max_length=100)
+    password = forms.CharField(label='密码', widget=forms.PasswordInput())
+    # password = forms.CharField(label='密码', max_length=100)
 
 
-def get_auth_obj(request):
-    # 安装gateone的服务器以及端口.
-    gateone_server = 'http://localhost:443'
-    secret = b"OTFjZTFlZDhhYjgzNDRkY2I1NTdmY2U0MTA1MmU1YzFkO"
-    api_key = "YWI2MjM3ZDk5YmYxNDlhOWJlZjdiNTY4MmRlMzU4YzI2M"
+# 登陆
+@csrf_exempt
+def login(request):
+    if request.method == 'GET':
+        info = ''
+        username = request.COOKIES.get('username', '')
+        password = request.COOKIES.get('password', '')
+        if username and password:
+            uf = UserForm(dict(username=username, password=password))
+        else:
+            uf = UserForm()
 
-    authobj = {
-        'api_key': api_key,
-        'upn': "gateone",
-        'timestamp': str(int(time.time() * 1000)),
-        'signature_method': 'HMAC-SHA1',
-        'api_version': '1.0'
-    }
-    my_hash = hmac.new(secret, digestmod=hashlib.sha1)
-    my_hash_update = authobj['api_key'] + authobj['upn'] + authobj['timestamp']
-    my_hash.update(my_hash_update.encode())
+    elif request.method == 'POST':
+        info = "用户名或密码错误"
+        uf = UserForm(request.POST)
 
-    authobj['signature'] = my_hash.hexdigest()
-    auth_info_and_server = {"url": gateone_server, "auth": authobj}
-    return JsonResponse(auth_info_and_server)
+    if uf.is_valid():
+        # 获取表单用户密码
+        username = uf.cleaned_data['username']
+        password = uf.cleaned_data['password']
+        # 获取的表单数据与数据库进行比较
+        user = User.objects.filter(
+            username__exact=username, password__exact=password)
+        if user:
+            url = '/gateone/?ssh=ssh://%s@inner.cheerl.online/' % username
+            response = HttpResponseRedirect(url)
+            response.set_cookie('username', username, 24 * 60 * 60)
+            response.set_cookie('password', password, 24 * 60 * 60)
+            # return render(request, 'ssh/login.html', {'uf': uf, 'info':
+            # info})
+            return render(request, 'ssh/main.html', {'user': username})
+
+    return render(request, 'ssh/login.html', {'uf': uf, 'info': info})
+
+
+# 退出
+def logout(request):
+    response = HttpResponseRedirect('/ssh/')
+    response.delete_cookie('username')
+    response.delete_cookie('password')
+    return response
