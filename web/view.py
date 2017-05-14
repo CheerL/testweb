@@ -9,6 +9,7 @@ def hello(request):
         {'text': '小助手', 'url': 'helper'},
         {'text': '文件管理', 'url': 'file'},
         {'text': 'VNC', 'url': 'vnc'},
+        {'text': 'SSH', 'url': 'ssh'},
         {'text': 'Admin', 'url': 'admin'}
     ]
     return render(request, 'index.html', dict(url_list=url_list))
