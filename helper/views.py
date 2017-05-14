@@ -9,7 +9,7 @@ from django.http import HttpResponse, JsonResponse
 from .wheel import parallel as pl
 from .models import Robot
 from .main import HELPER
-from .base import info, EXCEPTIONS, QR_pic, WX_pic, log_read, pkl_path
+from .base import info, EXCEPTIONS, QR_pic, WX_pic, log_read, pkl_path, str_multi_replace
 from . import tests
 
 MSG_init = '请点击登录按钮'
@@ -203,16 +203,24 @@ def send_log(request):
 
 
 # 聊天 api
-def get_chat_user(request):
-    def get_user_head_img(user):
-        HELPER.get_head_img(user)
+def chat_user(request):
+    def chat_user_head(user):
+        HELPER.get_head_img(user['user_name'], user['path'], user['name'])
 
-    user_list = itchat.get_friends()
-    req_list = [(get_user_head_img, (user,)) for user in user_list]
+    user_list = []
+    for user in itchat.get_friends():
+        temp_dict = {
+            'name': user['RemarkName'] if user['RemarkName'] else user['NickName'],
+            'nick_name': str_multi_replace(user['NickName']),
+            'user_name': user['UserName']
+        }
+        temp_dict['path'] = 'static/head/%s.png' % temp_dict['nick_name']
+        user_list.append(temp_dict)
+
+    req_list = [(chat_user_head, (user,)) for user in user_list]
     pl.run_thread_pool(req_list, is_lock=False)
-    after_user_list = [{'NickName': user.NickName,
-                        'RemarkName': user.RemarkName} for user in user_list]
-    return JsonResponse(dict(user_list=after_user_list, count=len(user_list)))
+
+    return JsonResponse(dict(user_list=user_list, count=len(user_list)))
 
 
 @csrf_exempt
@@ -249,19 +257,3 @@ def setting_change(request):
         return JsonResponse({'res': True, 'msg': '修改成功\n' + str(HELPER.settings)})
     else:
         return JsonResponse({'res': False, 'msg': '访问错误'})
-
-
-# send测试关闭
-# def send_page(request):
-#     return render(request, 'helper/send.html')
-
-
-# def send_to_channel(request, content=None, channel=None):
-#     Group(channel).send({'text': json.dumps({"msg": content})})
-#     return HttpResponse('send %s to %s' % (content, channel))
-
-
-# def send_login(request):
-#     tests.lll()
-#     return HttpResponse()
-# end

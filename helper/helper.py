@@ -25,15 +25,13 @@ class Helper(object):
         self.settings = Setting()
 
     @staticmethod
-    def get_head_img(user):
+    def get_head_img(user_name, pic_dir, name):
         '获取用户头像'
-        if isinstance(user, itchat.storage.templates.User):
-            user_name = user['UserName']
-            nick_name = user['NickName']
-            pic_dir = pic_dir = 'static/head/%s.png' % nick_name
-            if not os.path.exists(pic_dir) or (time.time() - os.path.getctime(pic_dir) > 24*60*60):
+        if not os.path.exists(pic_dir) or (time.time() - os.path.getctime(pic_dir) > 24*60*60):
+            try:
                 itchat.get_head_img(userName=user_name, picDir=pic_dir)
-                Group('head').send({'text':json.dumps(dict(img_path=pic_dir, nick_name=nick_name))})
+            except Exception as error:
+                print(error)
 
 
     @staticmethod

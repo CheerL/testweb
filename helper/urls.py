@@ -15,7 +15,7 @@ urlpatterns = [
     url(r'^log/send/$', views.send_log),
 
     url(r'^chat/$', views.chat_page),
-    url(r'^chat/user/', views.get_chat_user),
+    url(r'^chat/user/', views.chat_user),
     url(r'^chat/send/', views.chat_send),
 
     url(r'^setting/$', views.setting_page),

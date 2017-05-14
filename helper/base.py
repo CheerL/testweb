@@ -107,6 +107,21 @@ def itchat_send(text, user_name):
         message_type='Text', direction='OUT'
     )
 
+
+def str_multi_replace(ori_str, replace_list=None):
+    '一次性替换多个字符对, 返回结果字符串'
+    ori_str = repr(ori_str)
+    if not replace_list:
+        replace_list = [(each, '_') for each in ['\\', ' /',
+                                                 '.', '*', '?', '<', '>', '|', ':', '"']]
+    try:
+        for replace_pair in replace_list:
+            ori_str = ori_str.replace(replace_pair[0], replace_pair[1])
+    except EXCEPTIONS as error:
+        print(error)
+
+    return ori_str.strip("'")
+
 # def change_host(host):
 #     '修改全局变量HOST'
 #     if not HOST:

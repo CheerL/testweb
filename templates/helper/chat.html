@@ -28,18 +28,18 @@
         }
         function get_user_list(){
             $.get('/helper/chat/user/', function (data) {
+                var ul = $('ul');
                 for (i = 0; i <　data.count; i++){
                     var user = data.user_list[i];
-                    var nick_name = user['NickName']
-                    var name = user['RemarkName'] != '' ? user['RemarkName'] : user['NickName']
-                    if (name.length > 10) {
-                        name = name.slice(0, 10);
-                    }
-                    $('ul').append(
-                        '<li class="off" id="' + nick_name +
-                        '"><div id="img"><img src="/static/head/' + nick_name +
-                        '.png"></div>' + name + '</li>'
-                    );
+                    var name = user['name'];
+                    var path = user['path'];
+                    var li = $(
+                        '<li class="off" id="' + name +
+                        '"><div id="img"><img class="0" src="/' + path +
+                        '"></div>' + name.slice(0, 10) + '</li>'
+                        );
+                    li.find('img').on('error', img_reload);
+                    ul.append(li);
                 }
                 var list = $("li");
                 list.click(function(){
@@ -68,6 +68,17 @@
                 );
             })
         }
+
+        function img_reload(){
+            var dom = $(this);
+            var count = parseInt(dom.attr('class'));
+            var ori_src = dom.attr('src');
+            if (count < 10) {
+                setTimeout(function(){dom.attr('src', ori_src);}, 5000);
+                dom.attr('class', count+1);
+            }
+        }
+
         $(function(){
             get_user_list();
             button.click(function () {
@@ -77,7 +88,7 @@
                     send_to_user(msg, user);
                     $('#msg_input').val('');
                 }
-            })
+            });
 
             button.hover(
                 function(){
@@ -93,13 +104,6 @@
             );
 
             var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-            var head_img_sock = new ReconnectingWebSocket(ws_scheme + '://' + window.location.host + "/head/");
-
-            head_img_sock.onmessage = function (message) {
-                var data = JSON.parse(message.data);
-                var img = $('li#' + data.nick_name + ' img');
-                img.attr('src', '/' + data.img_path);
-            };
         });
     </script>
 {% endblock %}
