@@ -3,6 +3,7 @@ migrations/
 test/
 static/head/
 test.*
+tests.*
 *.ipynb
 *.csv
 *.mp3
