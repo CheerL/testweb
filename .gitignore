@@ -1,6 +1,7 @@
 collected_static/
 migrations/
 test/
+pid/
 static/head/
 test.*
 tests.*
