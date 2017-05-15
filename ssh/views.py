@@ -19,8 +19,10 @@ class UserForm(forms.Form):
 def login(request):
     if request.method == 'GET':
         info = ''
+        print(request.COOKIES)
         username = request.COOKIES.get('username', '')
         password = request.COOKIES.get('password', '')
+        print(username, password)
         if username and password:
             uf = UserForm(dict(username=username, password=password))
         else:

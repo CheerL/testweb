@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block content %}
-    <div id="text">非法访问, 请返回登录界面</div>
+    <div id="text">非法访问, <span>5</span>秒后自动返回登录界面</div>
     <div class="block">
     <a href="/helper">
     <div class="button">登录</div>
@@ -30,6 +30,19 @@
                     $(this).css('color', color);
                 }
             );
+
+            var interval = setInterval(return_login, 1000);
+
+            function return_login() {
+                var sec = $('span');
+                if (sec.text() == 0) {
+                    clearInterval(interval);
+                    window.top.location.href = '/helper/';
+                }
+                else{
+                    sec.text(sec.text() - 1);
+                }
+            }
         });
     </script>
 {% endblock %}
