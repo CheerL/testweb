@@ -17,7 +17,7 @@
     <script>
         var ssh_host = '{{user}}@' + window.location.host;
         var ssh_url = 'ssh://' + ssh_host + ':' + 22;
-        var server_url = '/gateone/'; //+ '?ssh=' + ssh_url
+        var server_url = 'http://' + window.location.host + '/gateone/'; //+ '?ssh=' + ssh_url
 
         function close_all_workspace(){
             var grid = $('#go_default_gridwrapper');
