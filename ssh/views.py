@@ -40,7 +40,7 @@ def login(request):
         user = User.objects.filter(
             username__exact=username, password__exact=password)
         if user:
-            url = '/gateone/?ssh=ssh://%s@inner.cheerl.online/' % username
+            url = '/gateone/?ssh=ssh://%s@%s/' % (username, request.get_host())
             response = HttpResponseRedirect(url)
             response.set_cookie('username', username, 24 * 60 * 60)
             response.set_cookie('password', password, 24 * 60 * 60)

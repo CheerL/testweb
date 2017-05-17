@@ -15,10 +15,9 @@
     <script src="{% static "js/jquery-3.1.1.min.js" %}"></script>
     <script src="{% static "js/gateone.js" %}"></script>
     <script>
-        var ssh_host = '{{user}}@inner.cheerl.online';
+        var ssh_host = '{{user}}@' + window.location.host;
         var ssh_url = 'ssh://' + ssh_host + ':' + 22;
         var server_url = '/gateone/'; //+ '?ssh=' + ssh_url
-        var link = 'http://inner.cheerl.online';
 
         function close_all_workspace(){
             var grid = $('#go_default_gridwrapper');
@@ -32,8 +31,8 @@
 
         $(document).ready(function(){
             GateOne.init({
-                //url: server_url,
-                url: link + server_url,
+                url: server_url,
+                //url: link + server_url,
                 theme:'black',
                 goDiv:'#gateone',
                 //embedded: true,

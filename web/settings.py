@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'chatroom',
     'channels',
     'ssh',
+    'ftp',
 ]
 
 MIDDLEWARE = [
