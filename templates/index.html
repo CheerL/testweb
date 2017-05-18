@@ -1,107 +1,108 @@
 {% load static staticfiles %}
 <html>
-    <head>
-        <title>
-           Welcome -- 跳转页
-        </title>
-    </head>
-    <body>
-        <div class="block">
+
+<head>
+    <title>
+        Welcome -- 跳转页
+    </title>
+</head>
+
+<body>
+    <div class="block">
         {% for url in url_list %}
-            <a href="/{{url.url}}/">
+        <a href="/{{url.url}}/">
             <div id="{{url.url}}" class="button">{{url.text}}</div>
-            </a>
+        </a>
         {% endfor %}
-        </div>
-    </body>
+    </div>
+</body>
 
 
-    <script src="{% static "js/jquery-3.1.1.min.js" %}"></script>
-    <script src="{% static "js/jquery-color-2.1.1.min.js" %}"></script>
-    <script>
-        var block = $('.block');
-        var button = $(".button");
+<script src="{% static " js/jquery-3.1.1.min.js " %}"></script>
+<script src="{% static " js/jquery-color-2.1.1.min.js " %}"></script>
+<script>
+    var block = $('.block');
+    var button = $(".button");
 
-        function resize_func(){
-            var button_height = button.outerHeight() + 2 * button.css('margin-top').slice(0, -2);
-            var block_height = button.length * button_height;
-            block.height(block_height);
-            block.css('margin-top', '-' + block_height/2 + 'px');
-        }
+    function resize_func() {
+        var button_height = button.outerHeight() + 2 * button.css('margin-top').slice(0, -2);
+        var block_height = button.length * button_height;
+        block.height(block_height);
+        block.css('margin-top', '-' + block_height / 2 + 'px');
+    }
 
-        $(function (){
-            resize_func();
-            block.show();
+    $(function() {
+        resize_func();
+        block.show();
 
-            button.hover(
-                function(){
-                    var color = $(this).css('border-color');
-                    $(this).css('color', 'rgb(255, 255, 255)');
-                    $(this).css('background-color', color);
-                },
-                function () {
-                    var color = $(this).css('border-color');
-                    $(this).css('background-color', 'rgb(255, 255, 255)');
-                    $(this).css('color', color);
-                }
-            );
-        });
-        
-    </script>
+        button.hover(
+            function() {
+                var color = $(this).css('border-color');
+                $(this).css('color', 'rgb(255, 255, 255)');
+                $(this).css('background-color', color);
+            },
+            function() {
+                var color = $(this).css('border-color');
+                $(this).css('background-color', 'rgb(255, 255, 255)');
+                $(this).css('color', color);
+            }
+        );
+    });
+</script>
 
-    <style>
-        *{
-            border: 0;
-            margin: 0;
-            padding: 0;
-        }
-        body{
-            background-color: #f6f9f6;
-        }
-        div{
-            color: dimgray;
-            text-align: center;
-        }
-    </style>
+<style>
+    * {
+        border: 0;
+        margin: 0;
+        padding: 0;
+    }
+    
+    body {
+        background-color: #f6f9f6;
+    }
+    
+    div {
+        color: dimgray;
+        text-align: center;
+    }
+</style>
 
-    <style>
-        .block{
-            display: none;
-            position: relative;
-            width: 200px;
-            margin-left: -100px;
-            text-align: center;
-            left: 50%;
-            top: 50%;
-        }
-        
-        .button{
-            width: 5em;
-            height: 2em;
-            margin: 1em 0;
-            display: inline-block;
-            position: relative;
-            padding: 0 20px;
-            text-align: center;
-            text-decoration: none;
-            font: 25px/2em Arial, sans-serif;
-
-            -moz-border-radius: 1em;
-            border-radius: 1em;
-
-            -webkit-transition: all 0.15s ease;
-            -moz-transition: all 0.15s ease;
-            -o-transition: all 0.15s ease;
-            -ms-transition: all 0.15s ease;
-            transition: all 0.15s ease;
-            background-color: white;
-            border: 1px solid dimgray;
-            color: dimgray;
-        }
-
-        a{
-            text-decoration:none;
-        }
-    </style>
+<style>
+    .block {
+        display: none;
+        position: relative;
+        width: 200px;
+        margin-left: -100px;
+        text-align: center;
+        left: 50%;
+        top: 50%;
+    }
+    
+    .button {
+        width: 5em;
+        height: 2em;
+        margin: 1em 0;
+        display: inline-block;
+        position: relative;
+        padding: 0 20px;
+        text-align: center;
+        text-decoration: none;
+        font: 25px/2em Arial, sans-serif;
+        -moz-border-radius: 1em;
+        border-radius: 1em;
+        -webkit-transition: all 0.15s ease;
+        -moz-transition: all 0.15s ease;
+        -o-transition: all 0.15s ease;
+        -ms-transition: all 0.15s ease;
+        transition: all 0.15s ease;
+        background-color: white;
+        border: 1px solid dimgray;
+        color: dimgray;
+    }
+    
+    a {
+        text-decoration: none;
+    }
+</style>
 
 </html>
