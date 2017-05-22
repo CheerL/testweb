@@ -6,32 +6,58 @@
 {% endblock %}
 
 {% block content %}
-    <div class="login_block">
-        <img id="pic" src="">
-        <div id="text"></div>
-        {% for button in button_list %}
-            <a href="javascript:;">
-            <div id="{{button.id}}" class="button" style="display: none;" onclick="{{button.id}}_func()">{{button.text}}</div>
-            </a>
-        {% endfor %}
+    <div id="main">
+        <img id="pic" :src="pic_src">
+        <div id="text">[[text]]</div>
+        <my-button v-if="status==0" :id="login.id" :color="login.color" :click="login.func">[[login.text]]</my-button>
+        <my-button v-if="status==1" :id="reload.id" :color="reload.color" :click="reload.func">[[reload.text]]</my-button>
+        <my-button v-if="status==2" :id="exit.id" :color="exit.color"  :click="exit.func">[[exit.text]]</my-button>
     </div>
 {% endblock %}
 
 {% block script %}
     <script src="{% static "js/web-socket.js" %}"></script>
     <script>
-        var button = $(".button");
-        var login = $("#login");
-        var text = $("#text");
-        var pic = $("#pic");
-        var exit = $("#exit");
-        var reload = $('#reload');
+        var main = new Vue({
+            el: '#main',
+            delimiters: ["[[", "]]"],
+            data: {
+                login:{
+                    text: '登陆',
+                    id: 'login',
+                    color: 'limegreen',
+                    func: function () {
+                        login_func()
+                    }
+                },
+                exit: {
+                    text: '退出',
+                    id: 'exit',
+                    color: 'crimson',
+                    func: function () {
+                        exit_func()
+                    }
+                },
+                reload: {
+                    text: '重启',
+                    id: 'reload',
+                    color: 'dimgray',
+                    func: function () {
+                        reload_func()
+                    }
+                },
+                status: 0,
+                text: "",
+                pic_src: "",
+                sock: null
+            }
+        })
 
         function run_func(){
-            reload.hide();
-            exit.show();
-            reload_func();
+            main.status = 2
+            reload_func()
         }
+
         function exit_func(){
             if (confirm("你确定要退出么?")) {
                 $.post("/helper/logout/", function(data){
@@ -40,65 +66,50 @@
                 });
             }
         }
+
         function login_func(){
-            text.text("正在获取二维码");
-            login.hide();
-            reload.show();
+            main.text = "正在获取二维码"
+            main.status = 1
             $.post("/helper/login/");
         }
 
         function reload_func(){
+            main.status = main.status == 1 ? 0 : main.status
             window.top.location.href = '/helper/'
         }
         
         $(document).ready(function(){
-            text.text('{{msg}}');
-            pic[0].src = '/' + '{{pic}}';
+            main.text = '{{msg}}'
+            main.pic_src = '/' + '{{pic}}';
             if('{{status}}' == 'False'){
-                login.show();
+                main.status = 0
             }
             else if('{{status}}' == 'True'){
-                exit.show();
+                main.status = 2
             }
 
-            if (text.text() != '小助手运行中') {
+            if (main.status != 2) {
                 var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-                sock = new WebSocket(ws_scheme + '://' + window.location.host + "/login/");
+                main.sock = new WebSocket(ws_scheme + '://' + window.location.host + "/login/");
 
-                sock.onmessage = function (message) {
+                main.sock.onmessage = function (message) {
                     var data = JSON.parse(message.data)
-                    text.text(data.msg);
-                    pic[0].src = '/' + data.pic;
+                    main.text = data.msg
+                    main.pic_src = '/' + data.pic;
                     if (data.msg == '小助手运行中'){
-                        run_func();
-                        sock.close();
-                    }
-
-                    else if (data.msg == '错误,请重新登录') {
-                        ;
+                        run_func()
+                        main.sock.close()
+                        main.sock = null
                     }
                 };
             }
-
-            button.hover(
-                function(){
-                    var color = $(this).css('border-color');
-                    $(this).css('color', 'rgb(255, 255, 255)');
-                    $(this).css('background-color', color);
-                },
-                function () {
-                    var color = $(this).css('border-color');
-                    $(this).css('background-color', 'rgb(255, 255, 255)');
-                    $(this).css('color', color);
-                }
-            );
         });
     </script>
 {% endblock %}
 
 {% block style %}
     <style>
-        .login_block{
+        #main{
             position: relative;
             width: 300px;
             height: 400px;
@@ -118,49 +129,17 @@
             -moz-box-shadow: 1px 1px 1px rgba(0,0,0, .1), inset 1px 1px 1px rgba(255,255,255, .2);
             box-shadow: 1px 1px 1px rgba(0,0,0, .1), inset 1px 1px 1px rgba(255,255,255, .2);
         }
-        .login_block img{
+        #main img{
             height: 290px;
             width: 290px;
             position: relative;
             top: 5px;
         }
-        .login_block #text{
+        #main #text{
             width: 300px;
-            position: absolute;
-            top: 300px;
-            text-align: center;
-        }
-        a{
-            top: 50px;
             position: relative;
-        }
-        .button{
-            width: 80px;
-            display: inline-block;
-            padding: 0 20px;
+            margin: 1em 0 0 0;
             text-align: center;
-            text-decoration: none;
-            font: 16px/30px Arial, sans-serif;
-
-            -moz-border-radius: 30px;
-            border-radius: 30px;
-
-            -webkit-transition: all 0.15s ease;
-            -moz-transition: all 0.15s ease;
-            -o-transition: all 0.15s ease;
-            -ms-transition: all 0.15s ease;
-            transition: all 0.15s ease;
-        }
-        #login{
-            border: 1px solid limegreen;
-            color: limegreen;
-        }
-        #reload{
-            border: 1px solid dimgray;
-        }
-        #exit{
-            border: 1px solid crimson;
-            color: crimson;
         }
     </style>
 {% endblock %}

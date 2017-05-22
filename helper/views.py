@@ -54,16 +54,10 @@ def run_page(request):
 def login_page(request):
     status = HELPER.IS_LOGIN
     msg = MSG_login if status else MSG_init
-    button_list = [
-        {'text': '登陆', 'id': 'login'},
-        {'text': '退出', 'id': 'exit'},
-        {'text': '重启', 'id': 'reload'}
-    ]
     res = dict(
         status=status,
         msg=msg,
         pic=WX_pic,
-        button_list=button_list
     )
     return render(request, 'helper/login.html', res)
 

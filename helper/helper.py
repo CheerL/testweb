@@ -828,14 +828,16 @@ class UCASSEP(object):
 
     def get_course_list(self):
         '获取已选择课程, 并储存'
+        term = '2016—2017学年(春)第二学期'
+        url = 'http://jwxk.ucas.ac.cn/courseManage/selectedCourse'
         self.course_list = list()
-        url = 'http://jwxk.ucas.ac.cn/courseManageBachelor/main'
         soup = self._get_page(url)
         tbody = soup.find('tbody').findChildren()
         pattern = re.compile(r'/course/coursetime/(\d*)')
-        for i in range(int(len(tbody)/15)):
-            if '退课成功' not in tbody[i*15+14].get_text():
-                href = tbody[i*15 + 4]['href']
+        for i in range(int(len(tbody)/9)):
+            if term in tbody[i*9+8].get_text():
+                print(tbody[i*9 + 5])
+                href = tbody[i*9 + 5]['href']
                 num = re.findall(pattern, href)[0]
                 if not Course.objects.filter(ident=num).count():
                     self.save_course(num)

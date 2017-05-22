@@ -8,46 +8,62 @@
 </head>
 
 <body>
-    <div class="block">
+    <div id='main' :style="style_object">
         {% for url in url_list %}
-        <a href="/{{url.url}}/">
-            <div id="{{url.url}}" class="button">{{url.text}}</div>
-        </a>
+        <my-button href="/{{url.url}}/" :font="font">{{url.text}}</my-button>
         {% endfor %}
     </div>
 </body>
 
+<script src="{% static "js/jquery-3.1.1.min.js" %}"></script>
+<script src="{% static "js/vue.js" %}"></script>
+<script src="{% static "js/my-vue.js" %}"></script>
+<script src="{% static "js/others.js" %}"></script>
 
-<script src="{% static " js/jquery-3.1.1.min.js " %}"></script>
-<script src="{% static " js/jquery-color-2.1.1.min.js " %}"></script>
+
 <script>
-    var block = $('.block');
-    var button = $(".button");
-
-    function resize_func() {
-        var button_height = button.outerHeight() + 2 * button.css('margin-top').slice(0, -2);
-        var block_height = button.length * button_height;
-        block.height(block_height);
-        block.css('margin-top', '-' + block_height / 2 + 'px');
-    }
-
-    $(function() {
-        resize_func();
-        block.show();
-
-        button.hover(
-            function() {
-                var color = $(this).css('border-color');
-                $(this).css('color', 'rgb(255, 255, 255)');
-                $(this).css('background-color', color);
-            },
-            function() {
-                var color = $(this).css('border-color');
-                $(this).css('background-color', 'rgb(255, 255, 255)');
-                $(this).css('color', color);
+    var main = new Vue({
+        el: '#main',
+        data: {
+            font: 23,
+            style_object:  {
+                width: 0,
+                height: 0,
+                left: 0,
+                top: 0,
+                position: 'relative'
             }
-        );
-    });
+        },
+        computed: {
+            child_num: function () {
+                return this.$children.length
+            }
+        },
+        methods: {
+            resize: debounce(
+                function () {
+                    if (this.child_num) {
+                        var childern = this.$children[0]
+                        var width = 2 * childern.$el.offsetLeft + childern.$el.offsetWidth
+                        var height = (2 * childern.$el.offsetTop + childern.$el.offsetHeight) * this.child_num
+                        this.style_object.width = width
+                        this.style_object.height = height
+                        center(this.style_object)
+                    }
+                },
+                50
+            )
+        },
+        mounted: function () {
+            this.resize()
+            window.addEventListener('resize', this.resize)
+        },
+        beforeDestroy: function () {
+            window.removeEventListener('resize', this.resize)
+        }
+    })
+
+    
 </script>
 
 <style>
@@ -64,44 +80,6 @@
     div {
         color: dimgray;
         text-align: center;
-    }
-</style>
-
-<style>
-    .block {
-        display: none;
-        position: relative;
-        width: 200px;
-        margin-left: -100px;
-        text-align: center;
-        left: 50%;
-        top: 50%;
-    }
-    
-    .button {
-        width: 5em;
-        height: 2em;
-        margin: 1em 0;
-        display: inline-block;
-        position: relative;
-        padding: 0 20px;
-        text-align: center;
-        text-decoration: none;
-        font: 25px/2em Arial, sans-serif;
-        -moz-border-radius: 1em;
-        border-radius: 1em;
-        -webkit-transition: all 0.15s ease;
-        -moz-transition: all 0.15s ease;
-        -o-transition: all 0.15s ease;
-        -ms-transition: all 0.15s ease;
-        transition: all 0.15s ease;
-        background-color: white;
-        border: 1px solid dimgray;
-        color: dimgray;
-    }
-    
-    a {
-        text-decoration: none;
     }
 </style>
 

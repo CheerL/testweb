@@ -1,44 +1,84 @@
 ;
-// document.write('<script src="{% static " js/vue.js " %}"></script>')
-Vue.config.delimiters = ["[[", "]]"];
 Vue.component('my-button', {
     template: '\
-                <a :href="my_href">\
-                <div\
+                <a\
                     class="my-button"\
-                    :id="id"\
+                    :href="href"\
                     :style="style_object"\
+                    :id="id"\
                     @mouseover="mouseover"\
                     @mouseout="mouseout"\
+                    @click="click"\
                 >\
-                    <slot></slot>\
-                </div>\
+                    <slot>{{text}}</slot>\
                 </a>\
             ',
-    props: ['href', 'id', 'color'],
+    props: {
+        id: String,
+        text: String,
+        href: {
+            type: String,
+            default: 'javascript:;'
+        },
+        color: {
+            type: String,
+            default: 'rgb(105, 105, 105)'
+        },
+        font: {
+            type: [String, Number],
+            default: 16
+        },
+        click: {
+            type: [String, Function],
+            default: ""
+        }
+    },
     data: function() {
-        this.my_color = this.color ? this.color : 'rgb(105, 105, 105)'
         return {
-            delay: 300,
             white: 'rgb(255, 255, 255)',
-            my_href: this.href ? this.href : 'javascript:;',
             style_object: {
-                color: this.my_color,
-                borderColor: this.my_color,
-                backgroundColor: 'rgb(255, 255, 255)'
+                color: this.color,
+                borderColor: this.color,
+                fontSize: this.font,
+                backgroundColor: 'rgb(255, 255, 255)',
+                width: '5em',
+                height: '2em',
+                margin: '1em 0',
+                display: 'inline-block',
+                position: 'relative',
+                padding: '0 1em',
+                lineHeight: '2em',
+                borderRadius: '1em',
+                border: '1px solid',
+                textDecoration: 'none'
             }
         }
     },
     methods: {
         mouseover: function() {
-            console.log('in')
             this.style_object.color = this.white
-            this.style_object.backgroundColor = this.my_color
+            this.style_object.backgroundColor = this.color
         },
         mouseout: function() {
-            console.log('out')
-            this.style_object.color = this.my_color
+            this.style_object.color = this.color
+            this.style_object.backgroundColor = this.white
+        }
+    },
+    watch: {
+        font: function (val, old_val) {
+            this.style_object.fontSize = val
+        },
+        color: function (val, old_val) {
+            this.style_object.borderColor = val
+            this.style_object.color = val
             this.style_object.backgroundColor = this.white
         }
     }
-});
+})
+
+function center(vm_style) {
+    var left = (window.innerWidth - vm_style.width) / 2
+    var top = (window.innerHeight - vm_style.height) / 2
+    vm_style.left = left
+    vm_style.top = top
+}
