@@ -310,13 +310,13 @@ def get_setting(request):
 @csrf_exempt
 def change_setting(request):
     if request.method == 'POST' and HELPER.IS_LOGIN:
-        # request.POST['res']
         try:
             res = json.loads(request.body)
             HELPER.settings.change_settings(res)
             HELPER.robot.save_settings(HELPER.settings)
             return JsonResponse({'res': True, 'msg': '修改成功'})
-        except EXCEPTIONS:
+        except EXCEPTIONS as error:
+            info(error)
             return JsonResponse({'res': False, 'msg': '修改失败'})
     else:
         return JsonResponse({'res': False, 'msg': '访问错误'})
