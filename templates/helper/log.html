@@ -33,7 +33,7 @@
     $(function () {
         get_log(0, 20);
         var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-        var sock = new ReconnectingWebSocket(ws_scheme + '://' + window.location.host + "/log/"); //+ window.location.pathname);
+        var sock = new WebSocket(ws_scheme + '://' + window.location.host + "/log/"); //+ window.location.pathname);
 
         sock.onmessage = function (message) {
             show_message(message);

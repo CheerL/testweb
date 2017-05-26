@@ -3,24 +3,19 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.index),
-    # url(r'^login/$', views.login_page),
-    # url(r'^run/$', views.run_page),
 
-    url(r'^login/$', views.login),
+    url(r'^login/login/$', views.login),
     url(r'^login/init/$', views.login_init),
     url(r'^login/stop/$', views.login_stop),
-    url(r'^login/exit/$', views.logout),
+    url(r'^login/logout/$', views.logout),
 
-    url(r'^log/$', views.log_page),
-    url(r'^log/all/', views.get_log_all),
-    url(r'^log/get/start=(?P<start>\d*)&count=(?P<count>\d*)$', views.get_log),
+    url(r'^log/get/start=(?P<start>\d*)&count=(?P<count>-?\d*)$', views.get_log),
     url(r'^log/send/$', views.send_log),
 
     url(r'^chat/$', views.chat_page),
     url(r'^chat/user/', views.chat_user),
     url(r'^chat/send/', views.chat_send),
 
-    url(r'^setting/$', views.setting_page),
     url(r'^setting/init/$', views.get_setting),
     url(r'^setting/change/$', views.change_setting),
 

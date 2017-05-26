@@ -28,18 +28,13 @@ ITEM_LIST = [
     {'text': '设置', 'id': 'setting'},
 ]
 
+
 # Create your views here.
-
-
 def index(request):
-    'app初始界面, 有可能是唯一的界面'
-    if HELPER.IS_LOGIN:
-        return run_page(request)
-    else:
-        return login_page(request)
+    return render(request, 'helper_frontend/index.html')
+
+
 # 跳转页面部分
-
-
 def run_page(request):
     if not HELPER.IS_LOGIN:
         return render(request, 'helper/return_to_login.html')
@@ -256,6 +251,7 @@ def chat_user(request):
             'user_name': user['UserName']
         }
         temp_dict['path'] = 'static/head/%s.png' % temp_dict['nick_name']
+        del temp_dict['nick_name']
         user_list.append(temp_dict)
 
     req_list = [(chat_user_head, (user,)) for user in user_list]

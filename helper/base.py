@@ -43,8 +43,8 @@ COURSE_DICT = [
 
 def __get_logger():
     formatter = logging.Formatter(
-        '[%(asctime)s] "%(levelname)s"  %(message)s',
-        '%d/%b/%Y %H:%M:%S'
+        '[%(asctime)s] %(message)s',
+        '%d/%m/%Y %H:%M:%S'
     )
     handle = logging.FileHandler(log_path)
     handle.setLevel(logging.INFO)
