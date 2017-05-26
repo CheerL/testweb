@@ -151,7 +151,7 @@ def kill_thread(thread=None, name=None, tid=0, exctype=SystemExit):
             return '线程已经关闭'
         tid = thread.ident
     if not tid:
-        raise NotImplementedError('参数错误, 线程名, 线程id, 线程对象至少输入一个')
+        return '线程不存在'
     if not isinstance(tid, ctypes.c_longlong):
         tid = ctypes.c_longlong(tid)
     if not inspect.isclass(exctype):

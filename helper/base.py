@@ -18,6 +18,7 @@ log_path = 'static/run.log'
 pkl_path = 'static/helper.pkl'
 QR_pic = 'static/images/QR.png'
 WX_pic = 'static/images/begin.png'
+HEAD_PIC = 'static/images/head.png'
 
 # HOST = []
 END_WEEK = 20

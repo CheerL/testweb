@@ -7,7 +7,9 @@ urlpatterns = [
     # url(r'^run/$', views.run_page),
 
     url(r'^login/$', views.login),
-    url(r'^logout/$', views.logout),
+    url(r'^login/init/$', views.login_init),
+    url(r'^login/stop/$', views.login_stop),
+    url(r'^login/exit/$', views.logout),
 
     url(r'^log/$', views.log_page),
     url(r'^log/all/', views.get_log_all),
@@ -19,7 +21,8 @@ urlpatterns = [
     url(r'^chat/send/', views.chat_send),
 
     url(r'^setting/$', views.setting_page),
-    url(r'^setting/change/$', views.setting_change),
+    url(r'^setting/init/$', views.get_setting),
+    url(r'^setting/change/$', views.change_setting),
 
     # url(r'^send/$', views.send_page),
     # url(r'^send/login$', views.send_login),
