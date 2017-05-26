@@ -311,7 +311,7 @@ def get_setting(request):
 def change_setting(request):
     if request.method == 'POST' and HELPER.IS_LOGIN:
         try:
-            res = json.loads(request.body)
+            res = json.loads(request.body.decode())
             HELPER.settings.change_settings(res)
             HELPER.robot.save_settings(HELPER.settings)
             return JsonResponse({'res': True, 'msg': '修改成功'})
