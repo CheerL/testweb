@@ -12,3 +12,4 @@ tests.*
 *.pkl
 *.log
 *.out
+db.sqlite3
