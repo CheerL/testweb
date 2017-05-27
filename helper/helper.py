@@ -210,7 +210,7 @@ class Helper(object):
                     )
                 if user.remind_time - self.settings.REMIND_BEFORE * 60 <= 0:       #当提醒时间到, 主动提醒一次
                     if not user.have_remind:                    #当没有提醒过
-                        today = time.localtime().tm_wday
+                        today = time.localtime().tm_wday if not self.settings.FLEXIBLE else self.settings.FLEXIBLE_DAY
                         course = Course.objects.get(ident=user.remind)
                         coursetime = course.coursetimes.all().filter(weekday__index__exact=today)[0]
                         msg = '今天{}在{}上{}, 不要迟到哦'.format(
