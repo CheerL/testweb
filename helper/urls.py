@@ -12,7 +12,6 @@ urlpatterns = [
     url(r'^log/get/start=(?P<start>\d*)&count=(?P<count>-?\d*)$', views.get_log),
     url(r'^log/send/$', views.send_log),
 
-    url(r'^chat/$', views.chat_page),
     url(r'^chat/user/', views.chat_user),
     url(r'^chat/send/', views.chat_send),
 

@@ -53,9 +53,8 @@ def __get_logger():
     __logger.addHandler(handle)
     return __logger
 
+
 # 外部调用函数
-
-
 def log_read(path=log_path, count=1, start=0):
     '从倒数start行读取count行日志, 返回一个列表'
     if not os.path.exists(path):
