@@ -18,6 +18,8 @@ urlpatterns = [
     url(r'^setting/init/$', views.get_setting),
     url(r'^setting/change/$', views.change_setting),
 
+    url(r'^.*$', views.redirect_index)
+
     # url(r'^send/$', views.send_page),
     # url(r'^send/login$', views.send_login),
     # url(r'^send/content=(?P<content>.*)&channel=(?P<channel>.*)$',

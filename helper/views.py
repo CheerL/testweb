@@ -5,7 +5,7 @@ from ast import literal_eval
 from channels import Group
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from .wheel import parallel as pl
 from .models import Robot
 from .main import HELPER
@@ -34,7 +34,12 @@ def index(request):
     return render(request, 'helper_frontend/index.html')
 
 
+def redirect_index(request):
+    return HttpResponseRedirect('/helper/')
+
 # 跳转页面部分
+
+
 def run_page(request):
     if not HELPER.IS_LOGIN:
         return render(request, 'helper/return_to_login.html')
