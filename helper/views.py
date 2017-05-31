@@ -37,9 +37,9 @@ def index(request):
 def redirect_index(request):
     return HttpResponseRedirect('/helper/')
 
+
+
 # 跳转页面部分
-
-
 def run_page(request):
     if not HELPER.IS_LOGIN:
         return render(request, 'helper/return_to_login.html')
