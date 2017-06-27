@@ -38,7 +38,6 @@ def redirect_index(request):
     return HttpResponseRedirect('/helper/')
 
 
-
 # 跳转页面部分
 def run_page(request):
     if not HELPER.IS_LOGIN:
@@ -297,7 +296,8 @@ def get_setting(request):
             'name': name,
             'val': val
         }
-        for name, val in item_list if not isinstance(val, bool) and name != 'LAST_UPDATE' and name != 'FLEXIBLE_DAY'
+        for name, val in item_list 
+        if not isinstance(val, bool) and name != 'LAST_UPDATE' and name != 'FLEXIBLE_DAY'
     ]
     select_list = [
         {

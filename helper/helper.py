@@ -3,7 +3,6 @@
 import os
 import re
 import time
-import json
 import threading
 import requests
 import itchat
@@ -11,10 +10,11 @@ import lxml
 from django.db.utils import IntegrityError
 from PIL import Image, ImageDraw, ImageFont
 from bs4 import BeautifulSoup as Bs
-from channels import Group
-from .base import EXCEPTIONS, info, get_now_week, error_report, TIMEOUT, TL_KEY, pkl_path, itchat_send
+from .base import TIMEOUT, TL_KEY, EXCEPTIONS
+from .base import info, get_now_week, error_report, pkl_path, itchat_send
 from .wheel import parallel as pl
 from .models import Helper_user, Course, Weekday, Coursetime
+
 
 class Helper(object):
     '助手类'
@@ -27,12 +27,11 @@ class Helper(object):
     @staticmethod
     def get_head_img(user_name, pic_dir, name):
         '获取用户头像'
-        if not os.path.exists(pic_dir) or (time.time() - os.path.getctime(pic_dir) > 24*60*60):
+        if not os.path.exists(pic_dir) or (time.time() - os.path.getctime(pic_dir) > 24 * 60 * 60):
             try:
                 itchat.get_head_img(userName=user_name, picDir=pic_dir)
             except Exception as error:
                 print(error)
-
 
     @staticmethod
     def send(msg, user=None):
@@ -56,7 +55,7 @@ class Helper(object):
                         return itchat.search_friends(name=user)[0]['UserName']
             else:
                 return None
-        #send函数主体
+        # send函数主体
         try:
             user_name = get_user_name(user)
             itchat_send(msg, user_name)
@@ -67,14 +66,14 @@ class Helper(object):
     def get_robot_response(msg):
         '这里我们就像在“3. 实现最简单的与图灵机器人的交互”中做的一样'
         # 构造了要发送给服务器的数据
-        apiUrl = 'http://www.tuling123.com/openapi/api'
+        api_url = 'http://www.tuling123.com/openapi/api'
         data = {
-            'key'    : TL_KEY,
-            'info'   : msg,
-            'userid' : 'wechat-robot',
+            'key': TL_KEY,
+            'info': msg,
+            'userid': 'wechat-robot',
         }
         try:
-            response = requests.post(apiUrl, data=data).json()
+            response = requests.post(api_url, data=data).json()
             # 字典的get方法在字典没有'text'值的时候会返回None而不会抛出异常
             return response.get('text')
         # 为了防止服务器没有正常响应导致程序异常退出，这里用try-except捕获了异常
@@ -83,12 +82,12 @@ class Helper(object):
             # 将会返回一个None
             return
 
-    
     def search_list(self, user_name=None):
         '在用户列表中查找当前用户是否已经绑定'
         if user_name:
             # try:
-            user = Helper_user.objects.filter(robot=self.robot).filter(user_name=user_name)
+            user = Helper_user.objects.filter(
+                robot=self.robot).filter(user_name=user_name)
             if user:
                 return user[0]
             else:
@@ -99,7 +98,8 @@ class Helper(object):
     def wxname_update(self):
         '更新用户名, 在登陆时调用'
         for user in self.search_list():
-            user.wx_UserName = itchat.search_friends(remarkName=user.user_name)[0]['UserName']
+            user.wx_UserName = itchat.search_friends(
+                remarkName=user.user_name)[0]['UserName']
             user.save()
 
     def update_info(self, user=None):
@@ -110,8 +110,10 @@ class Helper(object):
                 try:
                     sep = UCASSEP(user.user_id, user.password)
                     user.user_name = sep.user_name
-                    user.wx_UserName = itchat.search_friends(name=user.user_name)[0]['UserName']
-                    user.nick_name = itchat.search_friends(name=user.user_name)[0]['NickName']
+                    user.wx_UserName = itchat.search_friends(
+                        name=user.user_name)[0]['UserName']
+                    user.nick_name = itchat.search_friends(
+                        name=user.user_name)[0]['NickName']
                     user.robot = self.robot
                     user.set_alias()
                     user.courses_update(sep.get_course_list())
@@ -119,7 +121,7 @@ class Helper(object):
                         get_now_week(),
                         self.settings.FLEXIBLE,
                         self.settings.FLEXIBLE_DAY
-                        )
+                    )
                     user.save()
                     info('更新成功, 尝试%d次' % (count + 1))
                     break
@@ -135,7 +137,7 @@ class Helper(object):
 
     def add_user(self, now_user, user_name, text):
         '新增提醒用户'
-        try:    #如果用户已经存在, 回报告并返回, 不存在会报错, 但被pass, 进入下一个try
+        try:  # 如果用户已经存在, 回报告并返回, 不存在会报错, 但被pass, 进入下一个try
             user = self.search_list(user_name)
             self.send('你已经绑定过啦', now_user)
             return
@@ -152,7 +154,7 @@ class Helper(object):
                 user_name='temp',
                 user_id=user_id,
                 password=password,
-                )
+            )
             user.save()
             self.update_info(user)
             self.send('绑定成功', now_user)
@@ -166,13 +168,15 @@ class Helper(object):
         try:
             user = self.search_list(user_name)
             if '用户名' in text:
-                user_ids = re.findall(r'用户名[:：\s]*(.*?)(\s*|\s+\S*\s*?)$', text)
+                user_ids = re.findall(
+                    r'用户名[:：\s]*(.*?)(\s*|\s+\S*\s*?)$', text)
                 if user_ids:
                     user.user_id = user_ids[0][0]
                 else:
                     raise IOError('输入格式错误, 请输入"绑定 用户名:***"')
             if '密码' in text:
-                passwords = re.findall(r'密码[:：\s]*(.*?)(\s*|\s+\S*\s*?)$', text)
+                passwords = re.findall(
+                    r'密码[:：\s]*(.*?)(\s*|\s+\S*\s*?)$', text)
                 if passwords:
                     user.password = passwords[0][0]
                 else:
@@ -207,23 +211,24 @@ class Helper(object):
                     get_now_week(),
                     self.settings.FLEXIBLE,
                     self.settings.FLEXIBLE_DAY
-                    )
-                if user.remind_time - self.settings.REMIND_BEFORE * 60 <= 0:       #当提醒时间到, 主动提醒一次
-                    if not user.have_remind:                    #当没有提醒过
+                )
+                if user.remind_time - self.settings.REMIND_BEFORE * 60 <= 0:  # 当提醒时间到, 主动提醒一次
+                    if not user.have_remind:  # 当没有提醒过
                         today = time.localtime().tm_wday if not self.settings.FLEXIBLE else self.settings.FLEXIBLE_DAY
                         course = Course.objects.get(ident=user.remind)
-                        coursetime = course.coursetimes.all().filter(weekday__index__exact=today)[0]
+                        coursetime = course.coursetimes.all().filter(
+                            weekday__index__exact=today)[0]
                         msg = '今天{}在{}上{}, 不要迟到哦'.format(
                             coursetime.show_start_time(),
                             course.place,
                             course.name
-                            )
+                        )
                         info(msg)
                         self.send(msg, user)
 
-                        user.have_remind = True                 #修改为已经提醒过
+                        user.have_remind = True  # 修改为已经提醒过
                         user.save()
-                else:                                           #没有到提醒时间
+                else:  # 没有到提醒时间
                     if user.have_remind:
                         user.have_remind = False
                         user.save()
@@ -234,7 +239,7 @@ class Helper(object):
             '以执行新线程的方式循环提醒'
             time.sleep(int(self.settings.REMIND_WAIT * 60))
             info('打开新线程:%d, 提醒间隔%d分%d秒' %
-                 (pl.get_tid(), self.settings.REMIND_WAIT//1, self.settings.REMIND_WAIT%1*60))
+                 (pl.get_tid(), self.settings.REMIND_WAIT // 1, self.settings.REMIND_WAIT % 1 * 60))
             try:
                 if time.time() - self.settings.LAST_UPDATE > self.settings.UPDATE_WAIT * 60:
                     self.update_info()
@@ -244,7 +249,7 @@ class Helper(object):
             except EXCEPTIONS as error:
                 info(error)
 
-            try:                #继续打开新线程
+            try:  # 继续打开新线程
                 self.remind()
                 return
             except EXCEPTIONS as error:
@@ -252,7 +257,7 @@ class Helper(object):
                 info('打开新线程失败, 自动提醒结束')
                 self.settings.REMIND_ALIVE = False
                 return
-        #remind函数主体
+        # remind函数主体
         if user_name and now_user:
             user = self.search_list(user_name)
             user.is_open = True
@@ -262,7 +267,8 @@ class Helper(object):
         else:
             # try:
             if self.settings.REMIND_ALIVE:
-                threading.Thread(target=remind_thread, args=(), name='remind', daemon=True).start()
+                threading.Thread(target=remind_thread, args=(),
+                                 name='remind', daemon=True).start()
                 # new_thread.start()
                 # pl.run_thread_pool([(remind_thread, ())], False)
             # except EXCEPTIONS as error:
@@ -276,14 +282,14 @@ class Helper(object):
                     get_now_week(),
                     self.settings.FLEXIBLE,
                     self.settings.FLEXIBLE_DAY
-                    )
+                )
             elif user_name and isinstance(user_name, str):
                 self.search_list(user_name).remind_update(
                     get_now_week(),
                     self.settings.FLEXIBLE,
                     self.settings.FLEXIBLE_DAY
-                    )
-            #被外部调用
+                )
+            # 被外部调用
             else:
                 for _user in self.search_list():
                     self.remind_list_update(user=_user)
@@ -322,28 +328,29 @@ class Helper(object):
 
             def draw_font(col, row, text, color=(0, 0, 0), indent=0.5):
                 '打印第row行col列的字, 根据该块大小和字数进行分行打印, 调整应该打印的位置'
-                #自动计算调整参数
-                line_max = int((width_list[col + 1] - width_list[col]) / font_size - indent * 2)
+                # 自动计算调整参数
+                line_max = int(
+                    (width_list[col + 1] - width_list[col]) / font_size - indent * 2)
                 if len(text) % line_max:
                     line_num = len(text) // line_max + 1
                 else:
                     line_num = len(text) // line_max
                 font_x = width_list[col] + indent * font_size
-                font_y = height_list[row] + (height_list[row + 1] - height_list[row] - \
-                (font_size + space) * line_num + space) / 2
-                #分行打印
+                font_y = height_list[row] + (height_list[row + 1] - height_list[row] -
+                                             (font_size + space) * line_num + space) / 2
+                # 分行打印
                 for num in range(line_num):
-                    line = text[num * line_max : (num + 1) * line_max]
+                    line = text[num * line_max: (num + 1) * line_max]
                     if line != '':
                         draw.text(
                             (font_x, font_y + num * (font_size + space)),
                             line, font=font, fill=color
-                            )
+                        )
 
             ori_pic_path = 'static/course_png/course.png'
             from_begin = False if os.path.exists(ori_pic_path) else True
 
-            #颜色
+            # 颜色
             line_color = (221, 221, 221)
             white = (255, 255, 255)
             grey_0 = (245, 245, 245)
@@ -351,7 +358,7 @@ class Helper(object):
             blue_0 = (225, 234, 240)
             blue_1 = (0, 136, 205)
 
-            #图像和字体大小
+            # 图像和字体大小
             space = 5
             font_size = 14
             width = 900
@@ -362,56 +369,64 @@ class Helper(object):
             else:
                 img = Image.open(ori_pic_path)
             draw = ImageDraw.Draw(img)
-            font = ImageFont.truetype('static/fonts/Deng.ttf', font_size, encoding='utf-8')
+            font = ImageFont.truetype(
+                'static/fonts/Deng.ttf', font_size, encoding='utf-8')
             table = get_time_table(user)
 
             part_w = 7
             part_h = 12
             _change = font_size * 7
             _width = width - _change
-            width_list = [0] + [num + _change for num in range(0, _width, int(_width/part_w))]
-            height_list = [num for num in range(0, height, int(height/part_h))]
+            width_list = [
+                0] + [num + _change for num in range(0, _width, int(_width / part_w))]
+            height_list = [num for num in range(
+                0, height, int(height / part_h))]
             width_list[-1] = width
             height_list[-1] = height
-                # 初始图片
-                # 划块填色
+            # 初始图片
+            # 划块填色
             if from_begin:
                 for index_w, num_w in enumerate(width_list):
                     for index_h, num_h in enumerate(height_list):
                         if not index_h or not index_w:
                             continue
-                        #第一行第一列
+                        # 第一行第一列
                         elif index_h is 1 and index_w is 1:
-                            draw.rectangle([0, 0, num_w, num_h], grey_1, line_color)
-                        #第一行
+                            draw.rectangle([0, 0, num_w, num_h],
+                                           grey_1, line_color)
+                        # 第一行
                         elif index_h is 1 and index_w is not 1:
                             width_last = width_list[index_w - 1]
-                            draw.rectangle([width_last, 0, num_w, num_h], grey_1, line_color)
-                        #第一列
+                            draw.rectangle(
+                                [width_last, 0, num_w, num_h], grey_1, line_color)
+                        # 第一列
                         elif index_w is 1 and index_h is not 1:
                             height_last = height_list[index_h - 1]
-                            draw.rectangle([0, height_last, num_w, num_h], blue_0, line_color)
-                        #主体
+                            draw.rectangle(
+                                [0, height_last, num_w, num_h], blue_0, line_color)
+                        # 主体
                         else:
                             height_last = height_list[index_h - 1]
                             width_last = width_list[index_w - 1]
-                            #偶数行
+                            # 偶数行
                             if not index_h % 2:
                                 draw.rectangle(
-                                    [width_last, height_last, num_w, num_h], grey_0, line_color
-                                    )
-                            #奇数行
+                                    [width_last, height_last, num_w,
+                                        num_h], grey_0, line_color
+                                )
+                            # 奇数行
                             else:
                                 draw.rectangle(
-                                    [width_last, height_last, num_w, num_h], white, line_color
-                                    )
+                                    [width_last, height_last, num_w,
+                                        num_h], white, line_color
+                                )
 
-                #画字
+                # 画字
                 draw_font(0, 0, "节次/星期")
                 for num in range(7):
                     draw_font(num + 1, 0, Weekday.objects.get(index=num).day)
                 for num in range(1, 12):
-                    draw_font(0, num, '第%d节'%num)
+                    draw_font(0, num, '第%d节' % num)
 
                 img.save(ori_pic_path, 'png')
 
@@ -421,9 +436,9 @@ class Helper(object):
                         draw_font(i + 1, j, table[i][j][0]['name'], blue_1)
                     except EXCEPTIONS:
                         pass
-            #保存
+            # 保存
             img.save(pic_path, 'png')
-        #show_course_list函数主体
+        # show_course_list函数主体
         try:
             user = self.search_list(user_name)
             if is_pic:
@@ -436,16 +451,17 @@ class Helper(object):
                 course_everyday = [
                     user.courses.all().filter(coursetimes__weekday__index=weekday)
                     for weekday in range(7)
-                    ]
+                ]
                 msg_list = list()
                 for weekday, course_the_day in enumerate(course_everyday):
                     day = Weekday.objects.get(index=weekday)
                     for course in course_the_day:
-                        coursetime = course.coursetimes.all().filter(weekday=day)[0]
+                        coursetime = course.coursetimes.all().filter(weekday=day)[
+                            0]
                         course_num = ' '.join(list(map(
                             str,
-                            range(coursetime.start, coursetime.end+1)
-                            )))
+                            range(coursetime.start, coursetime.end + 1)
+                        )))
                         if not is_with_num:
                             msg_list.append('{}, {}, {}, 第{}节'.format(
                                 course.name,
@@ -474,14 +490,14 @@ class Helper(object):
                 get_now_week(),
                 self.settings.FLEXIBLE,
                 self.settings.FLEXIBLE_DAY
-                )
+            )
             course = Course.objects.get(ident=user.remind)
             msg = '%s离下节课%s上课还有%d天%d小时%d分%d秒, 上课地点在%s' % (
                 user.nick_name,
                 course.name,
                 abs(user.remind_time) // (24 * 60 * 60),
                 (abs(user.remind_time) % (24 * 60 * 60)) // (60 * 60),
-                (abs(user.remind_time) % (60 * 60)) //60,
+                (abs(user.remind_time) % (60 * 60)) // 60,
                 abs(user.remind_time) % 60,
                 course.place
             )
@@ -489,7 +505,7 @@ class Helper(object):
             self.send(msg, now_user)
         except EXCEPTIONS as error:
             error_report(error)
-    #选退课功能暂时关闭
+    # 选退课功能暂时关闭
         # def add_course(self, now_user, nick_name, text):
         #     '按课程编号选课'
         #     try:
@@ -551,14 +567,15 @@ class Setting(object):
         FLEXIBLE='灵活调整开关',
         FLEXIBLE_DAY='灵活调整日期'
     )
+
     def __init__(self):
         '设置参数初始化'
         self.REMIND_ALIVE = True
         self.ROBOT_REPLY = True
         self.VOICE_REPLY = True
-        self.REMIND_WAIT = 2#分钟
-        self.REMIND_BEFORE = 30#分钟
-        self.UPDATE_WAIT = 60#分钟
+        self.REMIND_WAIT = 2  # 分钟
+        self.REMIND_BEFORE = 30  # 分钟
+        self.UPDATE_WAIT = 60  # 分钟
         self.LAST_UPDATE = 0
         self.FLEXIBLE = False
         self.FLEXIBLE_DAY = 0
@@ -608,6 +625,7 @@ class Setting(object):
                 pl.kill_thread(thread=thread_remind)
                 info('关闭remind线程')
 
+
 class UCASSEP(object):
     'UCAS SEP系统'
     user_id = ''
@@ -624,7 +642,8 @@ class UCASSEP(object):
             if data is None and empty_post_tag is False:
                 response = self.session.get(url=url, timeout=TIMEOUT)
             else:
-                response = self.session.post(url=url, data=data, timeout=TIMEOUT)
+                response = self.session.post(
+                    url=url, data=data, timeout=TIMEOUT)
             if response.status_code is 200:
                 return response
             else:
@@ -649,10 +668,10 @@ class UCASSEP(object):
     def __init__(self, user_id, password):
         try:
             self.session.headers.update({
-                'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
                     AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.75 Safari/537.36',
-                'X-Requested-With':'XMLHttpRequest',
-                })
+                'X-Requested-With': 'XMLHttpRequest',
+            })
             self.user_id = user_id
             self.password = password
             self.login()
@@ -666,7 +685,7 @@ class UCASSEP(object):
             'username': self.user_id,
             'password': self.password,
             'remember': 'checked'
-            }
+        }
         url = 'http://onestop.ucas.ac.cn/Ajax/Login/0'
         try:
             result = self._get_json(url=url, data=data)
@@ -731,8 +750,8 @@ class UCASSEP(object):
             return True
         else:
             data = {
-                'deptIds':'910',
-                'sids':course
+                'deptIds': '910',
+                'sids': course
             }
             url = 'http://jwxk.ucas.ac.cn/courseManageBachelor/saveCourse?s='
             try:
@@ -779,13 +798,14 @@ class UCASSEP(object):
             link = 'http://jwxk.ucas.ac.cn/course/coursetime/' + str(num)
             tree = lxml.etree.HTML(self.session.get(url=link).content)
             if tree.xpath('//title/text()')[0] != '课程时间地点信息-选课系统'\
-            or not tree.xpath('//th'):
+                    or not tree.xpath('//th'):
                 return None
             name = (tree.xpath('//p/text()'))[0][5:]
             place = tree.xpath('//th[text()="上课地点"]/../td/text()')[0]
             times = [(re.findall(r'(星期.?)：', each)[0], re.findall(r'(\d*)[、节]', each))
                      for each in tree.xpath('//th[text()="上课时间"]/../td/text()')]
-            weeks_temp = tree.xpath('//th[text()="上课周次"]/../td/text()')[0].split('、')
+            weeks_temp = tree.xpath(
+                '//th[text()="上课周次"]/../td/text()')[0].split('、')
             weeks = (int(weeks_temp[0]) - 1, int(weeks_temp[-1]) - 1)
             return dict(name=name, weeks=weeks, place=place, times=times)
 
@@ -813,7 +833,7 @@ class UCASSEP(object):
                     weekday=Weekday.objects.get(day=times[0]),
                     start=int(times[1][0]),
                     end=int(times[1][-1])
-                    )
+                )
             except Coursetime.DoesNotExist:
                 coursetime = Coursetime.objects.create(
                     weekday=Weekday.objects.get(day=times[0]),
@@ -834,10 +854,10 @@ class UCASSEP(object):
         soup = self._get_page(url)
         tbody = soup.find('tbody').findChildren()
         pattern = re.compile(r'/course/coursetime/(\d*)')
-        for i in range(int(len(tbody)/9)):
-            if term in tbody[i*9+8].get_text():
-                print(tbody[i*9 + 5])
-                href = tbody[i*9 + 5]['href']
+        for i in range(int(len(tbody) / 9)):
+            if term in tbody[i * 9 + 8].get_text():
+                print(tbody[i * 9 + 5])
+                href = tbody[i * 9 + 5]['href']
                 num = re.findall(pattern, href)[0]
                 if not Course.objects.filter(ident=num).count():
                     self.save_course(num)

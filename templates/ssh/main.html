@@ -16,7 +16,7 @@
     <script src="{% static "js/gateone.js" %}"></script>
     <script>
         var ssh_host = '{{user}}@' + window.location.host;
-        var ssh_url = 'ssh://' + ssh_host + ':' + 22;
+        var ssh_url = 'ssh://' + ssh_host + ':' + 2200;
         var server_url = 'http://' + window.location.host + '/gateone/'; //+ '?ssh=' + ssh_url
 
         function close_all_workspace(){

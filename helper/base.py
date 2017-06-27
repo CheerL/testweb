@@ -102,10 +102,14 @@ def itchat_send(text, user_name):
     user = itchat.search_friends(userName=user_name)
     name = user['RemarkName'] if user['RemarkName'] else user['NickName']
     info('发出给%s的消息: %s' % (name, text))
-    Message.objects.create(
-        text=text, user=name, robot=HELPER.robot,
-        message_type='Text', direction='OUT'
+    message = Message.objects.create(
+        text=text,
+        user=name,
+        robot=HELPER.robot,
+        message_type='Text',
+        direction='OUT'
     )
+    message.send_to_client()
 
 
 def str_multi_replace(ori_str, replace_list=None):

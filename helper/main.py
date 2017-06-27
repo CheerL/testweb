@@ -60,16 +60,17 @@ def info_save_message(text, message_type, send_user, user, name, info_text):
     '写入日志并保存消息'
     if user['NickName'] == send_user['NickName']:
         info('收到来自' + info_text)
-        Message.objects.create(
+        message = Message.objects.create(
             text=text, user=name, robot=HELPER.robot,
             message_type=message_type, direction='IN'
         )
     else:
         info('发出给' + info_text)
-        Message.objects.create(
+        message = Message.objects.create(
             text=text, user=name, robot=HELPER.robot,
             message_type=message_type, direction='OUT'
         )
+    message.send_to_client()
 
 
 def text_reply(msg, text, send_user_name, message_type, send_user, user, alias, name):

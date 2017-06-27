@@ -1,6 +1,8 @@
 '小助手的数据库设计'
 import time
 import datetime
+import json
+from channels import Group
 from django.db import models
 from ast import literal_eval
 
@@ -36,6 +38,15 @@ class Message(models.Model):
 
     def __str__(self):
         return '%s-%s-%s' % (self.user, self.robot.nick_name, self.time)
+
+    def send_to_client(self):
+        channel = 'chat-%s' % self.robot.nick_name
+        Group(channel).send({'text': json.dumps(dict(
+            text=self.text,
+            user=self.user,
+            direction=self.direction,
+            time=str(self.time)
+        ))})
 
 
 class Weekday(models.Model):
