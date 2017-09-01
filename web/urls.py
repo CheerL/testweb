@@ -24,5 +24,5 @@ urlpatterns = [
     url(r'^blog/', include('blog.urls')),
     url(r'^chatroom/', include('chatroom.urls')),
     url(r'^ssh/', include('ssh.urls')),
-    url(r'^ftp/', include('ftp.urls')),
+    url(r'^file/', include('ftp.urls')),
 ]
