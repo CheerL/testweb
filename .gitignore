@@ -1,8 +1,11 @@
+__pycache__/
 collected_static/
 migrations/
 test/
 pid/
-*/head/*
+head/
+.ipynb_checkpoints/
+.vscode/
 test.*
 tests.*
 *.ipynb
