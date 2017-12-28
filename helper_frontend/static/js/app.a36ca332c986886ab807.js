@@ -27,8 +27,8 @@ module.exports = Component.exports
 
 /* WEBPACK VAR INJECTION */(function(__dirname) {// see http://vuejs-templates.github.io/webpack for documentation.
 var path = __webpack_require__(252)
-let port = '80'
-let ip_addr = '127.0.0.1'
+let port = '8000'
+let ip_addr = '192.168.10.100'
 let remote_addr = ip_addr + ':' + port
 
 module.exports = {
@@ -585,9 +585,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 _chat.sock = new __WEBPACK_IMPORTED_MODULE_4__js_web_socket_js___default.a(ws_scheme + '://' + __WEBPACK_IMPORTED_MODULE_1__config___default.a.remote_addr + '/chat-' + this.$store.state.main.robot + '/');
                 _chat.sock.onmessage = function (message) {
                     var data = JSON.parse(message.data);
-                    _chat.add_chat_record(data);
-                    if (_chat.now_user.name != data.name && data.IN) {
-                        _chat.unread_add_one(data.name);
+                    if ('name' in data) {
+                        _chat.add_chat_record(data);
+                        if (_chat.now_user.name != data.name && data.IN) {
+                            _chat.unread_add_one(data.name);
+                        }
                     }
                 };
             }
@@ -2631,4 +2633,4 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
 
 /***/ })
 ]),[110]);
-//# sourceMappingURL=app.86d4650bce7d5ad1df42.js.map
+//# sourceMappingURL=app.a36ca332c986886ab807.js.map

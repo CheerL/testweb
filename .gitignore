@@ -2,7 +2,7 @@ collected_static/
 migrations/
 test/
 pid/
-static/head/
+*/head/*
 test.*
 tests.*
 *.ipynb
