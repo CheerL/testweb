@@ -43,8 +43,10 @@ class Message(models.Model):
         channel = 'chat-%s' % self.robot.nick_name
         Group(channel).send({'text': json.dumps(dict(
             text=self.text,
-            user=self.user,
+            name=self.user,
             direction=self.direction,
+            sender=self.robot.nick_name if self.direction == 'OUT' else self.user,
+            IN=False if self.direction == 'OUT' else True,
             time=str(self.time)
         ))})
 

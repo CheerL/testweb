@@ -1,81 +1,87 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>django-websocket</title>
     <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
-    <script type="text/javascript">//<![CDATA[
+    <script type="text/javascript">
+        //<![CDATA[
         var client_id = null;
         var channel = 'default';
 
-        function close_connection(){
-            if(window.socket){
-                    if(client_id){
-                        $.post("close-connection", {client_id:client_id, channel:channel}, function(data){
-                            if(data.res == "failed"){
-                                alert(data.msg);
-                            }
-                        });
-                    }
-                    window.socket.close();
-                    window.socket = null;
+        function close_connection() {
+            if (window.socket) {
+                if (client_id) {
+                    $.post("close-connection", {
+                        client_id: client_id,
+                        channel: channel
+                    }, function(data) {
+                        if (data.res == "failed") {
+                            alert(data.msg);
+                        }
+                    });
                 }
+                window.socket.close();
+                window.socket = null;
+                channel = $('#channel').val();
+            }
         }
-        window.onbeforeunload = function(){
+        window.onbeforeunload = function() {
             close_connection();
         };
-        $(function () {
-            $('#connect_websocket').click(function () {
-                $.post("is-connection", {client_id:client_id, channel:channel}, function(data){
-                    if(data.res == 'True'){
+        $(function() {
+            $('#connect_websocket').click(function() {
+                channel = $('#channel').val();
+                $.post("is-connection", {
+                    client_id: client_id,
+                    channel: channel
+                }, function(data) {
+                    if (data.res == 'True') {
                         console.log('Client has connection');
-                    }
-                    else if(data.res == 'False'){
+                    } else if (data.res == 'False') {
                         close_connection()
                         client_id = data.client_id;
                         var socket = new WebSocket("ws://" + window.location.host + "/chatroom/echo/client_id=" + client_id + "&channel=" + channel);
-                        socket.onopen = function () {
+                        socket.onopen = function() {
                             console.log('WebSocket open');
                         };
-                        socket.onmessage = function (message) {
+                        socket.onmessage = function(message) {
                             console.log('received: ' + message.data);
                             $('#messagecontainer').prepend('<p>' + message.data + '</p>');
                         };
                         window.socket = socket;
-                    }
-                    else if(data.res == 'Error'){
+                    } else if (data.res == 'Error') {
                         alert(data.msg);
                     }
                 });
             });
-            $('#send_message').click(function () {
-                if(!window.socket){
+            $('#send_message').click(function() {
+                if (!window.socket) {
                     alert("Please connect server.");
-                }else{
+                } else {
                     var text = $('#message').val()
                     console.log('send: ' + text);
                     window.socket.send(text);
                 }
             });
-            $('#close_websocket').click(function () {
+            $('#close_websocket').click(function() {
                 close_connection();
             });
-            $('#change_channel').click(function(){
-                channel = $('#channel').val();
-            });
         });
-    //]]></script>
+    </script>
 </head>
-<body>
-<br>
-<input type="text" id="message" value="Hello, World!" />
-<input type="text" id="channel" value="default" />
-<button type="button" id="change_channel">Change channel</button>
-<button type="button" id="connect_websocket">Connect websocket</button>
-<button type="button" id="send_message">Send message</button>
-<button type="button" id="close_websocket">Close websocket</button>
-<h1>Received Messages</h1>
-<div id="messagecontainer">
 
-</div>
+<body>
+    <br>
+    <input type="text" id="message" value="Hello, World!" />
+    <input type="text" id="channel" value="default" />
+    <button type="button" id="connect_websocket">Connect websocket</button>
+    <button type="button" id="send_message">Send message</button>
+    <button type="button" id="close_websocket">Close websocket</button>
+    <h1>Received Messages</h1>
+    <div id="messagecontainer">
+
+    </div>
 </body>
+
 </html>
