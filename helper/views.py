@@ -189,13 +189,12 @@ def login_stop(req):
         pl.kill_thread(name='login')
         HELPER.logout()
     except Exception as error:
-        print(error)
         Group('login').send({'text': json.dumps(dict(
             status=1,
             msg=MSG_error,
             pic=WX_pic
         ))})
-        return JsonResponse(dict(res=False))
+        return JsonResponse(dict(res=False, msg=str(error)))
     else:
         Group('login').send({'text': json.dumps(dict(
             status=0,
@@ -276,7 +275,7 @@ def chat_send(request):
         else:
             raise NotImplementedError('访问错误')
     except EXCEPTIONS as error:
-        return JsonResponse(dict(res=False, msg=error))
+        return JsonResponse(dict(res=False, msg=str(error)))
 
 @csrf_exempt
 def chat_history(request):
@@ -284,12 +283,12 @@ def chat_history(request):
     try:
         if request.method == 'POST':
             user = request.POST['user']
-            HELPER.history_message(user)
+            # HELPER.history_message(user)
             return JsonResponse(dict(res=True))
         else:
             raise NotImplementedError('访问错误')
     except EXCEPTIONS as error:
-        return JsonResponse(dict(res=False, msg=error))
+        return JsonResponse(dict(res=False, msg=str(error))
 
 
 # 设置api
