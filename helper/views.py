@@ -288,7 +288,7 @@ def chat_history(request):
         else:
             raise NotImplementedError('访问错误')
     except EXCEPTIONS as error:
-        return JsonResponse(dict(res=False, msg=str(error))
+        return JsonResponse(dict(res=False, msg=str(error)))
 
 
 # 设置api
