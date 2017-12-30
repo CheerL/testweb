@@ -7,7 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from .wheel import parallel as pl
-from .models import Robot
+from .models import Robot, Message
 from .main import HELPER
 from .base import info, EXCEPTIONS, QR_pic, WX_pic, HEAD_PIC, log_read, pkl_path, str_multi_replace
 from . import tests
@@ -272,6 +272,22 @@ def chat_send(request):
             msg = request.POST['msg']
             user = request.POST['user']
             HELPER.send(msg, user)
+            return JsonResponse(dict(res=True))
+        else:
+            raise NotImplementedError('访问错误')
+    except EXCEPTIONS as error:
+        return JsonResponse(dict(res=False, msg=error))
+
+def chat_history(request):
+    '获取历史消息'
+    def history(user):
+        for message in Message.objects.filter(robot=HELPER.robot, user=user):
+            message.send_to_client()
+
+    try:
+        if request.method == 'POST':
+            user = request.POST['user']
+            pl.run_thread([(history, (user,))])
             return JsonResponse(dict(res=True))
         else:
             raise NotImplementedError('访问错误')
