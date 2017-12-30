@@ -281,8 +281,8 @@ def chat_send(request):
 def chat_history(request):
     '获取历史消息'
     def history(user):
-        messages = Message.objects.filter(robot=HELPER.robot).filter(user=user)
-        info(str(messages))
+        for message in Message.objects.filter(robot=HELPER.robot).filter(user=user):
+            message.send_to_client()
 
     try:
         if request.method == 'POST':
