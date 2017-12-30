@@ -10,10 +10,10 @@ import lxml
 from django.db.utils import IntegrityError
 from PIL import Image, ImageDraw, ImageFont
 from bs4 import BeautifulSoup as Bs
-from .base import TIMEOUT, TL_KEY, EXCEPTIONS
-from .base import info, get_now_week, error_report, pkl_path, itchat_send
-from .wheel import parallel as pl
-from .models import Helper_user, Course, Weekday, Coursetime, Message
+from helper.base import TIMEOUT, TL_KEY, EXCEPTIONS
+from helper.base import info, get_now_week, error_report, pkl_path, itchat_send
+from helper.wheel import parallel as pl
+from helper.models import Helper_user, Course, Weekday, Coursetime, Message
 
 
 class Helper(object):
@@ -208,7 +208,8 @@ class Helper(object):
             for message in messages:
                 message.send_to_client()
 
-        pl.run_thread([(history, (user))], is_lock=False)
+        pl.run_thread([(history, (user,))], is_lock=False)
+        return
 
     def remind(self, now_user=None, user_name=None):
         '定时提醒'

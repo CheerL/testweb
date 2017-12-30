@@ -283,7 +283,7 @@ def chat_history(request):
     try:
         if request.method == 'POST':
             user = request.POST['user']
-            # HELPER.history_message(user)
+            HELPER.history_message(user)
             return JsonResponse(dict(res=True))
         else:
             raise NotImplementedError('访问错误')
