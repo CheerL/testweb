@@ -208,7 +208,7 @@ class Helper(object):
             for message in messages:
                 message.send_to_client()
 
-        pl.run_thread([(history, (user))])
+        pl.run_thread([(history, (user))], is_lock=False)
 
     def remind(self, now_user=None, user_name=None):
         '定时提醒'
