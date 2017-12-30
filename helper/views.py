@@ -278,6 +278,7 @@ def chat_send(request):
     except EXCEPTIONS as error:
         return JsonResponse(dict(res=False, msg=error))
 
+@csrf_exempt
 def chat_history(request):
     '获取历史消息'
     def history(user):
