@@ -280,10 +280,14 @@ def chat_send(request):
 @csrf_exempt
 def chat_history(request):
     '获取历史消息'
+    def history(user):
+        messages = Message.objects.filter(robot=HELPER.robot).filter(user=user)
+        info(str(messages))
+
     try:
         if request.method == 'POST':
             user = request.POST['user']
-            HELPER.history_message(user)
+            pl.run_thread([(history, (user,))], is_lock=False)
             return JsonResponse(dict(res=True))
         else:
             raise NotImplementedError('访问错误')

@@ -202,15 +202,6 @@ class Helper(object):
         user.save()
         self.send('取消提醒成功', now_user)
 
-    def history_message(self, user):
-        def history(user):
-            messages = Message.objects.filter(robot=self.robot).filter(user=user)
-            for message in messages:
-                message.send_to_client()
-
-        pl.run_thread([(history, (user,))], is_lock=False)
-        return
-
     def remind(self, now_user=None, user_name=None):
         '定时提醒'
         def remind_main(user):
