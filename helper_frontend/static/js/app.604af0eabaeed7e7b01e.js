@@ -1056,13 +1056,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                     _login.status = data.status;
                     _login.pic_src = '/' + data.pic;
                     if (data.status == 2) {
-                        _login.is_login(true);
+                        _login.login_update();
                         _login.sock.close();
                         _login.sock = null;
                     }
                 };
             } else {
-                this.is_login(true);
+                this.login_update();
             }
         }
     }),
@@ -2633,4 +2633,4 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
 
 /***/ })
 ]),[110]);
-//# sourceMappingURL=app.a36ca332c986886ab807.js.map
+//# sourceMappingURL=app.604af0eabaeed7e7b01e.js.map

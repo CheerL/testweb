@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup as Bs
 from .base import TIMEOUT, TL_KEY, EXCEPTIONS
 from .base import info, get_now_week, error_report, pkl_path, itchat_send
 from .wheel import parallel as pl
-from .models import Helper_user, Course, Weekday, Coursetime
+from .models import Helper_user, Course, Weekday, Coursetime, Message
 
 
 class Helper(object):
@@ -201,6 +201,14 @@ class Helper(object):
         user.is_open = False
         user.save()
         self.send('取消提醒成功', now_user)
+
+    def history_message(self, user):
+        def history(user):
+            messages = Message.objects.filter(robot=self.robot).filter(user=user)
+            for message in messages:
+                message.send_to_client()
+
+        pl.run_thread([(history, (user))])
 
     def remind(self, now_user=None, user_name=None):
         '定时提醒'
