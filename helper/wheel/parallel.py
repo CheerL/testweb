@@ -51,7 +51,7 @@ def func_cpu(para, model=0, some=0):
 
 
 def run_thread(req_list, name=None, is_lock=True, limit_num=8):
-    ''' 
+    '''
         多线程函数
         - req_list    任务列表, list, 每个元素为一个任务, 形式为
         -           [

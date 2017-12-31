@@ -2,18 +2,20 @@
 '小助手'
 import os
 import re
-import time
 import threading
-import requests
+import time
+
 import itchat
 import lxml
+import requests
+from bs4 import BeautifulSoup as Bs
 from django.db.utils import IntegrityError
 from PIL import Image, ImageDraw, ImageFont
-from bs4 import BeautifulSoup as Bs
-from helper.base import TIMEOUT, TL_KEY, EXCEPTIONS
-from helper.base import info, get_now_week, error_report, pkl_path, itchat_send
-from helper.wheel import parallel as pl
-from helper.models import Helper_user, Course, Weekday, Coursetime, Message
+
+from .base import (EXCEPTIONS, TIMEOUT, TL_KEY, error_report, get_now_week,
+                   info, itchat_send, pkl_path)
+from .models import Course, Coursetime, Helper_user, Message, Weekday
+from .wheel import parallel as pl
 
 
 class Helper(object):
@@ -214,7 +216,8 @@ class Helper(object):
                 )
                 if user.remind_time - self.settings.REMIND_BEFORE * 60 <= 0:  # 当提醒时间到, 主动提醒一次
                     if not user.have_remind:  # 当没有提醒过
-                        today = time.localtime().tm_wday if not self.settings.FLEXIBLE else self.settings.FLEXIBLE_DAY
+                        today = time.localtime().tm_wday\
+                            if not self.settings.FLEXIBLE else self.settings.FLEXIBLE_DAY
                         course = Course.objects.get(ident=user.remind)
                         coursetime = course.coursetimes.all().filter(
                             weekday__index__exact=today)[0]
