@@ -15,4 +15,5 @@ tests.*
 *.pkl
 *.log
 *.out
+*.code-workspace
 db.sqlite3

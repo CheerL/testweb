@@ -1,14 +1,16 @@
 '多线程 与 多进程'
-import os
-import sys
-import signal
-import time
 import inspect
-import ctypes
-from collections import deque
-import threading
 import multiprocessing
+import os
+import signal
+import sys
+import threading
+import time
+from collections import deque
+
 import threadpool
+
+import ctypes
 
 
 def my_print(content, file=sys.stdout, model=0):

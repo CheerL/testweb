@@ -14,7 +14,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from .base import (EXCEPTIONS, TIMEOUT, TL_KEY, error_report, get_now_week,
                    info, itchat_send, pkl_path)
-from .models import Course, Coursetime, Helper_user, Message, Weekday
+from .models import Course, Coursetime, Helper_user, Weekday
 from .wheel import parallel as pl
 
 
@@ -87,7 +87,6 @@ class Helper(object):
     def search_list(self, user_name=None):
         '在用户列表中查找当前用户是否已经绑定'
         if user_name:
-            # try:
             user = Helper_user.objects.filter(
                 robot=self.robot).filter(user_name=user_name)
             if user:
