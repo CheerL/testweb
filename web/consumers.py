@@ -1,6 +1,7 @@
 import re
 import json
 import time
+from urllib.parse import urlencode
 from channels import Group
 from channels.sessions import channel_session
 
@@ -10,7 +11,9 @@ from channels.sessions import channel_session
 # 当连接上时，发回去一个connect字符串
 
 def get_channel(path):
-    return re.findall(r'channel=(.*)', path)[0] if 'chatroom' in path else path.strip('/')
+    channel_name = re.findall(r'channel=(.*)', path)[0] if 'chatroom' in path else path.strip('/')
+    # return urlencode({'': channel_name})[1:].replace('%', '')
+    return channel_name
 
 
 @channel_session

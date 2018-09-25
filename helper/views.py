@@ -10,7 +10,6 @@ from .wheel import parallel as pl
 from .models import Robot, Message
 from .main import HELPER
 from .base import info, EXCEPTIONS, QR_pic, WX_pic, HEAD_PIC, log_read, pkl_path, str_multi_replace
-from . import tests
 
 MSG_init = '请点击登录按钮'
 MSG_error = '错误,请重新登录'
@@ -117,67 +116,67 @@ def login_init(request):
 @csrf_exempt
 def login(request):
     '终于登录了'
+    def qr_func(uuid, status, qrcode):
+        if qrcode:
+            info('成功获取二维码')
+            with open(QR_pic, 'wb') as pic:
+                pic.write(qrcode)
+            Group('login').send({'text': json.dumps(dict(
+                status=1,
+                msg=MSG_scan,
+                pic=QR_pic
+            ))})
+        else:
+            info('等待确认登录')
+            Group('login').send({'text': json.dumps(dict(
+                status=1,
+                msg=MSG_confirm,
+                pic=WX_pic
+            ))})
+
+    def login_func():
+        user = itchat.search_friends()
+        itchat.get_head_img(userName=user['UserName'], picDir=HEAD_PIC)
+        robot = Robot.objects.get_or_create(uin=user['Uin'])[0]
+        robot.nick_name = user['NickName']
+        robot.save()
+        HELPER.robot = robot
+        HELPER.robot.apply_settings(HELPER.settings)
+        info('%s成功登录' % robot.nick_name)
+        HELPER.wxname_update()
+        HELPER.remind()
+        HELPER.IS_LOGIN = True
+        if os.path.exists(QR_pic):
+            os.remove(QR_pic)
+        Group('login').send({'text': json.dumps(dict(
+            status=2,
+            msg='%s成功登录' % HELPER.robot.nick_name,
+            pic=HEAD_PIC
+        ))})
+
+    def exit_func():
+        HELPER.logout()
+        info(MSG_logout)
+
+    def login_main():
+        try:
+            info('尝试登陆')
+            itchat.auto_login(True, pkl_path, False, QR_pic,
+                              qr_func, login_func, exit_func)
+            itchat.run(debug=True, blockThread=False)
+        except:
+            Group('login').send({'text': json.dumps(dict(
+                status=1,
+                msg=MSG_error,
+                pic=WX_pic
+            ))})
+
     if request.method == 'GET':
         if not HELPER.IS_LOGIN:
             return render(request, 'helper/return_to_login.html')
         else:
             return login_page(request)
     else:
-        def qr_func(uuid, status, qrcode):
-            if qrcode:
-                info('成功获取二维码')
-                with open(QR_pic, 'wb') as pic:
-                    pic.write(qrcode)
-                Group('login').send({'text': json.dumps(dict(
-                    status=1,
-                    msg=MSG_scan,
-                    pic=QR_pic
-                ))})
-            else:
-                info('等待确认登录')
-                Group('login').send({'text': json.dumps(dict(
-                    status=1,
-                    msg=MSG_confirm,
-                    pic=WX_pic
-                ))})
-
-        def login_func():
-            user = itchat.search_friends()
-            itchat.get_head_img(userName=user['UserName'], picDir=HEAD_PIC)
-            robot = Robot.objects.get_or_create(uin=user['Uin'])[0]
-            robot.nick_name = user['NickName']
-            robot.save()
-            HELPER.robot = robot
-            HELPER.robot.apply_settings(HELPER.settings)
-            info('%s成功登录' % robot.nick_name)
-            HELPER.wxname_update()
-            HELPER.remind()
-            HELPER.IS_LOGIN = True
-            if os.path.exists(QR_pic):
-                os.remove(QR_pic)
-            Group('login').send({'text': json.dumps(dict(
-                status=2,
-                msg='%s成功登录' % HELPER.robot.nick_name,
-                pic=HEAD_PIC
-            ))})
-
-        def exit_func():
-            HELPER.logout()
-            info(MSG_logout)
-
-        def login_main():
-            try:
-                info('尝试登陆')
-                itchat.auto_login(True, pkl_path, False, QR_pic,
-                                  qr_func, login_func, exit_func)
-                itchat.run(debug=True, blockThread=False)
-            except:
-                Group('login').send({'text': json.dumps(dict(
-                    status=1,
-                    msg=MSG_error,
-                    pic=WX_pic
-                ))})
-
         pl.run_thread([(login_main, ())], name='login', is_lock=False)
         return HttpResponse()
 

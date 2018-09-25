@@ -589,7 +589,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         ws_func: function ws_func() {
             if (!_chat.sock) {
                 var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-                _chat.sock = new __WEBPACK_IMPORTED_MODULE_4__js_web_socket_js___default.a(ws_scheme + '://' + __WEBPACK_IMPORTED_MODULE_1__config___default.a.remote_addr + '/chat-' + this.$store.state.main.robot + '/');
+                _chat.sock = new __WEBPACK_IMPORTED_MODULE_4__js_web_socket_js___default.a(ws_scheme + '://' + window.location.host + '/chat-' + this.$store.state.main.robot + '/');
                 _chat.sock.onmessage = function (message) {
                     var data = JSON.parse(message.data);
                     if ('name' in data) {
@@ -926,7 +926,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         ws_func: function ws_func() {
             if (!_log.sock) {
                 var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-                _log.sock = new __WEBPACK_IMPORTED_MODULE_3__js_web_socket_js___default.a(ws_scheme + '://' + __WEBPACK_IMPORTED_MODULE_1__config___default.a.remote_addr + '/log/');
+                _log.sock = new __WEBPACK_IMPORTED_MODULE_3__js_web_socket_js___default.a(ws_scheme + '://' + window.location.host + '/log/');
                 _log.sock.onmessage = function (message) {
                     var data = JSON.parse(message.data);
                     _log.prepend_log([data.msg], true);
@@ -1056,7 +1056,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         ws_func: function ws_func() {
             if (this.status != 2) {
                 var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-                this.sock = new __WEBPACK_IMPORTED_MODULE_3__js_web_socket_js___default.a(ws_scheme + '://' + __WEBPACK_IMPORTED_MODULE_1__config___default.a.remote_addr + '/login/');
+                this.sock = new __WEBPACK_IMPORTED_MODULE_3__js_web_socket_js___default.a(ws_scheme + '://' + window.location.host + '/login/');
                 this.sock.onmessage = function (message) {
                     var data = JSON.parse(message.data);
                     _login.text = data.msg;
