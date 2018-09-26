@@ -77,7 +77,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'web.wsgi.application'
-
+ASGI_APPLICATION = 'web.routing.application'
 # 内存后端
 # CHANNEL_LAYERS = {
 #     'default': {
