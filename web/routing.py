@@ -1,4 +1,7 @@
 from . import consumers
+from django.conf.urls import url
+from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.auth import AuthMiddlewareStack
 
 channel_routing = {
     # This makes Django serve static files from settings.STATIC_URL, similar
@@ -11,3 +14,11 @@ channel_routing = {
     'websocket.receive': consumers.ws_receive,
     'websocket.disconnect': consumers.ws_disconnect,
 }
+
+application = ProtocolTypeRouter({
+    "websocket": AuthMiddlewareStack(
+        URLRouter([
+            url(r'^.*$', consumers)
+        ])
+    )
+})
