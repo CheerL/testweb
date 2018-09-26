@@ -5,6 +5,8 @@ from urllib.parse import urlencode
 from channels import Group
 from channels.sessions import channel_session
 
+from channels.generic.websocket import WebsocketConsumer
+
 # message.reply_channel    一个客户端通道的对象
 # message.reply_channel.send(chunk)  用来唯一返回这个客户端
 
@@ -40,3 +42,13 @@ def ws_receive(message):
     channel_name = get_channel(message['path'])
     text = message.content['text']
     Group(channel_name).send({'text': json.dumps({"msg": text})})
+
+
+def ChatConsumer(WebsocketConsumer):
+    def connect(self):
+        print(self.scope)
+        print(self.channel_name)
+        print(self.channel_layer)
+        self.accept()
+
+--force-reinstall
