@@ -7,5 +7,6 @@ from chatroom import views
 
 
 urlpatterns = [
-    url(r'^$', views.base_view)
+    url(r'^$', views.base_view),
+    url(r'^send/text=(?P<text>[^/&]+)&channel=(?P<channel>[^/&]+)', views.send),
 ]
