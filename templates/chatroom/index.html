@@ -3,7 +3,7 @@
 
 <head>
     <title>django-websocket</title>
-    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
     <script type="text/javascript">
         //<![CDATA[
         var client_id = null;
@@ -41,7 +41,11 @@
                     } else if (data.res == 'False') {
                         close_connection()
                         client_id = data.client_id;
-                        var socket = new WebSocket("ws://" + window.location.host + "/chatroom/echo/client_id=" + client_id + "&channel=" + channel);
+                        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+                        var socket = new WebSocket(
+                            ws_scheme + '://' + window.location.host +
+                            "/chatroom/client_id=" + client_id + "&channel=" + channel + '/'
+                            );
                         socket.onopen = function() {
                             console.log('WebSocket open');
                         };
