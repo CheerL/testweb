@@ -1,10 +1,12 @@
 '小助手的数据库设计'
-import time
 import datetime
-import json
-from helper.consumers import group_send
-from django.db import models
+import time
 from ast import literal_eval
+
+from django.db import models
+
+from helper.consumers import group_send
+from helper.setting import COURSE_DICT, END_WEEK, EXCEPTIONS
 
 
 class Robot(models.Model):
@@ -155,6 +157,3 @@ class Helper_user(models.Model):
     def set_alias(self, alias=None):
         from helper.async_itchat import async_itchat as itchat
         itchat.set_alias(self.wx_UserName, alias if alias else self.user_name)
-
-
-from .base import END_WEEK, COURSE_DICT, EXCEPTIONS

@@ -3,7 +3,6 @@ from helper import views
 
 urlpatterns = [
     url(r'^$', views.index),
-    url(r'^thread/$', views.thread_list),
 
     url(r'^login/login/$', views.login),
     url(r'^login/init/$', views.login_init),

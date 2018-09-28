@@ -1,6 +1,6 @@
 import threading
 import asyncio
-from functools import partial
+from functools import partial, wraps
 
 def kill_callback(loop, thread):
     if not loop.is_closed():
@@ -33,5 +33,10 @@ def async_run(async_func, loop=None, thread=None, callback=None, *args, **kwargs
         callback = kill_callback
     asyncio.run_coroutine_threadsafe(target_wrap(async_func(*args, **kwargs), loop, thread, callback), loop)
 
-def async_wrap(async_func, loop=None, thread=None, callback=None):
-    return partial(async_run, async_func=async_func, loop=loop, thread=thread, callback=callback)
+def async_wrap(loop=None, thread=None, callback=None):
+    def _async_wrap(async_func):
+        @wraps(async_func)
+        def __async_wrap(*args, **kwargs):
+            async_run(async_func, loop=loop, thread=thread, callback=callback, *args, **kwargs)
+        return __async_wrap
+    return _async_wrap
