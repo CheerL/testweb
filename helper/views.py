@@ -1,16 +1,16 @@
 import os
 import json
 import time
-from helper.async_itchat import async_itchat as itchat
-import threading
+# from helper.async_itchat import async_itchat as itchat
+import itchat
 import asyncio
-from ast import literal_eval
 from asgiref.sync import async_to_sync
+from ast import literal_eval
 from helper.consumers import group_send
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
-from helper.wheel import parallel as pl
+from helper.utils import async_utils, parallel as pl
 from helper.models import Robot, Message
 from helper.main import HELPER
 from helper.base import info, EXCEPTIONS, QR_pic, WX_pic, HEAD_PIC, log_read, pkl_path, str_multi_replace
@@ -39,6 +39,9 @@ def index(request):
 
 def redirect_index(request):
     return HttpResponseRedirect('/helper/')
+
+def thread_list(request):
+    return JsonResponse({'threads': str(pl.thread_list())})
 
 # 登陆 api
 def login_init(request):
@@ -102,48 +105,25 @@ async def login(request):
 
     async def login_main():
         try:
+            # loop, thread = async_utils.get_loop_and_thread()
             await info('尝试登陆')
-            await itchat.auto_login(True, pkl_path, False, QR_pic,
-                                    qr_func, login_func, exit_func)
+            itchat.auto_login(
+                True, pkl_path, False, QR_pic,
+                async_utils.async_wrap(qr_func),
+                async_utils.async_wrap(login_func),
+                async_utils.async_wrap(exit_func)
+            )
             itchat.run(debug=True, blockThread=False)
-        except Exception as e:
-            print(e)
+        except Exception as error:
+            print(error)
             await group_send('login', dict(
                 status=1,
                 msg=MSG_error,
                 pic=WX_pic
             ))
 
-    async def test():
-        await info('test')
-        await asyncio.sleep(10)
-
-    # def async_thread_target(target):
-    #     loop = asyncio.new_event_loop()
-    #     asyncio.set_event_loop(loop)
-    #     loop.run_until_complete(asyncio.wait(target()))
-    #     loop.close()
-
-    def start_loop(loop):
-        asyncio.set_event_loop(loop)
-        loop.run_forever()
-
-    def callback():
-        print('callback')
-
-    async def target_wrap(target):
-        await target()
-        callback()
-
-    # await login_main()
-    loop = asyncio.new_event_loop()
-    loop_thread = threading.Thread(target=start_loop, args=(loop,))
-    loop_thread.start()
-    asyncio.run_coroutine_threadsafe(target_wrap(test), loop)
-    # loop.call_soon_threadsafe(callback)
-    # test_thread = threading.Thread(target=async_thread_target(test))
-    # test_thread.start()
-    return JsonResponse({'res': str(pl.thread_list())})
+    await login_main()
+    return JsonResponse({'res': True})
 
 @async_to_sync
 async def login_stop(request):

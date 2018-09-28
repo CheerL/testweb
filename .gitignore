@@ -6,7 +6,7 @@ collected_static/*
 **/migrations/*
 **/.ipynb_checkpoints/*
 static/head/*
-static/voice/*
+static/voices/*
 static/images/*
 test*
 *.ipynb

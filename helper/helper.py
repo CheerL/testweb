@@ -5,7 +5,8 @@ import re
 import threading
 import time
 
-from helper.async_itchat import async_itchat as itchat
+# from helper.async_itchat import async_itchat as itchat
+import itchat
 import lxml
 import requests
 from bs4 import BeautifulSoup as Bs
@@ -15,7 +16,7 @@ from PIL import Image, ImageDraw, ImageFont
 from helper.base import (EXCEPTIONS, TIMEOUT, TL_KEY, error_report, get_now_week,
                    info, itchat_send, pkl_path)
 from helper.models import Course, Coursetime, Helper_user, Weekday
-from helper.wheel import parallel as pl
+from helper.utils import parallel as pl
 
 
 class Helper(object):

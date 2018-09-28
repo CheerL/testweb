@@ -4,8 +4,8 @@ import time
 import json
 import logging
 import socket
-from helper.async_itchat import async_itchat as itchat
-# from channels import Group
+# from helper.async_itchat import async_itchat as itchat
+import itchat
 from asgiref.sync import async_to_sync
 from helper.consumers import group_send
 from requests.packages.urllib3.exceptions import HTTPError, PoolError, MaxRetryError
