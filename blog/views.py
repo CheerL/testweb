@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Blogs, Categorys
+from blog.models import Blogs, Categorys
 
 # Create your views here.
 def get_category(result):

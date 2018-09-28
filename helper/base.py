@@ -4,8 +4,10 @@ import time
 import json
 import logging
 import socket
-import itchat
-from channels import Group
+from helper.async_itchat import async_itchat as itchat
+# from channels import Group
+from asgiref.sync import async_to_sync
+from helper.consumers import group_send
 from requests.packages.urllib3.exceptions import HTTPError, PoolError, MaxRetryError
 
 # 需要交叉引用的变量的提前声明
@@ -84,16 +86,26 @@ def error_report(error, user=None, up_rep=True):
     else:
         Helper.send(str(error), user)
 
-
-def info(msg, is_report=False):
+async def info(msg, is_report=False):
     '向文件输出日志, 并发送到log频道'
     logger.info(msg)
     try:
-        Group('log').send({'text': json.dumps({'msg': msg})})
+        await group_send('log', {'msg': msg})
     except EXCEPTIONS:
         pass
     if is_report:
         raise NotImplementedError(msg)
+
+# def info(msg, is_report=False):
+#     '向文件输出日志, 并发送到log频道'
+#     logger.info(msg)
+#     try:
+#         # await group_send('log', {'msg': msg})
+#         pass
+#     except EXCEPTIONS:
+#         pass
+#     if is_report:
+#         raise NotImplementedError(msg)
 
 
 def itchat_send(text, user_name):

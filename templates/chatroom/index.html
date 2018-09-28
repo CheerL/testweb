@@ -36,7 +36,7 @@
                 this.active_channel = channel
             } else {
                 var socket = new WebSocket(
-                    window.location.protocol === "https:" ? "wss:" : "ws:" + '//' +
+                    (window.location.protocol === "https:" ? "wss:" : "ws:") + '//' +
                     window.location.host + "/chatroom/channel=" + channel + '/'
                 )
                 socket.onopen = () => {

@@ -1,11 +1,11 @@
 '程序运行主体'
 import re
 import time
-import itchat
-from .base import EXCEPTIONS, info, HELPER, error_report, itchat_send
-from .wheel import parallel as pl
-from .wheel.recognize import spech_recognize
-from .models import Message
+from helper.async_itchat import async_itchat as itchat
+from helper.base import EXCEPTIONS, info, HELPER, error_report, itchat_send
+from helper.wheel import parallel as pl
+from helper.wheel.recognize import spech_recognize
+from helper.models import Message
 
 # ADMIN_HELP = '''?data?   None
 # ?robot          None

@@ -20,7 +20,7 @@ from . import view
 urlpatterns = [
     url(r'^$', view.hello),
     url(r'^admin/', admin.site.urls),
-    # url(r'^helper/', include('helper.urls')),
+    url(r'^helper/', include('helper.urls')),
     url(r'^blog/', include('blog.urls')),
     url(r'^chatroom/', include('chatroom.urls')),
     url(r'^ssh/', include('ssh.urls')),
