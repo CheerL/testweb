@@ -2,7 +2,7 @@
 import time
 import datetime
 import json
-from channels import Group
+from helper.consumers import group_send
 from django.db import models
 from ast import literal_eval
 
@@ -39,16 +39,16 @@ class Message(models.Model):
     def __str__(self):
         return '%s-%s-%s' % (self.user, self.robot.nick_name, self.time)
 
-    def send_to_client(self):
+    async def send_to_client(self):
         channel = 'chat-%s' % self.robot.nick_name
-        Group(channel).send({'text': json.dumps(dict(
+        await group_send(channel, dict(
             text=self.text,
             name=self.user,
             direction=self.direction,
             sender=self.robot.nick_name if self.direction == 'OUT' else self.user,
             IN=False if self.direction == 'OUT' else True,
             time=str(self.time)
-        ))})
+        ))
 
 
 class Weekday(models.Model):
@@ -153,7 +153,7 @@ class Helper_user(models.Model):
         self.save()
 
     def set_alias(self, alias=None):
-        import itchat
+        from helper.async_itchat import async_itchat as itchat
         itchat.set_alias(self.wx_UserName, alias if alias else self.user_name)
 
 

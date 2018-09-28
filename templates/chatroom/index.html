@@ -3,71 +3,83 @@
 
 <head>
     <title>django-websocket</title>
-    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
     <script type="text/javascript">
-        //<![CDATA[
-        var client_id = null;
-        var channel = 'default';
+        this.active_channel = null
+        this.socket = {}
 
-        function close_connection() {
-            if (window.socket) {
-                if (client_id) {
-                    $.post("close-connection", {
-                        client_id: client_id,
-                        channel: channel
-                    }, function(data) {
-                        if (data.res == "failed") {
-                            alert(data.msg);
-                        }
-                    });
+        check_websocket = channel => {
+            return (this.socket.hasOwnProperty(channel) && this.socket[channel] instanceof WebSocket)
+        }
+
+        close_websocket = channel => {
+            if (this.socket.hasOwnProperty(channel)) {
+                if (this.active_channel === channel) {
+                    this.active_channel = null
                 }
-                window.socket.close();
-                window.socket = null;
-                channel = $('#channel').val();
+                if (this.socket[channel] instanceof WebSocket) {
+                    this.socket[channel].close()
+                }
+                delete this.socket[channel]
             }
         }
-        window.onbeforeunload = function() {
-            close_connection();
-        };
-        $(function() {
-            $('#connect_websocket').click(function() {
-                channel = $('#channel').val();
-                $.post("is-connection", {
-                    client_id: client_id,
-                    channel: channel
-                }, function(data) {
-                    if (data.res == 'True') {
-                        console.log('Client has connection');
-                    } else if (data.res == 'False') {
-                        close_connection()
-                        client_id = data.client_id;
-                        var socket = new WebSocket("ws://" + window.location.host + "/chatroom/echo/client_id=" + client_id + "&channel=" + channel);
-                        socket.onopen = function() {
-                            console.log('WebSocket open');
-                        };
-                        socket.onmessage = function(message) {
-                            console.log('received: ' + message.data);
-                            $('#messagecontainer').prepend('<p>' + message.data + '</p>');
-                        };
-                        window.socket = socket;
-                    } else if (data.res == 'Error') {
-                        alert(data.msg);
-                    }
-                });
-            });
-            $('#send_message').click(function() {
-                if (!window.socket) {
-                    alert("Please connect server.");
-                } else {
-                    var text = $('#message').val()
-                    console.log('send: ' + text);
-                    window.socket.send(text);
+
+        close_all_websockets = () => {
+            for (const channel in this.socket) {
+                close_websocket(channel)
+            }
+            this.socket = {}
+        }
+
+        connect_websocket = channel => {
+            if (check_websocket(channel)) {
+                this.active_channel = channel
+            } else {
+                var socket = new WebSocket(
+                    (window.location.protocol === "https:" ? "wss:" : "ws:") + '//' +
+                    window.location.host + "/chatroom/channel=" + channel + '/'
+                )
+                socket.onopen = () => {
+                    this.active_channel = channel
+                    console.log('WebSocket open')
                 }
-            });
-            $('#close_websocket').click(function() {
-                close_connection();
-            });
-        });
+                socket.onclose = () => {
+                    console.log('WebSocket close')
+                }
+                socket.onmessage = message => {
+                    const data = JSON.parse(message.data)
+                    const from_channel = data['channel']
+                    const msg = data['msg']
+                    $('#messagecontainer').prepend('<p>From: ' + from_channel + ' || ' + msg + '</p>')
+                }
+                this.socket[channel] = socket
+            }
+        }
+
+        send_message = text => {
+            if (this.active_channel && check_websocket(this.active_channel)) {
+                this.socket[this.active_channel].send(text)
+            }
+        }
+
+        window.onbeforeunload = close_all_websockets
+
+        $(function() {
+            $('#connect_websocket').click(() => {
+                const channel = $('#channel').val()
+                connect_websocket(channel)
+            })
+
+            $('#send_message').click(() => {
+                const text = $('#message').val()
+                send_message(text)
+            })
+
+            $('#close_websocket').click(() => {
+                const channel = $('#channel').val()
+                close_websocket(channel)
+            })
+        })
     </script>
 </head>
 

@@ -1,15 +1,20 @@
 import os
 import json
+import time
+# from helper.async_itchat import async_itchat as itchat
 import itchat
+import asyncio
+from functools import wraps
+from asgiref.sync import async_to_sync
 from ast import literal_eval
-from channels import Group
+from helper.consumers import group_send
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
-from .wheel import parallel as pl
-from .models import Robot, Message
-from .main import HELPER
-from .base import info, EXCEPTIONS, QR_pic, WX_pic, HEAD_PIC, log_read, pkl_path, str_multi_replace
+from helper.utils import async_utils, parallel as pl
+from helper.models import Robot, Message
+from helper.main import HELPER
+from helper.base import info, EXCEPTIONS, QR_pic, WX_pic, HEAD_PIC, log_read, pkl_path, str_multi_replace
 
 MSG_init = '请点击登录按钮'
 MSG_error = '错误,请重新登录'
@@ -36,69 +41,17 @@ def index(request):
 def redirect_index(request):
     return HttpResponseRedirect('/helper/')
 
-
-# 跳转页面部分
-def run_page(request):
-    if not HELPER.IS_LOGIN:
-        return render(request, 'helper/return_to_login.html')
-    res = dict(
-        status=HELPER.IS_LOGIN,
-        item_list=ITEM_LIST,
-        page='login'
-    )
-    return render(request, 'helper/run.html', res)
-
-
-def login_page(request):
-    status = HELPER.IS_LOGIN
-    msg = MSG_login if status else MSG_init
-    res = dict(
-        status=status,
-        msg=msg,
-        pic=WX_pic,
-    )
-    return render(request, 'helper/login.html', res)
-
-
-def log_page(request):
-    if not HELPER.IS_LOGIN:
-        return render(request, 'helper/return_to_login.html')
-    return render(request, 'helper/log.html')
-
-
-def chat_page(request):
-    if not HELPER.IS_LOGIN:
-        return render(request, 'helper/return_to_login.html')
-    return render(request, 'helper/chat.html')
-
-
-def setting_page(request):
-    if not HELPER.IS_LOGIN:
-        return render(request, 'helper/return_to_login.html')
-    item_list = vars(HELPER.settings).items()
-    bool_list = [
-        {
-            'name': name,
-            'show': HELPER.settings.trans_to_chinese(name),
-            'val': val
-        }
-        for name, val in item_list if isinstance(val, bool)
-    ]
-    num_list = [
-        {
-            'name': name,
-            'show': HELPER.settings.trans_to_chinese(name),
-            'val': val if name != 'FLEXIBLE_DAY' else HELPER.settings.trans_flexible_day()
-        }
-        for name, val in item_list if not isinstance(val, bool) and name != 'LAST_UPDATE'
-    ]
-    show_list = []
-    return render(
-        request,
-        'helper/setting.html',
-        {'bool_list': bool_list, 'num_list': num_list, 'show_list': show_list}
-    )
-
+def post_allowed_only(func):
+    @wraps(func)
+    def inner_func(request, *args, **kwargs):
+        try:
+            if request.method == 'POST':
+                return func(request, *args, **kwargs)
+            else:
+                raise NotImplementedError('访问错误')
+        except EXCEPTIONS as error:
+            return JsonResponse(dict(res=False, msg=str(error)))
+    return inner_func
 
 # 登陆 api
 def login_init(request):
@@ -114,27 +67,30 @@ def login_init(request):
 
 
 @csrf_exempt
-def login(request):
+@post_allowed_only
+@async_to_sync
+async def login(request):
     '终于登录了'
-    def qr_func(uuid, status, qrcode):
+    async def qr_func(uuid, status, qrcode):
         if qrcode:
-            info('成功获取二维码')
             with open(QR_pic, 'wb') as pic:
                 pic.write(qrcode)
-            Group('login').send({'text': json.dumps(dict(
+
+            await info('成功获取二维码')
+            await group_send('login', dict(
                 status=1,
                 msg=MSG_scan,
                 pic=QR_pic
-            ))})
+            ))
         else:
-            info('等待确认登录')
-            Group('login').send({'text': json.dumps(dict(
+            await info('等待确认登录')
+            await group_send('login', dict(
                 status=1,
                 msg=MSG_confirm,
                 pic=WX_pic
-            ))})
+            ))
 
-    def login_func():
+    async def login_func():
         user = itchat.search_friends()
         itchat.get_head_img(userName=user['UserName'], picDir=HEAD_PIC)
         robot = Robot.objects.get_or_create(uin=user['Uin'])[0]
@@ -142,84 +98,82 @@ def login(request):
         robot.save()
         HELPER.robot = robot
         HELPER.robot.apply_settings(HELPER.settings)
-        info('%s成功登录' % robot.nick_name)
+        await info('%s成功登录' % robot.nick_name)
         HELPER.wxname_update()
         HELPER.remind()
         HELPER.IS_LOGIN = True
         if os.path.exists(QR_pic):
             os.remove(QR_pic)
-        Group('login').send({'text': json.dumps(dict(
+        await group_send('login', dict(
             status=2,
             msg='%s成功登录' % HELPER.robot.nick_name,
             pic=HEAD_PIC
-        ))})
+        ))
 
-    def exit_func():
+    async def exit_func():
         HELPER.logout()
-        info(MSG_logout)
+        await info(MSG_logout)
 
-    def login_main():
+    async def login_main():
         try:
-            info('尝试登陆')
-            itchat.auto_login(True, pkl_path, False, QR_pic,
-                              qr_func, login_func, exit_func)
+            # loop, thread = async_utils.get_loop_and_thread()
+            await info('尝试登陆')
+            itchat.auto_login(
+                True, pkl_path, False, QR_pic,
+                async_utils.async_wrap(qr_func),
+                async_utils.async_wrap(login_func),
+                async_utils.async_wrap(exit_func)
+            )
             itchat.run(debug=True, blockThread=False)
-        except:
-            Group('login').send({'text': json.dumps(dict(
+        except Exception as error:
+            print(error)
+            await group_send('login', dict(
                 status=1,
                 msg=MSG_error,
                 pic=WX_pic
-            ))})
+            ))
 
-    if request.method == 'GET':
-        if not HELPER.IS_LOGIN:
-            return render(request, 'helper/return_to_login.html')
-        else:
-            return login_page(request)
-    else:
-        pl.run_thread([(login_main, ())], name='login', is_lock=False)
-        return HttpResponse()
+    await login_main()
+    return JsonResponse({'res': True})
 
-
-def login_stop(req):
+@async_to_sync
+async def login_stop(request):
     try:
         if os.path.exists(pkl_path):
             os.remove(pkl_path)
-        pl.kill_thread(name='login')
         HELPER.logout()
     except Exception as error:
-        Group('login').send({'text': json.dumps(dict(
+        await group_send('login', dict(
             status=1,
             msg=MSG_error,
             pic=WX_pic
-        ))})
+        ))
         return JsonResponse(dict(res=False, msg=str(error)))
     else:
-        Group('login').send({'text': json.dumps(dict(
+        await group_send('login', dict(
             status=0,
             msg=MSG_init,
             pic=WX_pic
-        ))})
+        ))
         return JsonResponse(dict(res=True))
 
 
 @csrf_exempt
-def logout(request):
+@post_allowed_only
+@async_to_sync
+async def logout(request):
     '退出登录'
-    if request.method == 'GET':
-        return render(request, 'helper/return_to_login.html')
-    else:
-        if HELPER.IS_LOGIN:
-            HELPER.logout()
-            if os.path.exists(pkl_path):
-                os.remove(pkl_path)
-            info(MSG_logout)
-            Group('login').send({'text': json.dumps(dict(
-                status=0,
-                msg=MSG_init,
-                pic=WX_pic
-            ))})
-        return HttpResponse(MSG_logout)
+    if HELPER.IS_LOGIN:
+        HELPER.logout()
+        if os.path.exists(pkl_path):
+            os.remove(pkl_path)
+        await info(MSG_logout)
+        await group_send('login', dict(
+            status=0,
+            msg=MSG_init,
+            pic=WX_pic
+        ))
+    return HttpResponse()
 
 
 # 日志 api
@@ -234,9 +188,9 @@ def get_log_all(request):
 
 
 @csrf_exempt
-def send_log(request):
-    if request.method == 'POST':
-        Group('log').send({'text': json.dumps({"msg": request.POST['msg']})})
+@async_to_sync
+async def send_log(request):
+    await group_send('log', {"msg": request.POST['msg']})
     return HttpResponse()
 
 
@@ -263,35 +217,25 @@ def chat_user(request):
 
 
 @csrf_exempt
+@post_allowed_only
 def chat_send(request):
     '主动发送消息'
-    try:
-        if request.method == 'POST':
-            msg = request.POST['msg']
-            user = request.POST['user']
-            HELPER.send(msg, user)
-            return JsonResponse(dict(res=True))
-        else:
-            raise NotImplementedError('访问错误')
-    except EXCEPTIONS as error:
-        return JsonResponse(dict(res=False, msg=str(error)))
+    msg = request.POST['msg']
+    user = request.POST['user']
+    HELPER.send(msg, user)
+    return JsonResponse(dict(res=True))
 
 @csrf_exempt
+@post_allowed_only
 def chat_history(request):
     '获取历史消息'
     def history(user):
         for message in Message.objects.filter(robot=HELPER.robot).filter(user=user):
             message.send_to_client()
 
-    try:
-        if request.method == 'POST':
-            user = request.POST['user']
-            pl.run_thread_pool([(history, (user,))], is_lock=False)
-            return JsonResponse(dict(res=True))
-        else:
-            raise NotImplementedError('访问错误')
-    except EXCEPTIONS as error:
-        return JsonResponse(dict(res=False, msg=str(error)))
+    user = request.POST['user']
+    pl.run_thread_pool([(history, (user,))], is_lock=False)
+    return JsonResponse(dict(res=True))
 
 
 # 设置api
@@ -328,15 +272,15 @@ def get_setting(request):
 
 
 @csrf_exempt
-def change_setting(request):
-    if request.method == 'POST' and HELPER.IS_LOGIN:
+@post_allowed_only
+@async_to_sync
+async def change_setting(request):
+    if HELPER.IS_LOGIN:
         try:
             res = json.loads(request.body.decode())
             HELPER.settings.change_settings(res)
             HELPER.robot.save_settings(HELPER.settings)
             return JsonResponse({'res': True, 'msg': '修改成功'})
         except EXCEPTIONS as error:
-            info(error)
+            await info(error)
             return JsonResponse({'res': False, 'msg': '修改失败'})
-    else:
-        return JsonResponse({'res': False, 'msg': '访问错误'})

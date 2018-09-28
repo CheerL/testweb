@@ -14,7 +14,6 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -31,14 +30,14 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    # 'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'helper',
+    'helper',
     'blog',
     'chatroom',
     'channels',
@@ -47,12 +46,12 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -78,33 +77,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'web.wsgi.application'
 ASGI_APPLICATION = 'web.routing.application'
-# 内存后端
-# CHANNEL_LAYERS = {
-#     'default': {
-#         'BACKEND': 'asgiref.inmemory.ChannelLayer',
-#         'ROUTING': 'web.routing.channel_routing'
-#     },
-# }
-# redis后端
+
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "asgi_redis.RedisChannelLayer",
-        # "CONFIG": {
-        #     "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
-        # },
-        "ROUTING": "web.routing.channel_routing",
-    },
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [('127.0.0.1', 6379)],
+        }
+    }
 }
-# ipc后端
-# CHANNEL_LAYERS = {
-#     "default": {
-#         "BACKEND": "asgi_ipc.IPCChannelLayer",
-#         "ROUTING": "my_project.routing.channel_routing",
-#         "CONFIG": {
-#             "prefix": "mysite",
-#         },
-#     },
-# }
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
@@ -113,10 +94,6 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        # 'NAME': os.path.join(BASE_DIR, 'db1/db.sqlite3'),
-        # 'NAME': os.path.join(BASE_DIR, 'db2/db.sqlite3'),
-        # 'NAME': os.path.join(BASE_DIR, 'db3/db.sqlite3'),
-        # 'NAME': os.path.join(BASE_DIR, 'db4/db.sqlite3'),
     }
 }
 
@@ -175,4 +152,4 @@ STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.AppDirectoriesFinder"
 )
 
-STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

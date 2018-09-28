@@ -1,11 +1,12 @@
 '程序运行主体'
 import re
 import time
+# from helper.async_itchat import async_itchat as itchat
 import itchat
-from .base import EXCEPTIONS, info, HELPER, error_report, itchat_send
-from .wheel import parallel as pl
-from .wheel.recognize import spech_recognize
-from .models import Message
+from helper.base import EXCEPTIONS, info, HELPER, error_report, itchat_send
+from helper.utils import parallel as pl
+from helper.utils.recognize import spech_recognize
+from helper.models import Message
 
 # ADMIN_HELP = '''?data?   None
 # ?robot          None
@@ -114,7 +115,7 @@ def text_reply(msg, text, send_user_name, message_type, send_user, user, alias, 
 
 def voice_reply(msg, text, send_user_name, message_type, send_user, user, alias, name):
     '语音消息的回复'
-    voice_path = 'static/voice/%s' % (msg['FileName'])
+    voice_path = 'static/voices/%s' % (msg['FileName'])
     text(voice_path)
 
     info_text = '%s的语音' % (name)

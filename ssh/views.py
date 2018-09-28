@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.template import RequestContext
 from django import forms
-from .models import User
+from ssh.models import User
 # Create your views here.
 
 
