@@ -16,7 +16,7 @@ def no_same_name(cls):
     return _no_same_name
 
 
-@no_same_name
+# @no_same_name
 class Logger(logging.Logger):
     """
     LogHandler

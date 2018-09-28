@@ -1,4 +1,5 @@
 import json
+import time
 import os
 import re
 from functools import wraps
@@ -72,6 +73,7 @@ def login_init(request):
 @async_to_sync
 async def login(request):
     '终于登录了'
+    @async_utils.async_wrap()
     async def qr_func(uuid, status, qrcode):
         if qrcode:
             with open(QR_PIC, 'wb') as pic:
@@ -90,7 +92,9 @@ async def login(request):
                 msg=MSG_COMFIRM,
                 pic=WX_PIC
             ))
-
+        time.sleep(1)
+    
+    @async_utils.async_wrap()
     async def login_func():
         user = itchat.search_friends()
         itchat.get_head_img(userName=user['UserName'], picDir=HEAD_PIC)
@@ -101,7 +105,6 @@ async def login(request):
         HELPER.robot.apply_settings(HELPER.settings)
         await HELPER.logger.info('%s成功登录' % robot.nick_name)
         HELPER.wxname_update()
-        HELPER.remind()
         HELPER.IS_LOGIN = True
         if os.path.exists(QR_PIC):
             os.remove(QR_PIC)
@@ -111,6 +114,7 @@ async def login(request):
             pic=HEAD_PIC
         ))
 
+    @async_utils.async_wrap()
     async def exit_func():
         HELPER.logout()
         await HELPER.logger.info(MSG_LOGOUT)
@@ -121,9 +125,7 @@ async def login(request):
             await HELPER.logger.info('尝试登陆')
             itchat.auto_login(
                 True, PKL_PATH, False, QR_PIC,
-                async_utils.async_wrap(qr_func),
-                async_utils.async_wrap(login_func),
-                async_utils.async_wrap(exit_func)
+                qr_func, login_func, exit_func
             )
             itchat.run(debug=True, blockThread=False)
         except EXCEPTIONS as error:
@@ -226,24 +228,27 @@ def chat_user(request):
 
 @csrf_exempt
 @post_allowed_only
-def chat_send(request):
+@async_to_sync
+async def chat_send(request):
     '主动发送消息'
     msg = request.POST['msg']
     user = request.POST['user']
-    HELPER.send(msg, user)
+    await HELPER.send(msg, user)
     return JsonResponse(dict(res=True, msg=''))
 
 
 @csrf_exempt
 @post_allowed_only
-def chat_history(request):
+@async_to_sync
+async def chat_history(request):
     '获取历史消息'
-    def history(user):
+    # @async_utils.async_wrap()
+    async def history(user):
         for message in Message.objects.filter(robot=HELPER.robot).filter(user=user):
-            message.send_to_client()
+            await message.send_to_client()
 
     user = request.POST['user']
-    parallel.run_thread_pool([(history, (user,))], is_lock=False)
+    await history(user)
     return JsonResponse(dict(res=True, msg=''))
 
 
@@ -257,20 +262,8 @@ def get_setting(request):
         }
         for name, val in item_list if isinstance(val, bool)
     ]
-    text_list = [
-        {
-            'name': name,
-            'val': val
-        }
-        for name, val in item_list
-        if not isinstance(val, bool) and name != 'LAST_UPDATE' and name != 'FLEXIBLE_DAY'
-    ]
-    select_list = [
-        {
-            'name': 'FLEXIBLE_DAY',
-            'val': HELPER.settings.trans_flexible_day()
-        }
-    ]
+    text_list = []
+    select_list = []
     return JsonResponse({
         'bool_list': bool_list,
         'text_list': text_list,

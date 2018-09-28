@@ -19,7 +19,7 @@ class Robot(models.Model):
         return '%s-%s' % (self.nick_name, self.uin)
 
     def save_settings(self, settings):
-        self.settings = str(settings.trans_to_dict())
+        self.settings = str(vars(settings))
         self.save()
 
     def apply_settings(self, settings):

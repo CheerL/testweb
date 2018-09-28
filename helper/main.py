@@ -41,6 +41,7 @@ async def add_friend(msg):
 @async_utils.async_wrap()
 async def reply(msg):
     try:
+        print(msg)
         text = msg['Text']
         message_type = msg['Type']
         send_user_name = msg['FromUserName']
@@ -49,13 +50,13 @@ async def reply(msg):
         alias = user['RemarkName']
         nick_name = user['NickName']
         name = alias if alias else nick_name
-
+        print('?')
         if message_type == itchat.content.TEXT:
             await text_reply(msg, text, send_user_name, message_type,
-                       send_user, user, alias, name)
+                             send_user, user, alias, name)
         elif message_type == itchat.content.VOICE:
             await voice_reply(msg, text, send_user_name, message_type,
-                        send_user, user, alias, name)
+                              send_user, user, alias, name)
 
     except EXCEPTIONS as error:
         await HELPER.logger.error_report(error, send_user_name, False)
@@ -97,7 +98,7 @@ async def voice_reply(msg, text, send_user_name, message_type, send_user, user, 
 
     info_text = '%s的语音' % (name)
     await info_save_message(str(voice_path), message_type,
-                      send_user, user, name, info_text)
+                            send_user, user, name, info_text)
 
     if HELPER.settings.VOICE_REPLY:
         translate = recognize.spech_recognize(voice_path)

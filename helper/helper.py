@@ -14,7 +14,7 @@ from helper.utils import logger
 class HelperLogger(logger.Logger):
     async def info(self, msg, is_report=False):
         '向文件输出日志, 并发送到log频道'
-        super(HelperLogger, self).info(msg)
+        super().info(msg)
         try:
             await group_send('log', {'msg': msg})
         except EXCEPTIONS:
@@ -164,7 +164,7 @@ class Helper:
             os.remove(PKL_PATH)
 
 
-class Setting(object):
+class Setting:
     '小助手设置'
     trans_dict = dict(
         ROBOT_REPLY='智能回复开关',
@@ -182,10 +182,9 @@ class Setting(object):
              for name, value in vars(self).items()]
         )
 
-    async def change_settings(self, items):
+    def change_settings(self, items):
         self.VOICE_REPLY = items['VOICE_REPLY']
         self.ROBOT_REPLY = items['ROBOT_REPLY']
-        await Helper.logger.info("修改设置 %s" % items)
 
 
 HELPER = Helper()
