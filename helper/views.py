@@ -201,6 +201,13 @@ async def send_log(request):
 
 # 聊天 api
 def chat_user(request):
+    def get_chat_users_head(user_list):
+        def chat_user_head(user):
+            HELPER.get_head_img(user['user_name'], user['path'], user['name'])
+
+        req_list = [(chat_user_head, (user,)) for user in user_list]
+        parallel.run_thread_pool(req_list, is_lock=False)
+
     user_list = [{
         'name': user['RemarkName'] if user['RemarkName'] else user['NickName'],
         'path': 'static/head/%s.png' % re.subn(r'[\\\"\'/.*<>|:?]', '_', user['NickName'])[0],
@@ -210,12 +217,6 @@ def chat_user(request):
     get_chat_users_head(user_list)
     return JsonResponse(dict(user_list=user_list, count=len(user_list)))
 
-def get_chat_users_head(user_list):
-    def chat_user_head(user):
-        HELPER.get_head_img(user['user_name'], user['path'], user['name'])
-
-    req_list = [(chat_user_head, (user,)) for user in user_list]
-    parallel.run_thread_pool(req_list, is_lock=False)
 
 
 @csrf_exempt
