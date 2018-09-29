@@ -27,13 +27,12 @@ def get_loop_and_thread():
     loop_thread.start()
     return loop, loop_thread
 
-def async_run(async_func, loop=None, thread=None, callback=None, *args, **kwargs):
+def async_run(async_func, loop=None, thread=None, callback=kill_callback, *args, **kwargs):
     if loop is None or thread is None:
         loop, thread = get_loop_and_thread()
-        callback = kill_callback
     asyncio.run_coroutine_threadsafe(target_wrap(async_func(*args, **kwargs), loop, thread, callback), loop)
 
-def async_wrap(loop=None, thread=None, callback=None):
+def async_wrap(loop=None, thread=None, callback=kill_callback):
     def _async_wrap(async_func):
         @wraps(async_func)
         def __async_wrap(*args, **kwargs):

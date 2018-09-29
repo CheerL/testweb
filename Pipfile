@@ -1,0 +1,22 @@
+[[source]]
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+verify_ssl = true
+name = "ts"
+
+[packages]
+django = "==1.11"
+channels = "*"
+whitenoise = "*"
+itchat = "*"
+threadpool = "*"
+requests = "*"
+"beautifulsoup4" = "*"
+pillow = "*"
+daphne = "*"
+lxml = "*"
+channels-redis = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.6"

@@ -15,6 +15,8 @@ from helper.helper import HELPER
 from helper.models import Message, Robot
 from helper.setting import EXCEPTIONS, HEAD_PIC, PKL_PATH, QR_PIC, WX_PIC
 from helper.utils import async_utils, parallel
+import helper.reply
+
 
 MSG_INIT = '请点击登录按钮'
 MSG_ERROR = '错误,请重新登录'
@@ -92,8 +94,7 @@ async def login(request):
                 msg=MSG_COMFIRM,
                 pic=WX_PIC
             ))
-        time.sleep(1)
-    
+
     @async_utils.async_wrap()
     async def login_func():
         user = itchat.search_friends()
@@ -121,7 +122,6 @@ async def login(request):
 
     async def login_main():
         try:
-            # loop, thread = async_utils.get_loop_and_thread()
             await HELPER.logger.info('尝试登陆')
             itchat.auto_login(
                 True, PKL_PATH, False, QR_PIC,
@@ -201,29 +201,21 @@ async def send_log(request):
 
 # 聊天 api
 def chat_user(request):
+    user_list = [{
+        'name': user['RemarkName'] if user['RemarkName'] else user['NickName'],
+        'path': 'static/head/%s.png' % re.subn(r'[\\\"\'/.*<>|:?]', '_', user['NickName'])[0],
+        'user_name': user['UserName']
+        } for user in itchat.get_friends()]
+
+    get_chat_users_head(user_list)
+    return JsonResponse(dict(user_list=user_list, count=len(user_list)))
+
+def get_chat_users_head(user_list):
     def chat_user_head(user):
         HELPER.get_head_img(user['user_name'], user['path'], user['name'])
 
-    def str_multi_replace(ori_str):
-        '一次性替换多个字符对, 返回结果字符串'
-        replace_str = re.subn(r'[\\\"\'/.*<>|:?]', '_', ori_str)
-        return replace_str[0]
-
-    user_list = []
-    for user in itchat.get_friends():
-        temp_dict = {
-            'name': user['RemarkName'] if user['RemarkName'] else user['NickName'],
-            'nick_name': str_multi_replace(user['NickName']),
-            'user_name': user['UserName']
-        }
-        temp_dict['path'] = 'static/head/%s.png' % temp_dict['nick_name']
-        del temp_dict['nick_name']
-        user_list.append(temp_dict)
-
     req_list = [(chat_user_head, (user,)) for user in user_list]
     parallel.run_thread_pool(req_list, is_lock=False)
-
-    return JsonResponse(dict(user_list=user_list, count=len(user_list)))
 
 
 @csrf_exempt
@@ -249,6 +241,7 @@ async def chat_history(request):
 
     user = request.POST['user']
     await history(user)
+    await HELPER.logger.info('读取与用户%s的聊天记录' % user)
     return JsonResponse(dict(res=True, msg=''))
 
 
@@ -278,7 +271,7 @@ async def change_setting(request):
     if HELPER.IS_LOGIN:
         try:
             res = json.loads(request.body.decode())
-            HELPER.settings.change_settings(res)
+            await HELPER.settings.change_settings(res)
             HELPER.robot.save_settings(HELPER.settings)
             return JsonResponse({'res': True, 'msg': '修改成功'})
         except EXCEPTIONS as error:

@@ -5,8 +5,9 @@ import time
 
 import itchat
 import requests
+
 from helper.consumers import group_send
-from helper.models import Helper_user
+from helper.models import Helper_user, Message
 from helper.setting import EXCEPTIONS, LOG_PATH, TL_KEY, PKL_PATH
 from helper.utils import logger
 
@@ -21,14 +22,6 @@ class HelperLogger(logger.Logger):
             pass
         if is_report:
             raise NotImplementedError(msg)
-
-    async def error_report(self, error, user=None, up_rep=True):
-        '错误处理, 向用户发送错误信息或继续上报错误'
-        await self.info(error)
-        if up_rep:
-            raise NotImplementedError(error)
-        else:
-            Helper.send(str(error), user)
 
     def log_read(self, count=1, start=0):
         '从倒数start行读取count行日志, 返回一个列表'
@@ -51,7 +44,8 @@ class Helper:
 
     def __init__(self):
         self.IS_LOGIN = False
-        self.settings = Setting()
+        self.settings = Setting(self)
+        self.user = None
 
     @staticmethod
     def get_head_img(user_name, pic_dir, name):
@@ -61,46 +55,6 @@ class Helper:
                 itchat.get_head_img(userName=user_name, picDir=pic_dir)
             except:
                 pass
-
-    @staticmethod
-    async def send(text, user=None):
-        '搜索用户并发送, 默认发给自己'
-        def get_user_name(user):
-            '自动处理  获取用户名'
-            if isinstance(user, dict):
-                if 'UserName' in user.keys():
-                    return user['UserName']
-
-            elif isinstance(user, Helper_user):
-                return user.wx_UserName
-
-            elif isinstance(user, str):
-                if '@' in user:
-                    return user
-                else:
-                    if itchat.search_friends(nickName=user):
-                        return itchat.search_friends(nickName=user)[0]['UserName']
-                    elif itchat.search_friends(name=user):
-                        return itchat.search_friends(name=user)[0]['UserName']
-            else:
-                return None
-        # send函数主体
-        try:
-            user_name = get_user_name(user)
-            itchat.send(text, user_name)
-            user = itchat.search_friends(userName=user_name)
-            name = user['RemarkName'] if user['RemarkName'] else user['NickName']
-            message = Message.objects.create(
-                text=text,
-                user=name,
-                robot=HELPER.robot,
-                message_type='Text',
-                direction='OUT'
-            )
-            await self.logger.info('发出给%s的消息: %s' % (name, text))
-            await message.send_to_client()
-        except EXCEPTIONS as error:
-            await self.logger.info(error)
 
     @staticmethod
     def get_robot_response(msg):
@@ -122,6 +76,14 @@ class Helper:
             # 将会返回一个None
             return
 
+    async def error_report(self, error, user=None, up_report=True):
+        '错误处理, 向用户发送错误信息或继续上报错误'
+        await self.logger.info(error)
+        if up_report:
+            raise NotImplementedError(error)
+        else:
+            self.send(str(error), user)
+
     def search_list(self, user_name=None):
         '在用户列表中查找当前用户是否已经绑定'
         if user_name is not None:
@@ -132,6 +94,60 @@ class Helper:
                 return self.add_user(user_name)
         else:
             return Helper_user.objects.filter(robot=self.robot)
+
+    async def create_message(self, text, message_type,
+                             name, user, send_user):
+        '写入日志并保存消息'
+        if user['NickName'] == send_user['NickName']:
+            direction = 'IN'
+            msg_pattern = '收到来自%s的消息: %s'
+        else:
+            direction = 'OUT'
+            msg_pattern = '发出给%s的消息: %s'
+
+        message = Message.objects.create(
+            text=text,
+            user=name,
+            robot=self.robot,
+            message_type=message_type,
+            direction=direction
+        )
+        await self.logger.info(msg_pattern % (name, text))
+        await message.send_to_client()
+
+    async def send(self, text, user=None):
+        '搜索用户并发送, 默认发给自己'
+        def get_user_name(user):
+            '自动处理  获取用户名'
+            if isinstance(user, dict):
+                if 'UserName' in user.keys():
+                    return user['UserName']
+
+            elif isinstance(user, Helper_user):
+                return user.wx_UserName
+
+            elif isinstance(user, str):
+                if '@' in user:
+                    return user
+                else:
+                    if itchat.search_friends(nickName=user):
+                        return itchat.search_friends(nickName=user)[0]['UserName']
+                    elif itchat.search_friends(name=user):
+                        return itchat.search_friends(name=user)[0]['UserName']
+            else:
+                return None
+
+        # send函数主体
+        try:
+            send_user = {'NickName': self.robot.nick_name}
+            user_name = get_user_name(user)
+            user = itchat.search_friends(userName=user_name)
+            name = user['RemarkName'] if user['RemarkName'] else user['NickName']
+            itchat.send(text, user_name)
+            await self.create_message(text, itchat.content.TEXT,
+                                      name, user, send_user)
+        except EXCEPTIONS as error:
+            await self.logger.info(error)
 
     def wxname_update(self):
         '更新用户名, 在登陆时调用'
@@ -171,8 +187,9 @@ class Setting:
         VOICE_REPLY='语音回复开关',
     )
 
-    def __init__(self):
+    def __init__(self, helper):
         '设置参数初始化'
+        self.helper = helper
         self.ROBOT_REPLY = True
         self.VOICE_REPLY = True
 
@@ -182,9 +199,11 @@ class Setting:
              for name, value in vars(self).items()]
         )
 
-    def change_settings(self, items):
+    async def change_settings(self, items):
         self.VOICE_REPLY = items['VOICE_REPLY']
         self.ROBOT_REPLY = items['ROBOT_REPLY']
+        await self.helper.logger.info('修改设置成功')
+
 
 
 HELPER = Helper()
