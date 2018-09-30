@@ -8,7 +8,7 @@ import requests
 
 from helper.consumers import group_send
 from helper.models import Helper_user, Message
-from helper.setting import EXCEPTIONS, LOG_PATH, TL_KEY, PKL_PATH
+from helper.setting import EXCEPTIONS, LOG_PATH, TL_KEY, HELPER_PKL
 from helper.utils import logger
 
 
@@ -176,8 +176,8 @@ class Helper:
         self.IS_LOGIN = False
         self.robot = None
         itchat.logout()
-        if os.path.exists(PKL_PATH):
-            os.remove(PKL_PATH)
+        if os.path.exists(HELPER_PKL):
+            os.remove(HELPER_PKL)
 
 
 class Setting:
