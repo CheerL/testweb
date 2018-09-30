@@ -37,7 +37,7 @@ COURSE_DICT = [
 
 
 for path in [LOG_PATH, MEDIA_PATH, MEDIA_IMAGE_PATH, MEDIA_VOICE_PATH, MEDIA_HEAD_PATH]:
-    if os.path.exists(path):
-        if os.path.isfile(path):
-            os.remove(path)
+    if os.path.exists(path) and os.path.isfile(path):
+        os.remove(path)
+    if not os.path.exists(path):
         os.makedirs(path)
