@@ -34,3 +34,10 @@ COURSE_DICT = [
     [13, 30], [14, 20], [15, 30], [16, 20],
     [19, 00], [19, 50], [20, 50], [21, 30]
 ]
+
+
+for path in [LOG_PATH, MEDIA_PATH, MEDIA_IMAGE_PATH, MEDIA_VOICE_PATH, MEDIA_HEAD_PATH]:
+    if os.path.exists(path):
+        if os.path.isfile(path):
+            os.remove(path):
+        os.makedirs(path)
