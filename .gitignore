@@ -11,6 +11,7 @@ media/images/*
 test*
 *.ipynb
 *.csv
+*.rdb
 *.mp3
 *.pyc
 *.pkl
