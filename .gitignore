@@ -5,9 +5,9 @@ collected_static/*
 **/__pycache__/*
 **/migrations/*
 **/.ipynb_checkpoints/*
-static/head/*
-static/voices/*
-static/images/*
+media/head/*
+media/voices/*
+media/images/*
 test*
 *.ipynb
 *.csv

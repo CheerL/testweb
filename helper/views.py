@@ -2,7 +2,6 @@ import json
 import time
 import os
 import re
-from functools import wraps
 
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
@@ -13,8 +12,8 @@ from asgiref.sync import async_to_sync
 from helper.consumers import group_send
 from helper.helper import HELPER
 from helper.models import Message, Robot
-from helper.setting import EXCEPTIONS, HEAD_PIC, PKL_PATH, QR_PIC, WX_PIC
-from helper.utils import async_utils, parallel
+from helper.setting import EXCEPTIONS, HEAD_PIC, HELPER_PKL, QR_PIC, WX_PIC
+from helper.utils import async_utils, parallel, post_allowed_only, time_limit
 import helper.reply
 
 
@@ -42,22 +41,7 @@ def index(request):
 def redirect_index(request):
     return HttpResponseRedirect('/helper/')
 
-
-def post_allowed_only(func):
-    @wraps(func)
-    def inner_func(request, *args, **kwargs):
-        try:
-            if request.method == 'POST':
-                return func(request, *args, **kwargs)
-            else:
-                raise NotImplementedError('访问错误')
-        except EXCEPTIONS as error:
-            return JsonResponse(dict(res=False, msg=str(error)))
-    return inner_func
-
 # 登陆 api
-
-
 def login_init(request):
     if HELPER.IS_LOGIN:
         status = 2
@@ -124,7 +108,7 @@ async def login(request):
         try:
             await HELPER.logger.info('尝试登陆')
             itchat.auto_login(
-                True, PKL_PATH, False, QR_PIC,
+                True, HELPER_PKL, False, QR_PIC,
                 qr_func, login_func, exit_func
             )
             itchat.run(debug=True, blockThread=False)
@@ -143,8 +127,8 @@ async def login(request):
 @async_to_sync
 async def login_stop(request):
     try:
-        if os.path.exists(PKL_PATH):
-            os.remove(PKL_PATH)
+        if os.path.exists(HELPER_PKL):
+            os.remove(HELPER_PKL)
         HELPER.logout()
     except EXCEPTIONS as error:
         await group_send('login', dict(
@@ -169,8 +153,8 @@ async def logout(request):
     '退出登录'
     if HELPER.IS_LOGIN:
         HELPER.logout()
-        if os.path.exists(PKL_PATH):
-            os.remove(PKL_PATH)
+        if os.path.exists(HELPER_PKL):
+            os.remove(HELPER_PKL)
         await HELPER.logger.info(MSG_LOGOUT)
         await group_send('login', dict(
             status=0,
@@ -200,6 +184,7 @@ async def send_log(request):
 
 
 # 聊天 api
+@time_limit(5 * 60)
 def chat_user(request):
     def get_chat_users_head(user_list):
         def chat_user_head(user):
@@ -210,7 +195,7 @@ def chat_user(request):
 
     user_list = [{
         'name': user['RemarkName'] if user['RemarkName'] else user['NickName'],
-        'path': 'static/head/%s.png' % re.subn(r'[\\\"\'/.*<>|:?]', '_', user['NickName'])[0],
+        'path': 'media/head/%s.png' % re.subn(r'[\\\"\'/.*<>|:?]', '_', user['NickName'])[0],
         'user_name': user['UserName']
         } for user in itchat.get_friends()]
 

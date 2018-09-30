@@ -68,7 +68,7 @@ async def text_reply(text, message_type, name, user, send_user):
 
 async def voice_reply(file_name, message_type, name, user, send_user):
     '语音消息的回复'
-    voice_path = 'static/voices/%s' % file_name
+    voice_path = 'media/voices/%s' % file_name
     await HELPER.create_message('语音' + voice_path, message_type,
                                 name, send_user, user)
 

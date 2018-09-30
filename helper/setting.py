@@ -2,12 +2,19 @@
 import os
 from requests.packages.urllib3.exceptions import HTTPError, PoolError, MaxRetryError
 
+from web.settings import BASE_DIR
+
 # 常量
-LOG_PATH = 'static/log/'
-PKL_PATH = 'static/helper.pkl'
-QR_PIC = 'static/images/QR.png'
-WX_PIC = 'static/images/begin.png'
-HEAD_PIC = 'static/images/head.png'
+LOG_PATH = os.path.join(BASE_DIR, 'log')
+MEDIA_PATH = os.path.join(BASE_DIR, 'media')
+MEDIA_IMAGE_PATH = os.path.join(MEDIA_PATH, 'images')
+MEDIA_VOICE_PATH = os.path.join(MEDIA_PATH, 'voices')
+MEDIA_HEAD_PATH = os.path.join(MEDIA_IMAGE_PATH, 'head')
+
+HELPER_PKL = os.path.join(MEDIA_PATH, 'helper.pkl')
+QR_PIC = os.path.join(MEDIA_IMAGE_PATH, 'QR.png')
+WX_PIC = os.path.join(MEDIA_IMAGE_PATH, 'WX.png')
+HEAD_PIC = os.path.join(MEDIA_IMAGE_PATH, 'robot_head.png')
 
 # HOST = []
 BEG_WEEK = 51

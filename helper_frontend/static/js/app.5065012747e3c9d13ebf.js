@@ -1036,7 +1036,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 });
                 _login.reload_func();
                 _login.text = '请点击登录按钮';
-                _login.pic_src = '/static/images/begin.png';
+                _login.pic_src = '/media/images/WX.png';
                 _login.status = 0;
                 _login.is_login(false);
             });
@@ -1553,7 +1553,7 @@ var actions = {
 
 
 var state = {
-    pic_src: '/static/images/begin.png',
+    pic_src: '/media/images/WX.png',
     text: '请点击登录按钮',
     robot: '',
     status: 0,
