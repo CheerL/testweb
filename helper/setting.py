@@ -4,9 +4,12 @@ from requests.packages.urllib3.exceptions import HTTPError, PoolError, MaxRetryE
 
 from web.settings import BASE_DIR
 
+
+HOST = 'http://pi.cheerl.site:8000'
+VOICE_HOST = 'https://w7.cheerl.site/clock/voice/'
 # 常量
 LOG_PATH = os.path.join(BASE_DIR, 'log')
-MEDIA_PATH = os.path.join(BASE_DIR, 'media')
+MEDIA_PATH = 'media'
 MEDIA_IMAGE_PATH = os.path.join(MEDIA_PATH, 'images')
 MEDIA_VOICE_PATH = os.path.join(MEDIA_PATH, 'voices')
 MEDIA_HEAD_PATH = os.path.join(MEDIA_IMAGE_PATH, 'head')

@@ -15,9 +15,11 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from . import view
+from django.views.static import serve
+from web import view, settings
 
 urlpatterns = [
+    url(r'^media/(?P<path>.*)$', serve, {'document_root':settings.MEDIA_ROOT}),
     url(r'^$', view.hello),
     url(r'^admin/', admin.site.urls),
     url(r'^helper/', include('helper.urls')),

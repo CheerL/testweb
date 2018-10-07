@@ -20,10 +20,11 @@ def time_limit(limit_sec):
         last_use = [0]
         cache = [None]
         @wraps(func)
-        def __time_limit(request, *args, **kwargs):
+        def __time_limit(*args, **kwargs):
             now = time.time()
             if now - last_use[0] > limit_sec:
-                cache[0] = func(request, *args, **kwargs)
+                last_use[0] = now
+                cache[0] = func(*args, **kwargs)
             return cache[0]
         return __time_limit
     return _time_limit

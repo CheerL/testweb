@@ -1,5 +1,4 @@
 '默认初始页面视图'
-from django.http import HttpResponse
 from django.shortcuts import render
 
 

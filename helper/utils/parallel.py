@@ -144,7 +144,7 @@ def search_thread(name=None, ident=None, part=False):
         return False
 
 
-def kill_thread(thread=None, name=None, tid=0, exctype=SystemExit):
+def kill_thread(thread=None, name=None, tid=None, exctype=SystemExit):
     """raises the exception, performs cleanup if needed"""
     if name:
         thread = search_thread(name=name, part=True)
@@ -165,7 +165,7 @@ def kill_thread(thread=None, name=None, tid=0, exctype=SystemExit):
     elif res != 1:
         # """if it returns a number greater than one, you're in trouble,
         # and you should call it again with exc=NULL to revert the effect"""
-        ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, 0)
+        ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
         raise SystemError("PyThreadState_SetAsyncExc failed")
 
 

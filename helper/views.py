@@ -12,19 +12,20 @@ from asgiref.sync import async_to_sync
 from helper.consumers import group_send
 from helper.helper import HELPER
 from helper.models import Message, Robot
-from helper.setting import EXCEPTIONS, HEAD_PIC, HELPER_PKL, QR_PIC, WX_PIC
+from helper.setting import EXCEPTIONS, HEAD_PIC, HELPER_PKL, QR_PIC, WX_PIC, MEDIA_HEAD_PATH
 from helper.utils import async_utils, parallel, post_allowed_only, time_limit
 import helper.reply
 
 
 MSG_INIT = '请点击登录按钮'
-MSG_ERROR = '错误,请重新登录'
+MSG_ERROR = '错误, 请重新登录'
 MSG_LOGIN = '小助手运行中'
 MSG_SCAN = '请扫描二维码'
 MSG_LOGOUT = '成功退出'
 MSG_RELOAD = '重新启动'
 MSG_REMIND = '小助手提醒中'
 MSG_COMFIRM = '请在手机上确认登录'
+MSG_COMFIRMED = '确认登录, 请稍候'
 
 ITEM_LIST = [
     {'text': '登录', 'id': 'login'},
@@ -56,12 +57,12 @@ def login_init(request):
 
 @csrf_exempt
 @post_allowed_only
-@async_to_sync
-async def login(request):
+def login(request):
     '终于登录了'
+    @time_limit(1)
     @async_utils.async_wrap()
     async def qr_func(uuid, status, qrcode):
-        if qrcode:
+        if qrcode and status in ['408', '0']:
             with open(QR_PIC, 'wb') as pic:
                 pic.write(qrcode)
 
@@ -71,11 +72,18 @@ async def login(request):
                 msg=MSG_SCAN,
                 pic=QR_PIC
             ))
-        else:
+        elif status == '201':
             await HELPER.logger.info('等待确认登录')
             await group_send('login', dict(
                 status=1,
                 msg=MSG_COMFIRM,
+                pic=WX_PIC
+            ))
+        elif status == '200':
+            await HELPER.logger.info('登录成功请稍候')
+            await group_send('login', dict(
+                status=1,
+                msg=MSG_COMFIRMED,
                 pic=WX_PIC
             ))
 
@@ -85,14 +93,14 @@ async def login(request):
         itchat.get_head_img(userName=user['UserName'], picDir=HEAD_PIC)
         robot = Robot.objects.get_or_create(uin=user['Uin'])[0]
         robot.nick_name = user['NickName']
+        robot.apply_settings(HELPER.settings)
         robot.save()
-        HELPER.robot = robot
-        HELPER.robot.apply_settings(HELPER.settings)
-        await HELPER.logger.info('%s成功登录' % robot.nick_name)
-        HELPER.wxname_update()
         HELPER.IS_LOGIN = True
+        HELPER.robot = robot
+        HELPER.wxname_update()
         if os.path.exists(QR_PIC):
             os.remove(QR_PIC)
+        await HELPER.logger.info('%s成功登录' % robot.nick_name)
         await group_send('login', dict(
             status=2,
             msg='%s成功登录' % HELPER.robot.nick_name,
@@ -101,8 +109,17 @@ async def login(request):
 
     @async_utils.async_wrap()
     async def exit_func():
+        try:
+            parallel.search_thread(name='login', part=True).kill()
+        except:
+            pass
         HELPER.logout()
         await HELPER.logger.info(MSG_LOGOUT)
+        await group_send('login', dict(
+            status=1,
+            msg=MSG_ERROR,
+            pic=WX_PIC
+        ))
 
     async def login_main():
         try:
@@ -111,7 +128,7 @@ async def login(request):
                 True, HELPER_PKL, False, QR_PIC,
                 qr_func, login_func, exit_func
             )
-            itchat.run(debug=True, blockThread=False)
+            itchat.run(debug=False, blockThread=False)
         except EXCEPTIONS as error:
             print(error)
             await group_send('login', dict(
@@ -120,13 +137,18 @@ async def login(request):
                 pic=WX_PIC
             ))
 
-    await login_main()
+    loop, thread = async_utils.get_loop_and_thread('login')
+    async_utils.async_run(login_main, loop, thread)
     return JsonResponse(dict(res=True, msg=''))
 
 
 @async_to_sync
 async def login_stop(request):
     try:
+        try:
+            parallel.search_thread(name='login', part=True).kill()
+        except:
+            pass
         if os.path.exists(HELPER_PKL):
             os.remove(HELPER_PKL)
         HELPER.logout()
@@ -195,7 +217,7 @@ def chat_user(request):
 
     user_list = [{
         'name': user['RemarkName'] if user['RemarkName'] else user['NickName'],
-        'path': 'media/head/%s.png' % re.subn(r'[\\\"\'/.*<>|:?]', '_', user['NickName'])[0],
+        'path': os.path.join(MEDIA_HEAD_PATH, '%s.png' % re.subn(r'[\\\"\'/.*<>|:?]', '_', user['NickName'])[0]),
         'user_name': user['UserName']
         } for user in itchat.get_friends()]
 

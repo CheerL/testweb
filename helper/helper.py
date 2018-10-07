@@ -172,7 +172,7 @@ class Helper:
 
     def logout(self):
         '退出登陆'
-        self.settings.__init__()
+        self.settings = Setting(self)
         self.IS_LOGIN = False
         self.robot = None
         itchat.logout()
@@ -194,10 +194,9 @@ class Setting:
         self.VOICE_REPLY = True
 
     def __str__(self):
-        return '\n'.join(
-            ['%s:%s' % (self.trans_dict[name], value)
-             for name, value in vars(self).items()]
-        )
+        settings = vars(self)
+        del settings['helper']
+        return str(settings)
 
     async def change_settings(self, items):
         self.VOICE_REPLY = items['VOICE_REPLY']

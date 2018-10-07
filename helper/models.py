@@ -19,8 +19,7 @@ class Robot(models.Model):
         return '%s-%s' % (self.nick_name, self.uin)
 
     def save_settings(self, settings):
-        self.settings = str(vars(settings))
-        self.save()
+        self.settings = str(settings)
 
     def apply_settings(self, settings):
         if self.settings:

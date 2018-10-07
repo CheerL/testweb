@@ -1,36 +1,42 @@
 import threading
 import asyncio
 from functools import partial, wraps
+from helper.utils.parallel import kill_thread
+
+class LoopThread(threading.Thread):
+    def __init__(self, target, loop, name):
+        self.loop = loop
+        super().__init__(target=target, args=(loop,), name=name)
+
+    def kill(self):
+        if not self.loop.is_closed():
+            self.loop.stop()
+            self.loop._thread_id = None
+            self.loop.close()
+        kill_thread(thread=self)
 
 def kill_callback(loop, thread):
-    if not loop.is_closed():
-        loop.stop()
-        loop.close()
-    if not thread._is_stopped:
-        thread._stop()
-        thread._delete()
-    # print('kill thread & loop')
+    thread.kill()
 
-async def target_wrap(coro, loop, thread, callback):
-    await coro
-    if hasattr(callback, '__call__'):
-        callback(loop, thread)
+def none_callback(loop, thread):
+    pass
 
-def get_loop_and_thread():
+def get_loop_and_thread(thread_name=None, daemon=False):
     def start_loop(loop):
         asyncio.set_event_loop(loop)
         loop.run_forever()
 
     loop = asyncio.new_event_loop()
-    loop_thread = threading.Thread(target=start_loop, args=(loop,), name='async_thread')
-    loop_thread.daemon = True
-    loop_thread.start()
-    return loop, loop_thread
+    thread = LoopThread(target=start_loop, loop=loop, name=thread_name)
+    thread.daemon = daemon
+    thread.start()
+    return loop, thread
 
 def async_run(async_func, loop=None, thread=None, callback=kill_callback, *args, **kwargs):
     if loop is None or thread is None:
         loop, thread = get_loop_and_thread()
-    asyncio.run_coroutine_threadsafe(target_wrap(async_func(*args, **kwargs), loop, thread, callback), loop)
+    future = asyncio.run_coroutine_threadsafe(async_func(*args, **kwargs), loop)
+    future.add_done_callback(lambda _: callback(loop, thread))
 
 def async_wrap(loop=None, thread=None, callback=kill_callback):
     def _async_wrap(async_func):

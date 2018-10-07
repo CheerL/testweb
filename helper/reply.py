@@ -7,8 +7,9 @@ import itchat
 from asgiref.sync import async_to_sync
 from helper.helper import HELPER
 from helper.models import Message
-from helper.setting import EXCEPTIONS
-from helper.utils import async_utils, recognize
+from helper.setting import EXCEPTIONS, HOST
+from helper.utils import async_utils
+from helper.voice import voice_recognize, auto_chat
 
 # ADMIN_HELP = '''?data?   None
 # ?robot          None
@@ -46,15 +47,16 @@ async def reply(msg):
         user = msg['User']
         name = user['RemarkName'] if user['RemarkName'] else user['NickName']
         if message_type == itchat.content.TEXT:
-            await text_reply(msg['Text'], message_type, name, user, send_user)
+            await text_reply(msg, message_type, name, user, send_user)
         elif message_type == itchat.content.VOICE:
-            await voice_reply(msg['FileName'], message_type, name, user, send_user)
+            await voice_reply(msg, message_type, name, user, send_user)
 
     except EXCEPTIONS as error:
         await HELPER.error_report(error, msg['FromUserName'], False)
 
-async def text_reply(text, message_type, name, user, send_user):
+async def text_reply(msg, message_type, name, user, send_user):
     '文字消息的回复'
+    text = msg['Text']
     await HELPER.create_message(text, message_type,
                                 name, user, send_user)
 
@@ -63,21 +65,37 @@ async def text_reply(text, message_type, name, user, send_user):
         await HELPER.send(msg, send_user)
     else:
         if HELPER.settings.ROBOT_REPLY:
-            await HELPER.send(HELPER.get_robot_response(text), send_user)
+            try:
+                answer, result = auto_chat(text, send_user['NickName'])
+            except Exception as error:
+                answer, result = str(error), False
 
+            if result:
+                await HELPER.send(answer, send_user)
+            else:
+                await HELPER.logger.info(answer)
+                await HELPER.send('我不知道该怎么接', send_user)
 
-async def voice_reply(file_name, message_type, name, user, send_user):
+async def voice_reply(msg, message_type, name, user, send_user):
     '语音消息的回复'
-    voice_path = 'media/voices/%s' % file_name
-    await HELPER.create_message('语音' + voice_path, message_type,
+    voice_path = 'media/voices/%s' % msg['FileName']
+    msg.download(voice_path)
+    await HELPER.create_message('语音:' + voice_path, message_type,
                                 name, send_user, user)
 
-    if HELPER.settings.VOICE_REPLY:
-        translate = recognize.spech_recognize(voice_path)
-        if translate:
-            await HELPER.send('你说的是:' + translate, send_user)
-            await HELPER.logger.info('收到来自%s的语音, 内容: %s' % (name, translate))
-            await text_reply(translate, itchat.content.TEXT,
+    try:
+        voice_url = '%s/%s' % (HOST, voice_path)
+        translate, result = voice_recognize(voice_url)
+    except Exception as error:
+        translate, result = str(error), False
+
+    if result:
+        await HELPER.send('你说的是:' + translate, send_user)
+        await HELPER.logger.info('收到来自%s的语音, 内容: %s' % (name, translate))
+        if HELPER.settings.VOICE_REPLY:
+            msg['Text'] = translate
+            await text_reply(msg, itchat.content.TEXT,
                              name, user, send_user)
-        else:
-            await HELPER.send('我没有听懂', send_user)
+    else:
+        await HELPER.logger.info(translate)
+        await HELPER.send('我没有听懂', send_user)
