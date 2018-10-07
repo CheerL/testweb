@@ -4,7 +4,7 @@ verify_ssl = true
 name = "ts"
 
 [packages]
-django = "==1.11"
+django = "==1.11.15"
 channels = "*"
 whitenoise = "*"
 itchat = "*"
