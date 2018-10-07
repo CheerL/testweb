@@ -1,10 +1,11 @@
+**/.ipynb_checkpoints/*
+**/__pycache__/*
+**/migrations/*
 .vscode/*
 test/*
 pid/*
 collected_static/*
-**/__pycache__/*
-**/migrations/*
-**/.ipynb_checkpoints/*
+**/.env
 media/images/head/*
 media/voices/*
 media/images/robot_head.png
