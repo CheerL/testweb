@@ -120,7 +120,7 @@
                 "sha256:b6f3b864944276b4fd1d099952112696558f78b77b39188ac92b6c5e80152c30"
             ],
             "index": "ts",
-            "version": "==1.11"
+            "version": "==1.11.15"
         },
         "hiredis": {
             "hashes": [
