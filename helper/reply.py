@@ -10,7 +10,7 @@ from helper.helper import HELPER
 from helper.models import Message
 from helper.setting import EXCEPTIONS, HOST
 from helper.utils import async_utils
-from helper.voice import voice_recognize, auto_chat, voice_recognize_remote
+from helper.voice import auto_chat, voice_recognize
 
 KEYS_1 = ['???', '？？？']
 
@@ -73,7 +73,7 @@ async def voice_reply(msg, message_type, name, user, send_user):
                                 name, send_user, user)
     try:
         voice_url = '%s/%s' % (HOST, voice_path)
-        translate, result = voice_recognize_remote(voice_url, 'tencent_ai')
+        translate, result = voice_recognize(voice_url, 'tencent_ai')
     except Exception as error:
         translate, result = str(error), False
 
