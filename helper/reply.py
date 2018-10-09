@@ -73,8 +73,7 @@ async def voice_reply(msg, message_type, name, user, send_user):
                                 name, send_user, user)
     try:
         voice_url = '%s/%s' % (HOST, voice_path)
-        # translate, result = voice_recognize(voice_url)
-        translate, result = voice_recognize_remote(voice_url)
+        translate, result = voice_recognize_remote(voice_url, 'tencent_ai')
     except Exception as error:
         translate, result = str(error), False
 
