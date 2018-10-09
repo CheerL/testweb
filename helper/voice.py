@@ -16,10 +16,10 @@ REGION = 'ap-guangzhou'
 
 SESSION = requests.Session()
 
-def voice_recognize(voice_url, eng_type='tencent_ai'):
+def voice_recognize(voice_url, style=None):
     para = {
         'url': voice_url,
-        'eng_type': eng_type
+        'style': style
     }
     response = SESSION.post(VOICE_HOST, para)
     result = response.json()
