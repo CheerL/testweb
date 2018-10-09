@@ -1,15 +1,26 @@
 import urllib
+import requests
 from tencentcloud.common import credential
 from tencentcloud.common.profile.client_profile import ClientProfile
 from tencentcloud.common.profile.http_profile import HttpProfile
 from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException 
 from tencentcloud.aai.v20180522 import aai_client, models
+from helper.setting import VOICE_HOST
 
 SECRET_ID = 'AKIDByZwBHyk7E6h3Uo7JI3atxnOjpeHZnkR'
 SECRET_KEY = 'av0pOm27pMh05vXx99uQjncDZgX8SWJq'
 PROJECT_ID = '0'
 ENDPOINT = 'aai.tencentcloudapi.com'
 REGION = 'ap-guangzhou'
+
+def voice_recognize_remote(voice_url, eng_type='tencent_ai'):
+    para = {
+        'url': voice_url,
+        'eng_type': eng_type
+    }
+    response = requests.post(VOICE_HOST, para)
+    result = response.json()
+    return result['msg'], result['result']
 
 def voice_recognize(voice_url):
     comment = 'voice'

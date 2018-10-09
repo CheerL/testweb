@@ -5,7 +5,7 @@ from requests.packages.urllib3.exceptions import HTTPError, PoolError, MaxRetryE
 from web.settings import BASE_DIR
 
 
-HOST = 'http://pi.cheerl.site:8000'
+HOST = 'http://home.cheerl.online:8000'
 VOICE_HOST = 'https://w7.cheerl.site/clock/voice/'
 # 常量
 LOG_PATH = os.path.join(BASE_DIR, 'log')

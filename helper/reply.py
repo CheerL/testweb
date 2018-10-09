@@ -1,5 +1,6 @@
 '程序运行主体'
 import re
+import os
 import time
 
 # from helper.async_itchat import async_itchat as itchat
@@ -9,26 +10,13 @@ from helper.helper import HELPER
 from helper.models import Message
 from helper.setting import EXCEPTIONS, HOST
 from helper.utils import async_utils
-from helper.voice import voice_recognize, auto_chat
-
-# ADMIN_HELP = '''?data?   None
-# ?robot          None
-# ?log?           None
-# ?update?        None
-# ?remind?        None
-# ?status?        None
-# ?user?          None
-# ?remind wait?   \\f
-# ?remind before? \\f
-# ?course dict?   \\d:\\d:\\d
-# ?send?          用户:\\s 内容:\\s'''
+from helper.voice import voice_recognize, auto_chat, voice_recognize_remote
 
 KEYS_1 = ['???', '？？？']
 
 
 @itchat.msg_register(itchat.content.FRIENDS)
 @async_to_sync
-# @async_utils.async_wrap()
 async def add_friend(msg):
     '自动接受好友申请'
     itchat.add_friend(**msg['Text'])
@@ -39,7 +27,6 @@ async def add_friend(msg):
 
 @itchat.msg_register([itchat.content.TEXT, itchat.content.VOICE])
 @async_to_sync
-# @async_utils.async_wrap()
 async def reply(msg):
     try:
         message_type = msg['Type']
@@ -80,12 +67,14 @@ async def voice_reply(msg, message_type, name, user, send_user):
     '语音消息的回复'
     voice_path = 'media/voices/%s' % msg['FileName']
     msg.download(voice_path)
+    while not os.path.exists(voice_path):
+        pass
     await HELPER.create_message('语音:' + voice_path, message_type,
                                 name, send_user, user)
-
     try:
         voice_url = '%s/%s' % (HOST, voice_path)
-        translate, result = voice_recognize(voice_url)
+        # translate, result = voice_recognize(voice_url)
+        translate, result = voice_recognize_remote(voice_url)
     except Exception as error:
         translate, result = str(error), False
 
