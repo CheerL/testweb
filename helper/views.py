@@ -11,7 +11,7 @@ import itchat
 from asgiref.sync import async_to_sync
 from helper.consumers import group_send
 from helper.helper import HELPER
-from helper.models import Message, Robot
+from helper.models import Message, Robot, Setting
 from helper.setting import EXCEPTIONS, HEAD_PIC, HELPER_PKL, QR_PIC, WX_PIC, MEDIA_HEAD_PATH
 from helper.utils import async_utils, parallel, post_allowed_only, time_limit
 import helper.reply
@@ -93,11 +93,11 @@ def login(request):
         itchat.get_head_img(userName=user['UserName'], picDir=HEAD_PIC)
         robot = Robot.objects.get_or_create(uin=user['Uin'])[0]
         robot.nick_name = user['NickName']
-        robot.apply_settings(HELPER.settings)
+        if robot.settings == 'None':
+            robot.settings = Setting.objects.create()
         robot.save()
         HELPER.IS_LOGIN = True
         HELPER.robot = robot
-        HELPER.wxname_update()
         if os.path.exists(QR_PIC):
             os.remove(QR_PIC)
         await HELPER.logger.info('%s成功登录' % robot.nick_name)
@@ -255,13 +255,14 @@ async def chat_history(request):
 
 # 设置api
 def get_setting(request):
-    item_list = vars(HELPER.settings).items()
+    item_list = HELPER.robot.settings.json()
     bool_list = [
         {
             'name': name,
             'val': val
         }
-        for name, val in item_list if isinstance(val, bool)
+        for name, val in item_list.items()
+        if isinstance(val, bool)
     ]
     text_list = []
     select_list = []
@@ -278,9 +279,9 @@ def get_setting(request):
 async def change_setting(request):
     if HELPER.IS_LOGIN:
         try:
-            res = json.loads(request.body.decode())
-            await HELPER.settings.change_settings(res)
-            HELPER.robot.save_settings(HELPER.settings)
+            settings = json.loads(request.body.decode())
+            HELPER.robot.settings.change_settings(settings)
+            await HELPER.logger.info('设置修改成功')
             return JsonResponse({'res': True, 'msg': '修改成功'})
         except EXCEPTIONS as error:
             await HELPER.logger.info(error)

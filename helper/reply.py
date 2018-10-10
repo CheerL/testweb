@@ -51,7 +51,7 @@ async def text_reply(msg, message_type, name, user, send_user):
         msg = '功能有: ' + ', '.join([', '.join(each) for each in [KEYS_1[:1]]])
         await HELPER.send(msg, send_user)
     else:
-        if HELPER.settings.ROBOT_REPLY:
+        if HELPER.robot.settings.rebot_reply:
             try:
                 answer, result = auto_chat(text, send_user['NickName'])
             except Exception as error:
@@ -80,7 +80,7 @@ async def voice_reply(msg, message_type, name, user, send_user):
     if result:
         await HELPER.send('你说的是:' + translate, send_user)
         await HELPER.logger.info('收到来自%s的语音, 内容: %s' % (name, translate))
-        if HELPER.settings.VOICE_REPLY:
+        if HELPER.robot.settings.voice_reply:
             msg['Text'] = translate
             await text_reply(msg, itchat.content.TEXT,
                              name, user, send_user)

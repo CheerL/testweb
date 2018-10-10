@@ -7,7 +7,7 @@ import itchat
 import requests
 
 from helper.consumers import group_send
-from helper.models import Helper_user, Message
+from helper.models import Message
 from helper.setting import EXCEPTIONS, LOG_PATH, TL_KEY, HELPER_PKL
 from helper.utils import logger
 
@@ -44,7 +44,6 @@ class Helper:
 
     def __init__(self):
         self.IS_LOGIN = False
-        self.settings = Setting(self)
         self.user = None
 
     @staticmethod
@@ -84,16 +83,16 @@ class Helper:
         else:
             self.send(str(error), user)
 
-    def search_list(self, user_name=None):
-        '在用户列表中查找当前用户是否已经绑定'
-        if user_name is not None:
-            user = Helper_user.objects.filter(robot=self.robot).filter(user_name=user_name)
-            if user:
-                return user[0]
-            else:
-                return self.add_user(user_name)
-        else:
-            return Helper_user.objects.filter(robot=self.robot)
+    # def search_list(self, user_name=None):
+    #     '在用户列表中查找当前用户是否已经绑定'
+    #     if user_name is not None:
+    #         user = Helper_user.objects.filter(robot=self.robot).filter(user_name=user_name)
+    #         if user:
+    #             return user[0]
+    #         else:
+    #             return self.add_user(user_name)
+    #     else:
+    #         return Helper_user.objects.filter(robot=self.robot)
 
     async def create_message(self, text, message_type,
                              name, user, send_user):
@@ -149,60 +148,31 @@ class Helper:
         except EXCEPTIONS as error:
             await self.logger.info(error)
 
-    def wxname_update(self):
-        '更新用户名, 在登陆时调用'
-        for user in self.search_list():
-            user.wx_UserName = itchat.search_friends(
-                remarkName=user.user_name)[0]['UserName']
-            user.save()
+    # def wxname_update(self):
+    #     '更新用户名, 在登陆时调用'
+    #     for user in self.search_list():
+    #         user.wx_UserName = itchat.search_friends(
+    #             remarkName=user.user_name)[0]['UserName']
+    #         user.save()
 
-    def add_user(self, user_name):
-        user = Helper_user(
-            user_name=user_name,
-            user_id='',
-            password=''
-        )
-        user.save()
-        return user
+    # def add_user(self, user_name):
+    #     return Helper_user.objects.create(
+    #         user_name=user_name,
+    #         user_id='',
+    #         password=''
+    #     )
 
-    def del_user(self, user_name):
-        '删除用户'
-        user = self.search_list(user_name=user_name)
-        user.delete()
+    # def del_user(self, user_name):
+    #     '删除用户'
+    #     user = self.search_list(user_name=user_name)
+    #     user.delete()
 
     def logout(self):
         '退出登陆'
-        self.settings = Setting(self)
         self.IS_LOGIN = False
         self.robot = None
         itchat.logout()
         if os.path.exists(HELPER_PKL):
             os.remove(HELPER_PKL)
-
-
-class Setting:
-    '小助手设置'
-    trans_dict = dict(
-        ROBOT_REPLY='智能回复开关',
-        VOICE_REPLY='语音回复开关',
-    )
-
-    def __init__(self, helper):
-        '设置参数初始化'
-        self.helper = helper
-        self.ROBOT_REPLY = True
-        self.VOICE_REPLY = True
-
-    def __str__(self):
-        settings = vars(self)
-        del settings['helper']
-        return str(settings)
-
-    async def change_settings(self, items):
-        self.VOICE_REPLY = items['VOICE_REPLY']
-        self.ROBOT_REPLY = items['ROBOT_REPLY']
-        await self.helper.logger.info('修改设置成功')
-
-
 
 HELPER = Helper()
