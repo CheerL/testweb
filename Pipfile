@@ -6,7 +6,6 @@ name = "ts"
 [packages]
 django = "*"
 channels = "*"
-whitenoise = "==3.3.1"
 itchat = "*"
 threadpool = "*"
 requests = "*"
