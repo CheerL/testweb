@@ -29,7 +29,7 @@ class Robot(models.Model):
     '机器人用户'
     uin = models.CharField(max_length=50, default='', primary_key=True)
     nick_name = models.CharField(max_length=50, default='')
-    settings = models.ForeignKey(Setting, default='None')
+    settings = models.ForeignKey(Setting, default='None', on_delete=models.CASCADE)
 
     def __str__(self):
         return '%s-%s' % (self.nick_name, self.uin)
@@ -39,7 +39,7 @@ class Message(models.Model):
     '消息往来'
     text = models.CharField(max_length=200, default='')
     user = models.CharField(max_length=50, default='')
-    robot = models.ForeignKey(Robot, default='None')
+    robot = models.ForeignKey(Robot, default='None', on_delete=models.CASCADE)
     time = models.DateTimeField(auto_now_add=True)
     message_type = models.CharField(max_length=10, default='TEXT')
     direction = models.CharField(max_length=10, default='IN')
@@ -69,7 +69,7 @@ class Helper_user(models.Model):
     is_open = models.BooleanField(default=True)
     have_remind = models.BooleanField(default=False)
     wx_UserName = models.CharField(max_length=100, default='')
-    robot = models.ForeignKey(Robot, default='None')
+    robot = models.ForeignKey(Robot, default='None', on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.user_name)

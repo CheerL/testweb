@@ -4,9 +4,9 @@ verify_ssl = true
 name = "ts"
 
 [packages]
-django = "==1.11.15"
+django = "*"
 channels = "*"
-whitenoise = "*"
+whitenoise = "==3.3.1"
 itchat = "*"
 threadpool = "*"
 requests = "*"
@@ -15,9 +15,14 @@ pillow = "*"
 daphne = "*"
 lxml = "*"
 channels-redis = "*"
+pypng = "*"
+pyqrcode = "*"
+twisted = "*"
+tencentcloud-sdk-python = "*"
+asgiref = "==2.3"
 
 [dev-packages]
 pylint = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.5"

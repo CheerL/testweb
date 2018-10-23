@@ -6,9 +6,8 @@ test/*
 pid/*
 collected_static/*
 **/.env
-media/images/head/*
-media/voices/*
-media/images/robot_head.png
+!media/images/WX.png
+media/*
 test*
 *.ipynb
 *.csv
