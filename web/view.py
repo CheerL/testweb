@@ -16,7 +16,7 @@ def admin(request):
         {'text': '文件管理', 'url': 'file'},
         {'text': 'Django', 'url': 'django_admin'},
         #{'text': 'VNC', 'url': 'vnc'},
-        {'text': '路由', 'url': 'cgi-bin/luci'},
+        #{'text': '路由', 'url': 'cgi-bin/luci'},
         {'text': 'Syncthing', 'url': 'syncthing'}
     ]
     return render(request, 'index.html', dict(url_list=url_list))
