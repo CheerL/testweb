@@ -3,13 +3,15 @@
 {% block title %}{{title}}{% endblock %}
 {% block content %}
     <!-- 博客封面图 -->
+    <link rel="stylesheet" href="/static/css/splendor.css">
     <div class="blog-jpg">
         <!-- 阴影块 -->
         <div class="blog-overlay"></div>
         <!-- 封面及标题 -->
-        <div class="blog-cover" data-stellar-background-ratio="0.5" style="background-image: url({% static pic %});">
-            <div class="blog-title">
+	<div class="blog-cover">
+            <div class="blog-title animate-box">
                 <h2>{{title}}</h2>
+                <div class="info text-center">{{writer}} &nbsp; {{date|date:"Y年n月j日"}}</div>
             </div>
         </div>
     </div>
@@ -17,12 +19,23 @@
     <div class="container">
         <div id="main-content">
             <article>
-                <div class="art-content">
-                    <div class="info"><a href="">{{writer}}</a><p>{{date|date:"Y年n月j日"}}</p></div>
-                    {{body}}
-                </div>
+                <div class="art-content markdown">
+		    <div class="body">{{ body | safe }}</div>
+		</div>
             </article>
         </div>
     </div>
-    
+    <style>
+        .blog-cover {
+		background-image: url('{{MEDIA_URL}}{{cover}}');
+		background-repeat: no-repeat;
+		background-position: top center;
+		background-size: 100%;
+		background-attachment: fixed;
+	}
+	.info {
+		color: white;
+		margin: 1.5em;
+	}
+    </style> 
 {% endblock %}

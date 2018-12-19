@@ -70,12 +70,11 @@
 						<!-- 导航条 -->
 						<nav id="fh5co-menu-wrap" role="navigation">
 							<ul class="sf-menu" id="fh5co-primary-menu">
-								<li class="active"><a href="/blog">主页</a></li>
-								<li><a href="#">博客</a></li>
+								<li id='index'><a href="/blog">博客主页</a></li>
                                 <li><a href="#" class="fh5co-sub-ddown">分类</a>
 									<ul class="fh5co-sub-menu">
 										{% for category in category_list %}
-										<li><a href="#" target="_blank">{{category}}</a></li>
+										<li><a href="/blog/cat/{{category}}">{{category}}</a></li>
 										{% endfor %}
 									</ul>
 								</li>
@@ -109,14 +108,14 @@
 								<ul class="float">
 									{% for category in category_list %}
 									{% if forloop.counter is 1 or forloop.counter is 3 or forloop.counter is 5 or forloop.counter is 7 or forloop.counter is 9 %}
-									<li><a href="#">{{category}}</a></li>
+									<li><a href="/blog/cat/{{category}}">{{category}}</a></li>
 									{% endif %}
 									{% endfor %}
 								</ul>
 								<ul class="float">
 									{% for category in category_list %}
 									{% if forloop.counter is 2 or forloop.counter is 4 or forloop.counter is 6 or forloop.counter is 8 or forloop.counter is 10 %}
-									<li><a href="#">{{category}}</a></li>
+									<li><a href="/blog/cat/{{category}}">{{category}}</a></li>
 									{% endif %}
 									{% endfor %}
 								</ul>

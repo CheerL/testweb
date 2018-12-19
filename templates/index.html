@@ -10,7 +10,7 @@
 <body>
     <div id='main' :style="style_object">
         {% for url in url_list %}
-        <my-button href="/{{url.url}}/" :font="font">{{url.text}}</my-button>
+        <my-button href="{{url.url}}" :font="font">{{url.text}}</my-button>
         {% endfor %}
     </div>
 </body>

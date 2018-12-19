@@ -19,6 +19,7 @@ pyqrcode = "*"
 twisted = "*"
 tencentcloud-sdk-python = "*"
 asgiref = "==2.3"
+django-markdownx = "*"
 
 [dev-packages]
 pylint = "*"

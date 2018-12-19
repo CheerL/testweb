@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^helper/', include('helper.urls')),
     url(r'^blog/', include('blog.urls')),
     url(r'^chatroom/', include('chatroom.urls')),
+    url(r'^markdownx/', include('markdownx.urls')),
 ]
 
 if settings.DEBUG:
