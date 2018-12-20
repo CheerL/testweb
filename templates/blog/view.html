@@ -6,9 +6,10 @@
     <link rel="stylesheet" href="/static/css/splendor.css">
     <div class="blog-jpg">
         <!-- 阴影块 -->
-        <div class="blog-overlay"></div>
         <!-- 封面及标题 -->
 	<div class="blog-cover">
+	    <div class='cover-box'><img class='cover-box-img' src='{{MEDIA_URL}}{{cover}}'></div>
+            <div class="blog-overlay"></div>
             <div class="blog-title animate-box">
                 <h2>{{title}}</h2>
                 <div class="info text-center">{{writer}} &nbsp; {{date|date:"Y年n月j日"}}</div>
@@ -36,6 +37,14 @@
 	.info {
 		color: white;
 		margin: 1.5em;
+	}
+	.cover-box {
+		position: relative;
+		z-index: -1;
+	}
+	.cover-box-img {
+		width: 100%;
+		max-height: 500px;
 	}
     </style> 
 {% endblock %}

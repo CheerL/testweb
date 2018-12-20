@@ -335,7 +335,7 @@ figure {
   z-index: 2;
   font-size: 22px;
   text-transform: uppercase;
-  margin: 0.25em;
+  margin: 0.5em;
   font-weight: 700;
   float: left;
 }
@@ -361,11 +361,9 @@ figure {
   z-index: 2;
   display: block;
   float: right;
-  margin-top: 5px;
-  margin-bottom: 5px;
 }
 #fh5co-menu-wrap .sf-menu a {
-  padding: 1em .75em;
+  padding: 1em;
 }
 
 #fh5co-primary-menu > li > ul li.active > a {
@@ -1654,13 +1652,13 @@ figure {
 .blog-cover,
 .blog-jpg {
   position: relative;
-  height: 500px;
   width: 100%;
 }
 .blog-title {
-  position: relative;
+  position: absolute;
   text-align: center;
-  top: 50%;
+  top: calc(50% - 2rem);
+  width: 100%;
   z-index: 3;
 }
 .blog-title h2 {
